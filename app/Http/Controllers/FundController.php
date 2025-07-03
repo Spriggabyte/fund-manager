@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FundController extends Controller
 {
@@ -131,18 +132,11 @@ class FundController extends Controller
         ]);
 
         $data = $fund->data ?? [];
-        
-        // Handle different data types appropriately
+        $fieldPath = $validated['field'];
         $value = $validated['value'];
-        if ($validated['field'] === 'value' || $validated['field'] === 'expense_ratio' || $validated['field'] === 'minimum_investment') {
-            $value = $value !== null ? (float) $value : null;
-        }
-
-        if ($value === '' || $value === null) {
-            unset($data[$validated['field']]);
-        } else {
-            $data[$validated['field']] = $value;
-        }
+        
+        // Handle nested field paths (e.g., "fund.name", "sidebar.domicile")
+        $this->setNestedValue($data, $fieldPath, $value);
 
         $fund->update(['data' => $data]);
 
@@ -151,6 +145,37 @@ class FundController extends Controller
             'message' => 'Fund data updated successfully.',
             'fund_data' => $fund->fresh()->data
         ]);
+    }
+
+    /**
+     * Set a nested value in an array using dot notation.
+     */
+    private function setNestedValue(&$array, $path, $value)
+    {
+        $keys = explode('.', $path);
+        $current = &$array;
+
+        foreach ($keys as $i => $key) {
+            if ($i === count($keys) - 1) {
+                // Last key, set the value
+                if ($value === '' || $value === null) {
+                    unset($current[$key]);
+                } else {
+                    // Handle numeric values
+                    if (is_numeric($value) && !in_array($key, ['phone', 'email', 'website', 'date', 'name', 'description'])) {
+                        $current[$key] = is_float($value + 0) ? (float) $value : (int) $value;
+                    } else {
+                        $current[$key] = $value;
+                    }
+                }
+            } else {
+                // Create nested array if it doesn't exist
+                if (!isset($current[$key]) || !is_array($current[$key])) {
+                    $current[$key] = [];
+                }
+                $current = &$current[$key];
+            }
+        }
     }
 
     /**
@@ -190,5 +215,29 @@ class FundController extends Controller
             'success' => false,
             'message' => 'Holding not found.'
         ], 404);
+    }
+
+    /**
+     * Export the fund data as a PDF.
+     */
+    public function exportPdf(Fund $fund)
+    {
+        $this->authorize('view', $fund);
+        
+        // Create a clean PDF view without edit controls
+        $pdf = Pdf::loadView('funds.pdf', compact('fund'))
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont' => 'Arial',
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+                'dpi' => 150,
+                'defaultPaperSize' => 'a4',
+                'chroot' => public_path(),
+            ]);
+
+        $filename = 'fund-' . $fund->id . '-' . now()->format('Y-m-d') . '.pdf';
+        
+        return $pdf->download($filename);
     }
 }

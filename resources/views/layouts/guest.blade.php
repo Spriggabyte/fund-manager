@@ -20,11 +20,11 @@
             <div class="text-center mb-8">
                 <a href="/" class="inline-block">
                     <div class="bg-white rounded-full p-4 shadow-lg border border-gray-100">
-                        <x-application-logo class="w-12 h-12 fill-current text-indigo-600" />
+                        <img src="https://foord.co.za/themes/custom/mirum/logo.png" width="200" height="200" />
                     </div>
                 </a>
-                <h1 class="mt-4 text-2xl font-bold text-gray-900">{{ config('app.name') }}</h1>
-                <p class="text-gray-600 text-sm">Secure authentication portal</p>
+                <h1 class="mt-4 text-2xl font-bold text-gray-900">Foord Unit Trusts</h1>
+                {{-- <p class="text-gray-600 text-sm">Secure authentication portal</p> --}}
             </div>
 
             <!-- Auth Form Card -->

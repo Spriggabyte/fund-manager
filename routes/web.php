@@ -27,6 +27,10 @@ Route::middleware('auth')->group(function () {
     Route::get('funds/{fund}/fact-sheet', [\App\Http\Controllers\FundController::class, 'factSheet'])
         ->name('funds.fact-sheet');
     
+    // PDF export
+    Route::get('funds/{fund}/pdf', [\App\Http\Controllers\FundController::class, 'exportPdf'])
+        ->name('funds.pdf');
+    
     // AJAX endpoints for inline editing
     Route::patch('funds/{fund}/update-data', [\App\Http\Controllers\FundController::class, 'updateData'])
         ->name('funds.update-data');
