@@ -6,10 +6,10 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center space-x-3">
-                        <div class="bg-indigo-100 rounded-lg p-2">
-                            <x-application-logo class="block h-6 w-auto fill-current text-indigo-600" />
+                        <div class="rounded-lg p-2">
+                            <img src="https://foord.co.za/themes/custom/mirum/logo.png" width="150" height="150" />
                         </div>
-                        <span class="text-xl font-bold text-gray-900">{{ config('app.name') }}</span>
+                        {{-- <span class="text-xl font-bold text-gray-900">{{ config('app.name') }}</span> --}}
                     </a>
                 </div>
 
@@ -18,9 +18,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('funds.index')" :active="request()->routeIs('funds.*')">
+                    {{-- <x-nav-link :href="route('funds.index')" :active="request()->routeIs('funds.*')">
                         {{ __('Funds') }}
-                    </x-nav-link>
+                    </x-nav-link> --}}
                     <x-nav-link :href="route('funds.create')" :active="request()->routeIs('funds.create')">
                         {{ __('Create Fund') }}
                     </x-nav-link>

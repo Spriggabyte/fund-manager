@@ -21,7 +21,7 @@
             <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg">
                 <div class="p-6 text-white">
                     <h3 class="text-2xl font-bold mb-2">Welcome back, {{ Auth::user()->name }}!</h3>
-                    <p class="text-indigo-100">Manage your fund portfolio and track performance</p>
+                    <p class="text-indigo-100">Create and manage unit trusts below</p>
                 </div>
             </div>
 

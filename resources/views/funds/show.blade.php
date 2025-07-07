@@ -322,40 +322,17 @@
 
                     <!-- Charts -->
                     @if(isset($fund->data['mainContent']['charts']))
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div>
-                            <h3 class="text-lg font-bold mb-4">
-                                <span x-data="editableField('mainContent.charts.investmentStrategy.title', '{{ $fund->data['mainContent']['charts']['investmentStrategy']['title'] }}')" 
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <div class="bg-gray-100 h-64 flex items-center justify-center text-gray-500 mb-2">
-                                <span x-data="editableField('mainContent.charts.investmentStrategy.chartPlaceholder', '{{ $fund->data['mainContent']['charts']['investmentStrategy']['chartPlaceholder'] }}')" 
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </div>
-                            <p class="text-xs text-gray-600">
-                                <span x-data="editableField('mainContent.charts.investmentStrategy.description', '{{ $fund->data['mainContent']['charts']['investmentStrategy']['description'] }}')" 
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Investment Strategy vs SA Inflation Chart -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h2 class="text-xl font-semibold mb-4">INVESTMENT STRATEGY VS SA INFLATION</h2>
+                            <canvas id="inflationChart" width="400" height="300"></canvas>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-bold mb-4">
-                                <span x-data="editableField('mainContent.charts.portfolioPerformance.title', '{{ $fund->data['mainContent']['charts']['portfolioPerformance']['title'] }}')" 
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <div class="bg-gray-100 h-64 flex items-center justify-center text-gray-500 mb-2">
-                                <span x-data="editableField('mainContent.charts.portfolioPerformance.chartPlaceholder', '{{ $fund->data['mainContent']['charts']['portfolioPerformance']['chartPlaceholder'] }}')" 
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </div>
+
+                        <!-- Portfolio Performance vs Benchmark Chart -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h2 class="text-xl font-semibold mb-4">PORTFOLIO PERFORMANCE VS BENCHMARK</h2>
+                            <canvas id="portfolioChart" width="400" height="300"></canvas>
                         </div>
                     </div>
                     @endif
@@ -940,5 +917,259 @@
             }
         }
     </script>
+    
+    <!-- Chart.js Scripts -->
+    @if(isset($fund->data['mainContent']['charts']))
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Parse JSON data passed from Laravel controller
+        const inflationData = @json($fund->data['mainContent']['charts']['inflationData'] ?? []);
+        const portfolioData = @json($fund->data['mainContent']['charts']['portfolioData'] ?? []);
+
+        // Investment Strategy vs SA Inflation Chart
+        const inflationCtx = document.getElementById('inflationChart').getContext('2d');
+        const inflationChart = new Chart(inflationCtx, {
+            type: 'line',
+            data: {
+                labels: inflationData.map(item => item.date),
+                datasets: [
+                    {
+                        label: 'Composite',
+                        data: inflationData.map(item => item.composite),
+                        borderColor: '#DC2626',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        order: 1
+                    },
+                    {
+                        label: 'Excess',
+                        data: inflationData.map(item => item.excess),
+                        borderColor: 'transparent',
+                        backgroundColor: '#1F2937',
+                        fill: '+2',
+                        order: 2
+                    },
+                    {
+                        label: 'Inflation',
+                        data: inflationData.map(item => item.inflation),
+                        borderColor: 'transparent',
+                        backgroundColor: '#9CA3AF',
+                        fill: '+1',
+                        order: 3
+                    },
+                    {
+                        label: '5% Hurdle',
+                        data: inflationData.map(item => item.hurdle),
+                        borderColor: 'transparent',
+                        backgroundColor: '#6B7280',
+                        fill: 'origin',
+                        order: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y.toFixed(1) + '%';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            },
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        }
+                    },
+                    y: {
+                        min: -10,
+                        max: 35,
+                        ticks: {
+                            stepSize: 5,
+                            font: {
+                                size: 11
+                            },
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: {
+                            borderDash: [0],
+                            color: '#e0e0e0'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Portfolio Performance vs Benchmark Chart
+        const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+        const portfolioChart = new Chart(portfolioCtx, {
+            type: 'line',
+            data: {
+                labels: portfolioData.map(item => item.date),
+                datasets: [
+                    {
+                        label: 'Fund',
+                        data: portfolioData.map(item => item.fund),
+                        borderColor: '#DC2626',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Benchmark',
+                        data: portfolioData.map(item => item.benchmark),
+                        borderColor: '#1F2937',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': R ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y.toLocaleString();
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            },
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        }
+                    },
+                    y: {
+                        type: 'logarithmic',
+                        min: 100,
+                        ticks: {
+                            font: {
+                                size: 11
+                            },
+                            callback: function(value) {
+                                if (value === 100 || value === 1000) {
+                                    return value;
+                                }
+                                return null;
+                            }
+                        },
+                        grid: {
+                            borderDash: [0],
+                            color: '#e0e0e0'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Add value labels to the end of portfolio lines
+        const addEndLabels = () => {
+            const meta = portfolioChart.getDatasetMeta(0);
+            const ctx = portfolioChart.ctx;
+            
+            portfolioChart.data.datasets.forEach((dataset, i) => {
+                const meta = portfolioChart.getDatasetMeta(i);
+                if (meta.data.length > 0) {
+                    const lastPoint = meta.data[meta.data.length - 1];
+                    const value = dataset.data[dataset.data.length - 1];
+                    
+                    ctx.save();
+                    ctx.fillStyle = dataset.borderColor;
+                    ctx.font = 'bold 12px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`R ${value.toLocaleString()}`, lastPoint.x + 10, lastPoint.y);
+                    ctx.restore();
+                }
+            });
+        };
+
+        // Redraw labels on chart update
+        portfolioChart.options.animation = {
+            onComplete: addEndLabels
+        };
+    </script>
+    @endif
+    
+    <style>
+        canvas {
+            max-height: 400px;
+        }
+    </style>
 </body>
 </html>
