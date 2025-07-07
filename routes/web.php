@@ -36,6 +36,14 @@ Route::middleware('auth')->group(function () {
         ->name('funds.update-data');
     Route::patch('funds/{fund}/update-holding', [\App\Http\Controllers\FundController::class, 'updateHolding'])
         ->name('funds.update-holding');
+    
+    // Revision management
+    Route::get('funds/{fund}/revisions', [\App\Http\Controllers\FundController::class, 'revisions'])
+        ->name('funds.revisions');
+    Route::get('funds/{fund}/revisions/{revision}', [\App\Http\Controllers\FundController::class, 'showRevision'])
+        ->name('funds.revisions.show');
+    Route::post('funds/{fund}/revisions/{revision}/restore', [\App\Http\Controllers\FundController::class, 'restoreRevision'])
+        ->name('funds.revisions.restore');
 });
 
 require __DIR__.'/auth.php';

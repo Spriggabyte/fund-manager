@@ -135,8 +135,19 @@ class FundController extends Controller
         $fieldPath = $validated['field'];
         $value = $validated['value'];
         
+        // Get the old value for revision tracking
+        $oldValue = $this->getNestedValue($data, $fieldPath);
+        
         // Handle nested field paths (e.g., "fund.name", "sidebar.domicile")
         $this->setNestedValue($data, $fieldPath, $value);
+
+        // Create revision before updating
+        $fund->createRevision(
+            $fieldPath,
+            $oldValue,
+            $value,
+            "Updated {$fieldPath}"
+        );
 
         $fund->update(['data' => $data]);
 
@@ -239,5 +250,91 @@ class FundController extends Controller
         $filename = 'fund-' . $fund->id . '-' . now()->format('Y-m-d') . '.pdf';
         
         return $pdf->download($filename);
+    }
+
+    /**
+     * Get a nested value from an array using dot notation.
+     */
+    private function getNestedValue($array, $path)
+    {
+        $keys = explode('.', $path);
+        $current = $array;
+
+        foreach ($keys as $key) {
+            if (!is_array($current) || !array_key_exists($key, $current)) {
+                return null;
+            }
+            $current = $current[$key];
+        }
+
+        return $current;
+    }
+
+    /**
+     * Display all revisions for a fund.
+     */
+    public function revisions(Fund $fund): View
+    {
+        $this->authorize('view', $fund);
+        
+        $revisions = $fund->revisions()->with('user')->paginate(20);
+        
+        return view('funds.revisions', compact('fund', 'revisions'));
+    }
+
+    /**
+     * Restore a fund to a specific revision.
+     */
+    public function restoreRevision(Fund $fund, \App\Models\FundRevision $revision)
+    {
+        $this->authorize('update', $fund);
+        
+        // Ensure the revision belongs to this fund
+        if ($revision->fund_id !== $fund->id) {
+            abort(404);
+        }
+
+        // Create a revision of the current state before restoring
+        $fund->createRevision(
+            null,
+            null,
+            null,
+            "Restored to revision from " . $revision->created_at->format('Y-m-d H:i:s')
+        );
+
+        // Restore the fund to the revision state
+        $fund->update([
+            'name' => $revision->name,
+            'class' => $revision->class,
+            'data' => $revision->data,
+        ]);
+
+        return redirect()->route('funds.show', $fund)
+            ->with('success', 'Fund restored to revision from ' . $revision->created_at->format('Y-m-d H:i:s'));
+    }
+
+    /**
+     * Show a specific revision.
+     */
+    public function showRevision(Fund $fund, \App\Models\FundRevision $revision): View
+    {
+        $this->authorize('view', $fund);
+        
+        // Ensure the revision belongs to this fund
+        if ($revision->fund_id !== $fund->id) {
+            abort(404);
+        }
+
+        // Create a temporary fund object with revision data for display
+        $revisionFund = new Fund([
+            'id' => $fund->id,
+            'name' => $revision->name,
+            'class' => $revision->class,
+            'data' => $revision->data,
+            'created_at' => $fund->created_at,
+            'updated_at' => $revision->created_at,
+        ]);
+
+        return view('funds.revision-show', compact('fund', 'revision', 'revisionFund'));
     }
 }

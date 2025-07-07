@@ -93,6 +93,13 @@
                 <span x-show="editMode" class="text-yellow-300 text-sm">✏️ Edit mode active - Click any text to edit</span>
             </div>
             <div class="flex items-center space-x-3">
+                <a href="{{ route('funds.revisions', $fund) }}" 
+                   class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Revisions</span>
+                </a>
                 <a href="{{ route('funds.pdf', $fund) }}" 
                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out flex items-center space-x-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,6 +112,13 @@
                 </a>
             </div>
         </div>
+
+        <!-- Success/Info Messages -->
+        @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 mx-6 mt-4 rounded">
+            {{ session('success') }}
+        </div>
+        @endif
 
         <!-- Page 2 -->
         <div class="bg-white mt-8 shadow-lg">
