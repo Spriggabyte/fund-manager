@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Fund;
+use App\Services\SvgChartService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -235,8 +236,18 @@ class FundController extends Controller
     {
         $this->authorize('view', $fund);
         
+        // Generate chart SVGs
+        $chartSvgs = [];
+        try {
+            $chartService = new SvgChartService();
+            $chartSvgs = $chartService->generateChartsForFund($fund);
+        } catch (\Exception $e) {
+            // Log error but continue with PDF generation
+            \Log::warning('Chart generation failed for PDF export: ' . $e->getMessage());
+        }
+        
         // Create a clean PDF view without edit controls
-        $pdf = Pdf::loadView('funds.pdf', compact('fund'))
+        $pdf = Pdf::loadView('funds.pdf', compact('fund', 'chartSvgs'))
             ->setPaper('a4', 'portrait')
             ->setOptions([
                 'defaultFont' => 'Arial',
