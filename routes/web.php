@@ -8,6 +8,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Special route for internal PDF generation (bypasses auth)
+Route::get('/internal/funds/{fund}/pdf-view', [\App\Http\Controllers\FundController::class, 'internalPdfView'])
+    ->name('funds.internal.pdf-view');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

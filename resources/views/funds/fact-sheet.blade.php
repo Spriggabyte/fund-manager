@@ -277,7 +277,7 @@
                                         <td class="border border-gray-300 px-4 py-2 font-bold">{{ $data['fees']['performanceFeeExamples']['total']['name'] }}</td>
                                         <td class="border border-gray-300 px-4 py-2 text-center font-bold">{{ $data['fees']['performanceFeeExamples']['total']['a'] }}</td>
                                         <td class="border border-gray-300 px-4 py-2 text-center font-bold">{{ $data['fees']['performanceFeeExamples']['total']['b'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center font-bold">{{ $data['fees']['performanceFeeExamples']['total']['c'] }}</td>
+                                        <td class="bodrer border-gray-300 px-4 py-2 text-center font-bold">{{ $data['fees']['performanceFeeExamples']['total']['c'] }}</td>
                                         <td class="border border-gray-300 px-4 py-2 text-center font-bold">{!! $data['fees']['performanceFeeExamples']['total']['d'] !!}</td>
                                     </tr>
                                 </tbody>

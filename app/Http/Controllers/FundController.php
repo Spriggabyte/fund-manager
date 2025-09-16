@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Fund;
-use App\Services\SvgChartService;
+use App\Services\PuppeteerPdfService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class FundController extends Controller
 {
@@ -72,6 +71,7 @@ class FundController extends Controller
         
         return view('funds.fact-sheet', compact('fund'));
     }
+    
 
     /**
      * Show the form for editing the specified resource.
@@ -230,37 +230,39 @@ class FundController extends Controller
     }
 
     /**
-     * Export the fund data as a PDF.
+     * Export the fund data as a PDF using Puppeteer for pixel-perfect rendering.
      */
-    public function exportPdf(Fund $fund)
+    public function exportPdf(Fund $fund, Request $request)
     {
         $this->authorize('view', $fund);
         
-        // Generate chart SVGs
-        $chartSvgs = [];
+        // Increase execution time limit for PDF generation
+        set_time_limit(180); // 3 minutes for Puppeteer
+        ini_set('max_execution_time', 180);
+        
+        $puppeteerService = new PuppeteerPdfService();
+        
         try {
-            $chartService = new SvgChartService();
-            $chartSvgs = $chartService->generateChartsForFund($fund);
+            // Generate PDF using Puppeteer
+            $pdfPath = $puppeteerService->generatePdf($fund);
+            
+            // Create filename for download
+            $filename = 'fund-' . $fund->id . '-' . now()->format('Y-m-d') . '.pdf';
+            
+            // Return the PDF as download and clean up
+            return response()->download($pdfPath, $filename)->deleteFileAfterSend(true);
+            
         } catch (\Exception $e) {
-            // Log error but continue with PDF generation
-            \Log::warning('Chart generation failed for PDF export: ' . $e->getMessage());
+            \Log::error('PDF generation failed: ' . $e->getMessage());
+            \Log::error('PDF error trace: ' . $e->getTraceAsString());
+            
+            // Return error response instead of fallback
+            return response()->json([
+                'error' => 'PDF generation failed',
+                'message' => 'Unable to generate PDF. Please try again or contact support.',
+                'details' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-        
-        // Create a clean PDF view without edit controls
-        $pdf = Pdf::loadView('funds.pdf', compact('fund', 'chartSvgs'))
-            ->setPaper('a4', 'portrait')
-            ->setOptions([
-                'defaultFont' => 'Arial',
-                'isRemoteEnabled' => true,
-                'isHtml5ParserEnabled' => true,
-                'dpi' => 150,
-                'defaultPaperSize' => 'a4',
-                'chroot' => public_path(),
-            ]);
-
-        $filename = 'fund-' . $fund->id . '-' . now()->format('Y-m-d') . '.pdf';
-        
-        return $pdf->download($filename);
     }
 
     /**
@@ -347,5 +349,14 @@ class FundController extends Controller
         ]);
 
         return view('funds.revision-show', compact('fund', 'revision', 'revisionFund'));
+    }
+
+    /**
+     * Internal PDF view - bypasses authentication for Puppeteer access.
+     */
+    public function internalPdfView(Fund $fund): View
+    {
+        // No authorization check - this is for internal PDF generation only
+        return view('funds.show', compact('fund'));
     }
 }
