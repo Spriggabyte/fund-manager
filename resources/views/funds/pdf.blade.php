@@ -98,7 +98,6 @@
             font-weight: 500;
             font-size: 9pt;
             letter-spacing: 0.03em;
-            text-transform: uppercase;
         }
 
         .logo {
@@ -351,13 +350,13 @@
             border-bottom: none;
         }
 
-        /* Change indicators */
+        /* Change indicators - both use naartjie color to match reference */
         .change-up {
             color: var(--naartjie);
         }
 
         .change-down {
-            color: var(--dark-navy);
+            color: var(--naartjie);
         }
 
         /* =====================================================
@@ -580,7 +579,7 @@
         <!-- Header -->
         <div class="header">
             <div class="date-badge">
-                {{ strtoupper($fund->data['fund']['date'] ?? now()->format('d F Y')) }}
+                {{ $fund->data['fund']['date'] ?? now()->format('d F Y') }}
             </div>
             <div class="logo">
                 <img src="{{ $fund->data['fund']['logoUrl'] ?? 'https://foord.co.za/themes/custom/mirum/logo.png' }}" alt="FOORD">
@@ -592,9 +591,9 @@
             @php
                 $fundName = $fund->data['fund']['name'] ?? $fund->name;
                 // Split the fund name and class if present
-                if (preg_match('/^(.+?)\s*[-—]\s*(CLASS\s+[A-Z])$/i', $fundName, $matches)) {
+                if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z])$/i', $fundName, $matches)) {
                     $mainName = trim($matches[1]);
-                    $classText = '— ' . strtoupper(trim($matches[2]));
+                    $classText = strtoupper(trim($matches[2]));
                 } else {
                     $mainName = $fundName;
                     $classText = '';
@@ -603,7 +602,7 @@
             <h1 class="fund-name">
                 {{ strtoupper($mainName) }}
                 @if($classText)
-                    <span class="class-suffix">{{ $classText }}</span>
+                    <span class="class-suffix">&mdash; {{ $classText }}</span>
                 @endif
             </h1>
             <p class="fund-description">{{ $fund->data['fund']['description'] ?? '' }}</p>
@@ -991,6 +990,7 @@
     <!-- Chart.js -->
     @if(isset($fund->data['mainContent']['charts']))
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const inflationData = @json($fund->data['mainContent']['charts']['inflationData'] ?? []);
@@ -1009,7 +1009,17 @@
             Chart.defaults.font.family = "'Lato', sans-serif";
             Chart.defaults.font.size = 6;
 
+            // Custom legend line drawing
+            const lineLegendPlugin = {
+                id: 'lineLegend',
+                beforeDraw: (chart) => {
+                    const legend = chart.legend;
+                    if (!legend || !legend.legendItems) return;
+                }
+            };
+
             // Investment Strategy vs SA Inflation Chart
+            // Legend order: Composite, Inflation, 5% Hurdle, Excess (matching reference)
             if (inflationData.length > 0) {
                 const inflationCtx = document.getElementById('inflationChart').getContext('2d');
                 new Chart(inflationCtx, {
@@ -1022,34 +1032,40 @@
                                 data: inflationData.map(item => item.composite),
                                 borderColor: colors.naartjie,
                                 backgroundColor: 'transparent',
-                                borderWidth: 1,
+                                borderWidth: 1.5,
                                 tension: 0.1,
                                 pointRadius: 0,
                                 order: 1
                             },
                             {
-                                label: 'Excess',
-                                data: inflationData.map(item => item.excess),
-                                borderColor: 'transparent',
-                                backgroundColor: colors.darkNavy,
-                                fill: '+2',
-                                order: 2
-                            },
-                            {
                                 label: 'Inflation',
                                 data: inflationData.map(item => item.inflation),
-                                borderColor: 'transparent',
+                                borderColor: colors.mediumGrey,
                                 backgroundColor: colors.mediumGrey,
+                                borderWidth: 1.5,
                                 fill: '+1',
+                                pointRadius: 0,
                                 order: 3
                             },
                             {
                                 label: '5% Hurdle',
                                 data: inflationData.map(item => item.hurdle),
-                                borderColor: 'transparent',
+                                borderColor: colors.lightGrey,
                                 backgroundColor: colors.lightGrey,
+                                borderWidth: 1.5,
                                 fill: 'origin',
+                                pointRadius: 0,
                                 order: 4
+                            },
+                            {
+                                label: 'Excess',
+                                data: inflationData.map(item => item.excess),
+                                borderColor: colors.darkNavy,
+                                backgroundColor: colors.darkNavy,
+                                borderWidth: 1.5,
+                                fill: '-2',
+                                pointRadius: 0,
+                                order: 2
                             }
                         ]
                     },
@@ -1061,10 +1077,11 @@
                             legend: {
                                 position: 'bottom',
                                 labels: {
-                                    usePointStyle: true,
-                                    boxWidth: 3,
-                                    padding: 6,
-                                    font: { size: 5 }
+                                    usePointStyle: false,
+                                    boxWidth: 15,
+                                    boxHeight: 1,
+                                    padding: 8,
+                                    font: { size: 5.5 }
                                 }
                             }
                         },
@@ -1072,7 +1089,7 @@
                             x: {
                                 grid: { display: false },
                                 ticks: {
-                                    font: { size: 5 },
+                                    font: { size: 5.5 },
                                     maxRotation: 0,
                                     autoSkip: true,
                                     maxTicksLimit: 5
@@ -1082,8 +1099,8 @@
                                 min: -10,
                                 max: 35,
                                 ticks: {
-                                    stepSize: 10,
-                                    font: { size: 5 },
+                                    stepSize: 5,
+                                    font: { size: 5.5 },
                                     callback: (v) => v + '%'
                                 },
                                 grid: { color: '#e5e5e5' }
@@ -1096,6 +1113,17 @@
             // Portfolio Performance vs Benchmark Chart
             if (portfolioData.length > 0) {
                 const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+
+                // Get last values for annotations
+                const lastFundValue = portfolioData.length > 0 ? portfolioData[portfolioData.length - 1].fund : 0;
+                const lastBenchmarkValue = portfolioData.length > 0 ? portfolioData[portfolioData.length - 1].benchmark : 0;
+
+                // Format values as "R 1,487" style
+                const formatValue = (val) => {
+                    const inThousands = Math.round(val / 1000);
+                    return 'R ' + inThousands.toLocaleString('en-US');
+                };
+
                 new Chart(portfolioCtx, {
                     type: 'line',
                     data: {
@@ -1106,7 +1134,7 @@
                                 data: portfolioData.map(item => item.fund),
                                 borderColor: colors.naartjie,
                                 backgroundColor: 'transparent',
-                                borderWidth: 1,
+                                borderWidth: 1.5,
                                 tension: 0.1,
                                 pointRadius: 0
                             },
@@ -1115,7 +1143,7 @@
                                 data: portfolioData.map(item => item.benchmark),
                                 borderColor: colors.darkNavy,
                                 backgroundColor: 'transparent',
-                                borderWidth: 1,
+                                borderWidth: 1.5,
                                 tension: 0.1,
                                 pointRadius: 0
                             }
@@ -1125,14 +1153,46 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: false,
+                        layout: {
+                            padding: {
+                                right: 40
+                            }
+                        },
                         plugins: {
                             legend: {
                                 position: 'bottom',
                                 labels: {
-                                    usePointStyle: true,
-                                    boxWidth: 3,
-                                    padding: 6,
-                                    font: { size: 5 }
+                                    usePointStyle: false,
+                                    boxWidth: 15,
+                                    boxHeight: 1,
+                                    padding: 8,
+                                    font: { size: 5.5 }
+                                }
+                            },
+                            annotation: {
+                                annotations: {
+                                    fundLabel: {
+                                        type: 'label',
+                                        xValue: portfolioData.length - 1,
+                                        yValue: lastFundValue,
+                                        content: [formatValue(lastFundValue)],
+                                        color: colors.naartjie,
+                                        font: { size: 6, weight: 'bold' },
+                                        position: 'end',
+                                        xAdjust: 30,
+                                        yAdjust: 0
+                                    },
+                                    benchmarkLabel: {
+                                        type: 'label',
+                                        xValue: portfolioData.length - 1,
+                                        yValue: lastBenchmarkValue,
+                                        content: [formatValue(lastBenchmarkValue)],
+                                        color: colors.darkNavy,
+                                        font: { size: 6, weight: 'bold' },
+                                        position: 'end',
+                                        xAdjust: 30,
+                                        yAdjust: 0
+                                    }
                                 }
                             }
                         },
@@ -1140,18 +1200,25 @@
                             x: {
                                 grid: { display: false },
                                 ticks: {
-                                    font: { size: 5 },
+                                    font: { size: 5.5 },
                                     maxRotation: 0,
                                     autoSkip: true,
-                                    maxTicksLimit: 5
+                                    maxTicksLimit: 6
                                 }
                             },
                             y: {
                                 type: 'logarithmic',
+                                title: {
+                                    display: true,
+                                    text: 'Cash Value² (R\'000)',
+                                    font: { size: 5.5 },
+                                    color: colors.darkGrey
+                                },
                                 ticks: {
-                                    font: { size: 5 },
+                                    font: { size: 5.5 },
                                     callback: (v) => {
-                                        if (v === 100 || v === 1000 || v === 10000) return 'R ' + v.toLocaleString();
+                                        if (v === 100) return '100';
+                                        if (v === 1000) return '';
                                         return null;
                                     }
                                 },
