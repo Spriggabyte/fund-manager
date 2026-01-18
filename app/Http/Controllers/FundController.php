@@ -357,6 +357,7 @@ class FundController extends Controller
     public function internalPdfView(Fund $fund): View
     {
         // No authorization check - this is for internal PDF generation only
-        return view('funds.show', compact('fund'));
+        // Render the dedicated PDF template with proper A4 layout
+        return view('funds.pdf', compact('fund'));
     }
 }

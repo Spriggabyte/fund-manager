@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foord Balanced Fund - Class A</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        
+        body {
+            color: #333;
+            line-height: 1.5;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #f9f9f9;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0055a4;
+        }
+        
+        .header h1 {
+            color: #0055a4;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .fund-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .detail-card h3 {
+            color: #0055a4;
+            font-size: 16px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .equity-indicator {
+            display: flex;
+            margin: 10px 0;
+        }
+        
+        .equity-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #0055a4;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .performance-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        .performance-table table {
+            min-width: 700px;
+        }
+        
+        .up-arrow {
+            color: green;
+        }
+        
+        .down-arrow {
+            color: red;
+        }
+        
+        .section-title {
+            background-color: #0055a4;
+            color: white;
+            padding: 8px 15px;
+            margin: 25px 0 15px 0;
+            border-radius: 3px;
+            font-size: 18px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .fund-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .contact-info {
+                flex-direction: column;
+            }
+            
+            .contact-info div {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>FOORD BALANCED FUND – CLASS A</h1>
+        <p>31 August 2025</p>
+    </div>
+    
+    <div class="fund-details">
+        <div class="detail-card">
+            <h3>FUND OVERVIEW</h3>
+            <p>The fund aims to grow retirement savings by meaningful, inflation-beating returns over the long term from an actively managed multi-asset class portfolio.</p>
+            <div class="detail-item">
+                <span class="detail-label">Domicile:</span>
+                <span>South Africa</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Management Company:</span>
+                <span>Foord Unit Trusts (RF) (Pty) Ltd</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">VAT Registration:</span>
+                <span>4560201594</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Fund Managers:</span>
+                <span>Nick Balkin, Nancy Hossack and Wim Murray</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Inception Date:</span>
+                <span>1 September 2002</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Base Currency:</span>
+                <span>South African rands</span>
+            </div>
+        </div>
+        
+        <div class="detail-card">
+            <h3>KEY INFORMATION</h3>
+            <div class="detail-item">
+                <span class="detail-label">Equity Indicator:</span>
+                <span>●●●●●●●●●●●●●</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Category:</span>
+                <span>South African – Multi Asset – High Equity</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Benchmark:</span>
+                <span>Market value weighted average total return of the South African – Multi Asset – High Equity unit trust sector, excluding Foord Balanced Fund</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Minimum Investment:</span>
+                <span>R50 000 lump sum / R1 000 monthly</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Portfolio Size:</span>
+                <span>R25.9 billion</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Unit Price:</span>
+                <span>8916.63 cents</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Number of Units:</span>
+                <span>28.9 million</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section-title">ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)</div>
+    <p>Change since 30 June 2025</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>SA(100)</th>
+                <th>FOREIGN (65)</th>
+                <th>TOTAL</th>
+                <th>CHANGE</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Equities (75)</td>
+                <td>39.5</td>
+                <td>29.7</td>
+                <td>69.2</td>
+                <td class="up-arrow">▲3.2</td>
+            </tr>
+            <tr>
+                <td>Listed property (25)</td>
+                <td>3.6</td>
+                <td>0.9</td>
+                <td>4.5</td>
+                <td class="down-arrow">▼0.1</td>
+            </tr>
+            <tr>
+                <td>Corporate bonds (50)</td>
+                <td>0.0</td>
+                <td>2.5</td>
+                <td>2.5</td>
+                <td class="down-arrow">▼0.1</td>
+            </tr>
+            <tr>
+                <td>Government bonds (100)</td>
+                <td>8.1</td>
+                <td>1.2</td>
+                <td>9.3</td>
+                <td class="down-arrow">▼1.4</td>
+            </tr>
+            <tr>
+                <td>Commodities (10)</td>
+                <td>2.5</td>
+                <td>1.3</td>
+                <td>3.8</td>
+                <td class="up-arrow">▲0.1</td>
+            </tr>
+            <tr>
+                <td>Money market (100)</td>
+                <td>5.4</td>
+                <td>5.2</td>
+                <td>10.6</td>
+                <td class="down-arrow">▼1.8</td>
+            </tr>
+            <tr>
+                <td><strong>TOTAL</strong></td>
+                <td><strong>59.1</strong></td>
+                <td><strong>40.9</strong></td>
+                <td><strong>100.0</strong></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="section-title">TOP 10 INVESTMENTS</div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>SECURITY</th>
+                <th>ASSET CLASS</th>
+                <th>MARKET</th>
+                <th>% OF FUND</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Foord Global Equity Fund</td>
+                <td>Foreign assets</td>
+                <td>LUX/SGP</td>
+                <td>18.6</td>
+            </tr>
+            <tr>
+                <td>Foord International Fund</td>
+                <td>Foreign assets</td>
+                <td>LUX</td>
+                <td>18.2</td>
+            </tr>
+            <tr>
+                <td>Prosus</td>
+                <td>Equity</td>
+                <td>ZAF</td>
+                <td>9.3</td>
+            </tr>
+            <tr>
+                <td>FirstRand</td>
+                <td>Equity</td>
+                <td>ZAF</td>
+                <td>3.2</td>
+            </tr>
+            <tr>
+                <td>NewGold</td>
+                <td>Commodity</td>
+                <td>ZAF</td>
+                <td>2.5</td>
+            </tr>
+            <tr>
+                <td>Premier Group</td>
+                <td>Equity</td>
+                <td>ZAF</td>
+                <td>2.5</td>
+            </tr>
+            <tr>
+                <td>Standard Bank</td>
+                <td>Equity</td>
+                <td>ZAF</td>
+                <td>2.4</td>
+            </tr>
+            <tr>
+                <td>Tiger Brands</td>
+                <td>Equity</td>
+                <td>ZAF</td>
+                <td>2.4</td>
+            </tr>
+            <tr>
+                <td>RSA 8.5% (R2037)</td>
+                <td>Government bond</td>
+                <td>ZAF</td>
+                <td>2.3</td>
+            </tr>
+            <tr>
+                <td>Anheuser-Busch</td>
+                <td>Equity</td>
+                <td>ZAF</td>
+                <td>2.1</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="section-title">PORTFOLIO PERFORMANCE</div>
+    <p>PERIODS GREATER THAN ONE YEAR ARE ANNUALIZED<sup>1</sup></p>
+    
+    <div class="performance-table">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>CASH VALUE<sup>2</sup></th>
+                    <th>SINCE INCEPTION</th>
+                    <th>15 YRS</th>
+                    <th>10 YRS</th>
+                    <th>7 YRS</th>
+                    <th>5 YRS</th>
+                    <th>3 YRS</th>
+                    <th>1 YR</th>
+                    <th>THIS MONTH</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Fund<sup>3</sup></td>
+                    <td>R 1,557,819</td>
+                    <td>12.7</td>
+                    <td>10.4</td>
+                    <td>7.7</td>
+                    <td>8.5</td>
+                    <td>10.9</td>
+                    <td>13.1</td>
+                    <td>15.6</td>
+                    <td>1.0</td>
+                </tr>
+                <tr>
+                    <td>Benchmark<sup>3,4</sup></td>
+                    <td>R 1,289,654</td>
+                    <td>11.7</td>
+                    <td>10.0</td>
+                    <td>8.8</td>
+                    <td>9.4</td>
+                    <td>13.3</td>
+                    <td>15.1</td>
+                    <td>18.5</td>
+                    <td>1.2</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <p><small>
+        <sup>1</sup> Convert to reflect the average yearly return for each period presented.<br>
+        <sup>2</sup> Convert value of R100 000 notional lump sum invested at inception, distributions reinvested<br>
+        <sup>3</sup> Net of fees and expense.<br>
+        <sup>4</sup> Source: Morningstar, performance as calculated by Foord<br>
+        Note: Totals may not cast perfectly due to rounding
+    </small></p>
+    
+    <div class="section-title">FEE INFORMATION</div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>TOTAL INVESTMENT CHARGE %</th>
+                <th>12 MONTHS</th>
+                <th>36 MONTHS</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total expense ratio (TER)</td>
+                <td>1.22</td>
+                <td>1.35</td>
+            </tr>
+            <tr>
+                <td>- Manager's charge (basic)</td>
+                <td>1.00</td>
+                <td>1.00</td>
+            </tr>
+            <tr>
+                <td>- Performance charge</td>
+                <td>0.20</td>
+                <td>0.09</td>
+            </tr>
+            <tr>
+                <td>- Foord global charges</td>
+                <td>0.30</td>
+                <td>0.28</td>
+            </tr>
+            <tr>
+                <td>- VAT and sundry costs</td>
+                <td>0.12</td>
+                <td>0.16</td>
+            </tr>
+            <tr>
+                <td>Transaction costs (incl VAT)</td>
+                <td>0.31</td>
+                <td>0.41</td>
+            </tr>
+            <tr>
+                <td>Total investment charge</td>
+                <td>1.53</td>
+                <td>1.76</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p><strong>IMPORTANT INFORMATION FOR INVESTORS</strong></p>
+        <p>Foord Unit Trusts (RF) (Pty) Ltd (Foord) is an approved CISCA Management Company (IFU), regulated by the Financial Sector Conduct Authority. Portfolios are managed by Foord Asset Management (Pty) Ltd, an authorised Financial Services Provider (FSP; 573).</p>
+        
+        <div class="contact-info">
+            <div>
+                <p>T. +27 21 532 6969</p>
+                <p>E. unittrust@foord.co.za</p>
+            </div>
+            <div>
+                <p>www.foord.co.za</p>
+            </div>
+        </div>
+        
+        <p style="margin-top: 15px; font-style: italic;">This information is provided free of charge.</p>
+    </div>
+</body>
+</html>
