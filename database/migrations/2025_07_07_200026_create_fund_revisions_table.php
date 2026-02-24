@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('old_value')->nullable();
             $table->text('new_value')->nullable();
             $table->timestamps();
-            
+
             $table->index(['fund_id', 'created_at']);
         });
     }

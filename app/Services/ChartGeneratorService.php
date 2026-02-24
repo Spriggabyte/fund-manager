@@ -3,25 +3,25 @@
 namespace App\Services;
 
 use App\Models\Fund;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class ChartGeneratorService
 {
     protected string $chartOutputPath;
+
     protected string $tempPath;
 
     public function __construct()
     {
         $this->chartOutputPath = storage_path('app/charts');
         $this->tempPath = storage_path('app/temp');
-        
+
         // Ensure directories exist
-        if (!is_dir($this->chartOutputPath)) {
+        if (! is_dir($this->chartOutputPath)) {
             mkdir($this->chartOutputPath, 0755, true);
         }
-        if (!is_dir($this->tempPath)) {
+        if (! is_dir($this->tempPath)) {
             mkdir($this->tempPath, 0755, true);
         }
     }
@@ -32,15 +32,15 @@ class ChartGeneratorService
     public function generateChartsForFund(Fund $fund): array
     {
         $fundId = $fund->id;
-        $outputDir = $this->chartOutputPath . '/' . $fundId;
-        
+        $outputDir = $this->chartOutputPath.'/'.$fundId;
+
         // Create fund-specific directory
-        if (!is_dir($outputDir)) {
+        if (! is_dir($outputDir)) {
             mkdir($outputDir, 0755, true);
         }
 
         // Create temporary JSON file with fund data
-        $tempFile = $this->tempPath . '/fund_' . $fundId . '_' . time() . '.json';
+        $tempFile = $this->tempPath.'/fund_'.$fundId.'_'.time().'.json';
         file_put_contents($tempFile, json_encode($fund->data));
 
         try {
@@ -49,13 +49,13 @@ class ChartGeneratorService
                 'node',
                 base_path('chart-generator.js'),
                 $tempFile,
-                $outputDir
+                $outputDir,
             ]);
 
             $process->setTimeout(60); // 60 second timeout
             $process->run();
 
-            if (!$process->isSuccessful()) {
+            if (! $process->isSuccessful()) {
                 throw new ProcessFailedException($process);
             }
 
@@ -64,8 +64,8 @@ class ChartGeneratorService
 
             // Return paths to generated images
             return [
-                'inflation' => $outputDir . '/inflation-chart.png',
-                'portfolio' => $outputDir . '/portfolio-chart.png',
+                'inflation' => $outputDir.'/inflation-chart.png',
+                'portfolio' => $outputDir.'/portfolio-chart.png',
             ];
 
         } catch (ProcessFailedException $exception) {
@@ -73,8 +73,8 @@ class ChartGeneratorService
             if (file_exists($tempFile)) {
                 unlink($tempFile);
             }
-            
-            throw new \Exception('Chart generation failed: ' . $exception->getMessage());
+
+            throw new \Exception('Chart generation failed: '.$exception->getMessage());
         }
     }
 
@@ -85,15 +85,15 @@ class ChartGeneratorService
     {
         try {
             $chartPaths = $this->generateChartsForFund($fund);
-            
+
             $result = [];
             foreach ($chartPaths as $name => $path) {
                 if (file_exists($path)) {
                     $imageData = base64_encode(file_get_contents($path));
-                    $result[$name] = 'data:image/png;base64,' . $imageData;
+                    $result[$name] = 'data:image/png;base64,'.$imageData;
                 }
             }
-            
+
             return $result;
         } catch (\Exception $e) {
             // Return empty array if chart generation fails
@@ -109,6 +109,7 @@ class ChartGeneratorService
         try {
             $process = new Process(['node', '--version']);
             $process->run();
+
             return $process->isSuccessful();
         } catch (\Exception $e) {
             return false;
@@ -121,7 +122,7 @@ class ChartGeneratorService
     public function cleanupOldCharts(int $daysOld = 7): void
     {
         $cutoffTime = time() - ($daysOld * 24 * 60 * 60);
-        
+
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($this->chartOutputPath),
             \RecursiveIteratorIterator::LEAVES_ONLY

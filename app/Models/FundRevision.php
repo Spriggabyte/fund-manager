@@ -35,7 +35,7 @@ class FundRevision extends Model
 
     public function getDiffAttribute(): array
     {
-        if (!$this->changed_field) {
+        if (! $this->changed_field) {
             return [];
         }
 

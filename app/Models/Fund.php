@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Fund extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
         'class',
@@ -28,6 +29,7 @@ class Fund extends Model
         if (is_string($value)) {
             return json_decode($value, true) ?? [];
         }
+
         return is_array($value) ? $value : [];
     }
 
@@ -41,7 +43,7 @@ class Fund extends Model
         return $this->hasMany(FundRevision::class)->orderBy('created_at', 'desc');
     }
 
-    public function createRevision(string $changedField = null, $oldValue = null, $newValue = null, string $changeSummary = null): FundRevision
+    public function createRevision(?string $changedField = null, $oldValue = null, $newValue = null, ?string $changeSummary = null): FundRevision
     {
         return $this->revisions()->create([
             'user_id' => auth()->id(),
@@ -64,7 +66,7 @@ class Fund extends Model
         $current = $this->data ?? [];
 
         foreach ($keys as $key) {
-            if (!is_array($current) || !array_key_exists($key, $current)) {
+            if (! is_array($current) || ! array_key_exists($key, $current)) {
                 return null;
             }
             $current = $current[$key];
@@ -88,13 +90,13 @@ class Fund extends Model
             if ($i === count($keys) - 1) {
                 if ($value === '' || $value === null) {
                     unset($current[$key]);
-                } elseif (is_numeric($value) && !in_array($key, $stringFields)) {
+                } elseif (is_numeric($value) && ! in_array($key, $stringFields)) {
                     $current[$key] = is_float($value + 0) ? (float) $value : (int) $value;
                 } else {
                     $current[$key] = $value;
                 }
             } else {
-                if (!isset($current[$key]) || !is_array($current[$key])) {
+                if (! isset($current[$key]) || ! is_array($current[$key])) {
                     $current[$key] = [];
                 }
                 $current = &$current[$key];

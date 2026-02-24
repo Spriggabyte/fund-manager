@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Fund;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class PuppeteerPdfService
 {
@@ -13,31 +12,31 @@ class PuppeteerPdfService
      */
     public function generatePdf(Fund $fund): string
     {
-        $filename = 'fund-' . $fund->id . '-' . now()->format('Y-m-d-His') . '.pdf';
+        $filename = 'fund-'.$fund->id.'-'.now()->format('Y-m-d-His').'.pdf';
         $tempDir = storage_path('app/temp');
-        $tempPdfPath = $tempDir . '/' . $filename;
-        
+        $tempPdfPath = $tempDir.'/'.$filename;
+
         // Ensure temp directory exists
-        if (!file_exists($tempDir)) {
+        if (! file_exists($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
-        
-        $url = config('app.url') . '/internal/funds/' . $fund->id . '/pdf-view';
-        
+
+        $url = config('app.url').'/internal/funds/'.$fund->id.'/pdf-view';
+
         // Create the Puppeteer script (no auth cookie needed for internal route)
         $script = $this->generatePuppeteerScript($url, $tempPdfPath);
-        
+
         // Execute the script
         $this->executePuppeteerScript($script, $tempPdfPath);
-        
+
         // Verify PDF was created
-        if (!file_exists($tempPdfPath)) {
+        if (! file_exists($tempPdfPath)) {
             throw new \Exception('PDF file was not generated');
         }
-        
+
         return $tempPdfPath;
     }
-    
+
     /**
      * Generate the Puppeteer JavaScript code.
      */
@@ -75,10 +74,10 @@ const puppeteer = require('puppeteer-core');
             deviceScaleFactor: 2
         });
 
-        console.log('Navigating to: " . addslashes($url) . "');
+        console.log('Navigating to: ".addslashes($url)."');
 
         // Navigate to the page and wait for all resources
-        await page.goto('" . addslashes($url) . "', {
+        await page.goto('".addslashes($url)."', {
             waitUntil: ['networkidle0', 'load', 'domcontentloaded'],
             timeout: 60000
         });
@@ -135,7 +134,7 @@ const puppeteer = require('puppeteer-core');
         // Generate PDF with exact A4 dimensions
         // The template handles all margins internally, so we set margins to 0
         await page.pdf({
-            path: '" . addslashes($pdfPath) . "',
+            path: '".addslashes($pdfPath)."',
             format: 'A4',
             printBackground: true,
             margin: {
@@ -148,7 +147,7 @@ const puppeteer = require('puppeteer-core');
             displayHeaderFooter: false
         });
 
-        console.log('PDF generated successfully at: " . addslashes($pdfPath) . "');
+        console.log('PDF generated successfully at: ".addslashes($pdfPath)."');
 
     } catch (error) {
         console.error('Error generating PDF:', error.message);
@@ -160,93 +159,93 @@ const puppeteer = require('puppeteer-core');
 })();
 ";
     }
-    
+
     /**
      * Execute the Puppeteer script with timeout handling.
      */
     private function executePuppeteerScript(string $script, string $tempPdfPath): void
     {
         $command = ['node', '-e', $script];
-        
+
         $process = proc_open(
             implode(' ', array_map('escapeshellarg', $command)),
             [
                 0 => ['pipe', 'r'],
                 1 => ['pipe', 'w'],
-                2 => ['pipe', 'w']
+                2 => ['pipe', 'w'],
             ],
             $pipes,
             null,
             ['NODE_PATH' => base_path('node_modules')]
         );
-        
-        if (!is_resource($process)) {
+
+        if (! is_resource($process)) {
             throw new \Exception('Failed to start Puppeteer process');
         }
-        
+
         fclose($pipes[0]);
-        
+
         // Set streams to non-blocking for timeout handling
         stream_set_blocking($pipes[1], false);
         stream_set_blocking($pipes[2], false);
-        
+
         $output = '';
         $error = '';
         $timeout = 120; // 120 seconds timeout for better chart rendering
         $start = time();
-        
+
         while (true) {
             $status = proc_get_status($process);
-            
-            if (!$status['running']) {
+
+            if (! $status['running']) {
                 // Process finished
                 $output .= stream_get_contents($pipes[1]);
                 $error .= stream_get_contents($pipes[2]);
                 break;
             }
-            
+
             if ((time() - $start) > $timeout) {
                 // Timeout reached, kill the process
                 proc_terminate($process);
                 fclose($pipes[1]);
                 fclose($pipes[2]);
                 proc_close($process);
-                throw new \Exception('Puppeteer process timed out after ' . $timeout . ' seconds');
+                throw new \Exception('Puppeteer process timed out after '.$timeout.' seconds');
             }
-            
+
             // Read available output
             $output .= stream_get_contents($pipes[1]);
             $error .= stream_get_contents($pipes[2]);
-            
+
             usleep(100000); // Sleep for 0.1 seconds
         }
-        
+
         fclose($pipes[1]);
         fclose($pipes[2]);
         $returnValue = proc_close($process);
-        
+
         // Check if PDF was actually created successfully despite non-zero return code
         $pdfWasCreated = file_exists($tempPdfPath) && filesize($tempPdfPath) > 0;
-        
-        if ($returnValue !== 0 && !$pdfWasCreated) {
+
+        if ($returnValue !== 0 && ! $pdfWasCreated) {
             $errorMessage = $error ?: $output ?: 'Unknown error occurred';
             Log::error('Puppeteer process failed', [
                 'return_value' => $returnValue,
                 'output' => $output,
                 'error' => $error,
-                'pdf_created' => $pdfWasCreated
+                'pdf_created' => $pdfWasCreated,
             ]);
-            throw new \Exception('Puppeteer process failed: ' . $errorMessage);
+            throw new \Exception('Puppeteer process failed: '.$errorMessage);
         } elseif ($returnValue !== 0 && $pdfWasCreated) {
             // PDF was created but process returned non-zero, log warning but continue
             Log::warning('Puppeteer process returned non-zero but PDF was created', [
                 'return_value' => $returnValue,
                 'output' => $output,
                 'error' => $error,
-                'pdf_size' => filesize($tempPdfPath)
+                'pdf_size' => filesize($tempPdfPath),
             ]);
         }
-        
+
         Log::info('Puppeteer PDF generation completed', ['output' => $output]);
     }
 }

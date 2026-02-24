@@ -20,23 +20,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     Route::resource('funds', \App\Http\Controllers\FundController::class);
-    
+
     // Fact sheet view
     Route::get('funds/{fund}/fact-sheet', [\App\Http\Controllers\FundController::class, 'factSheet'])
         ->name('funds.fact-sheet');
-    
+
     // PDF export
     Route::get('funds/{fund}/pdf', [\App\Http\Controllers\FundController::class, 'exportPdf'])
         ->name('funds.pdf');
-    
+
     // AJAX endpoints for inline editing
     Route::patch('funds/{fund}/update-data', [\App\Http\Controllers\FundController::class, 'updateData'])
         ->name('funds.update-data');
     Route::patch('funds/{fund}/update-holding', [\App\Http\Controllers\FundController::class, 'updateHolding'])
         ->name('funds.update-holding');
-    
+
     // Revision management
     Route::get('funds/{fund}/revisions', [\App\Http\Controllers\FundController::class, 'revisions'])
         ->name('funds.revisions');

@@ -10,18 +10,20 @@ use App\Services\PuppeteerPdfService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class FundController extends Controller
 {
     use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
     public function index(): View
     {
         $funds = auth()->user()->funds()->latest()->get();
-        
+
         return view('funds.index', compact('funds'));
     }
 
@@ -56,7 +58,7 @@ class FundController extends Controller
     public function show(Fund $fund): View
     {
         $this->authorize('view', $fund);
-        
+
         return view('funds.show', compact('fund'));
     }
 
@@ -66,10 +68,9 @@ class FundController extends Controller
     public function factSheet(Fund $fund): View
     {
         $this->authorize('view', $fund);
-        
+
         return view('funds.fact-sheet', compact('fund'));
     }
-    
 
     /**
      * Show the form for editing the specified resource.
@@ -77,7 +78,7 @@ class FundController extends Controller
     public function edit(Fund $fund): View
     {
         $this->authorize('update', $fund);
-        
+
         return view('funds.edit', compact('fund'));
     }
 
@@ -106,7 +107,7 @@ class FundController extends Controller
     public function destroy(Fund $fund): RedirectResponse
     {
         $this->authorize('delete', $fund);
-        
+
         $fund->delete();
 
         return redirect()->route('funds.index')
@@ -146,7 +147,7 @@ class FundController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Fund data updated successfully.',
-            'fund_data' => $fund->fresh()->data
+            'fund_data' => $fund->fresh()->data,
         ]);
     }
 
@@ -169,23 +170,23 @@ class FundController extends Controller
 
         if (isset($holdings[$validated['index']])) {
             $holdings[$validated['index']] = array_merge(
-                $holdings[$validated['index']], 
+                $holdings[$validated['index']],
                 $validated['holding']
             );
-            
+
             $data['holdings'] = $holdings;
             $fund->update(['data' => $data]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Holding updated successfully.',
-                'fund_data' => $fund->fresh()->data
+                'fund_data' => $fund->fresh()->data,
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'Holding not found.'
+            'message' => 'Holding not found.',
         ], 404);
     }
 
@@ -202,22 +203,22 @@ class FundController extends Controller
         try {
             // Generate PDF using Puppeteer
             $pdfPath = $puppeteerService->generatePdf($fund);
-            
+
             // Create filename for download
-            $filename = 'fund-' . $fund->id . '-' . now()->format('Y-m-d') . '.pdf';
-            
+            $filename = 'fund-'.$fund->id.'-'.now()->format('Y-m-d').'.pdf';
+
             // Return the PDF as download and clean up
             return response()->download($pdfPath, $filename)->deleteFileAfterSend(true);
-            
+
         } catch (\Exception $e) {
-            \Log::error('PDF generation failed: ' . $e->getMessage());
-            \Log::error('PDF error trace: ' . $e->getTraceAsString());
-            
+            Log::error('PDF generation failed: '.$e->getMessage());
+            Log::error('PDF error trace: '.$e->getTraceAsString());
+
             // Return error response instead of fallback
             return response()->json([
                 'error' => 'PDF generation failed',
                 'message' => 'Unable to generate PDF. Please try again or contact support.',
-                'details' => config('app.debug') ? $e->getMessage() : null
+                'details' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -228,9 +229,9 @@ class FundController extends Controller
     public function revisions(Fund $fund): View
     {
         $this->authorize('view', $fund);
-        
+
         $revisions = $fund->revisions()->with('user')->paginate(20);
-        
+
         return view('funds.revisions', compact('fund', 'revisions'));
     }
 
@@ -240,7 +241,7 @@ class FundController extends Controller
     public function restoreRevision(Fund $fund, FundRevision $revision)
     {
         $this->authorize('update', $fund);
-        
+
         // Ensure the revision belongs to this fund
         if ($revision->fund_id !== $fund->id) {
             abort(404);
@@ -251,7 +252,7 @@ class FundController extends Controller
             null,
             null,
             null,
-            "Restored to revision from " . $revision->created_at->format('Y-m-d H:i:s')
+            'Restored to revision from '.$revision->created_at->format('Y-m-d H:i:s')
         );
 
         // Restore the fund to the revision state
@@ -262,7 +263,7 @@ class FundController extends Controller
         ]);
 
         return redirect()->route('funds.show', $fund)
-            ->with('success', 'Fund restored to revision from ' . $revision->created_at->format('Y-m-d H:i:s'));
+            ->with('success', 'Fund restored to revision from '.$revision->created_at->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -271,7 +272,7 @@ class FundController extends Controller
     public function showRevision(Fund $fund, FundRevision $revision): View
     {
         $this->authorize('view', $fund);
-        
+
         // Ensure the revision belongs to this fund
         if ($revision->fund_id !== $fund->id) {
             abort(404);

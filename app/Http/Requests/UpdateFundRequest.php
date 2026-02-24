@@ -2,6 +2,4 @@
 
 namespace App\Http\Requests;
 
-class UpdateFundRequest extends StoreFundRequest
-{
-}
+class UpdateFundRequest extends StoreFundRequest {}
