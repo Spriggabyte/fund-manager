@@ -25,4 +25,3 @@ class FundFactory extends Factory
         return $this->state(['data' => $data]);
     }
 }
-2
