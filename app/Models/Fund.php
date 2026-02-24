@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fund extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'name',
         'class',
@@ -17,6 +19,17 @@ class Fund extends Model
     protected $casts = [
         'data' => 'array',
     ];
+
+    public function getDataAttribute(mixed $value): array
+    {
+        if (is_null($value)) {
+            return [];
+        }
+        if (is_string($value)) {
+            return json_decode($value, true) ?? [];
+        }
+        return is_array($value) ? $value : [];
+    }
 
     public function user(): BelongsTo
     {

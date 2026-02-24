@@ -308,7 +308,7 @@
                 
                 <!-- Logo -->
                 <div class="absolute top-4 right-4">
-                    <img src="{{ $fund->data['fund']['logoUrl'] }}" alt="Foord Logo" class="h-10">
+                    <img src="{{ $fund->data['fund']['logoUrl'] ?? '' }}" alt="Foord Logo" class="h-10">
                 </div>
             </div>
 
