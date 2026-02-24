@@ -22,9 +22,7 @@ class PuppeteerPdfService
             mkdir($tempDir, 0755, true);
         }
         
-        // Generate the full URL to the fund show page (internal route bypasses auth)
-        $baseUrl = env('APP_URL', 'http://foord-funds.test');
-        $url = $baseUrl . '/internal/funds/' . $fund->id . '/pdf-view';
+        $url = config('app.url') . '/internal/funds/' . $fund->id . '/pdf-view';
         
         // Create the Puppeteer script (no auth cookie needed for internal route)
         $script = $this->generatePuppeteerScript($url, $tempPdfPath);

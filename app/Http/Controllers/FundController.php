@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFundRequest;
+use App\Http\Requests\UpdateFundRequest;
 use App\Models\Fund;
+use App\Models\FundRevision;
 use App\Services\PuppeteerPdfService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
@@ -33,16 +36,11 @@ class FundController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreFundRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'class' => 'nullable|string|max:255',
-            'data' => 'nullable|json',
-        ]);
+        $validated = $request->validated();
 
-        // Parse JSON data if provided
-        if ($validated['data']) {
+        if ($validated['data'] ?? null) {
             $validated['data'] = json_decode($validated['data'], true);
         }
 
@@ -86,18 +84,13 @@ class FundController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Fund $fund): RedirectResponse
+    public function update(UpdateFundRequest $request, Fund $fund): RedirectResponse
     {
         $this->authorize('update', $fund);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'class' => 'nullable|string|max:255',
-            'data' => 'nullable|json',
-        ]);
+        $validated = $request->validated();
 
-        // Parse JSON data if provided
-        if ($validated['data']) {
+        if ($validated['data'] ?? null) {
             $validated['data'] = json_decode($validated['data'], true);
         }
 
@@ -135,12 +128,10 @@ class FundController extends Controller
         $data = $fund->data ?? [];
         $fieldPath = $validated['field'];
         $value = $validated['value'];
-        
-        // Get the old value for revision tracking
-        $oldValue = $this->getNestedValue($data, $fieldPath);
-        
-        // Handle nested field paths (e.g., "fund.name", "sidebar.domicile")
-        $this->setNestedValue($data, $fieldPath, $value);
+
+        $oldValue = $fund->getDataValue($fieldPath);
+
+        $fund->setDataValue($data, $fieldPath, $value);
 
         // Create revision before updating
         $fund->createRevision(
@@ -157,37 +148,6 @@ class FundController extends Controller
             'message' => 'Fund data updated successfully.',
             'fund_data' => $fund->fresh()->data
         ]);
-    }
-
-    /**
-     * Set a nested value in an array using dot notation.
-     */
-    private function setNestedValue(&$array, $path, $value)
-    {
-        $keys = explode('.', $path);
-        $current = &$array;
-
-        foreach ($keys as $i => $key) {
-            if ($i === count($keys) - 1) {
-                // Last key, set the value
-                if ($value === '' || $value === null) {
-                    unset($current[$key]);
-                } else {
-                    // Handle numeric values
-                    if (is_numeric($value) && !in_array($key, ['phone', 'email', 'website', 'date', 'name', 'description'])) {
-                        $current[$key] = is_float($value + 0) ? (float) $value : (int) $value;
-                    } else {
-                        $current[$key] = $value;
-                    }
-                }
-            } else {
-                // Create nested array if it doesn't exist
-                if (!isset($current[$key]) || !is_array($current[$key])) {
-                    $current[$key] = [];
-                }
-                $current = &$current[$key];
-            }
-        }
     }
 
     /**
@@ -232,16 +192,13 @@ class FundController extends Controller
     /**
      * Export the fund data as a PDF using Puppeteer for pixel-perfect rendering.
      */
-    public function exportPdf(Fund $fund, Request $request)
+    public function exportPdf(Fund $fund, PuppeteerPdfService $puppeteerService)
     {
         $this->authorize('view', $fund);
-        
-        // Increase execution time limit for PDF generation
-        set_time_limit(180); // 3 minutes for Puppeteer
+
+        set_time_limit(180);
         ini_set('max_execution_time', 180);
-        
-        $puppeteerService = new PuppeteerPdfService();
-        
+
         try {
             // Generate PDF using Puppeteer
             $pdfPath = $puppeteerService->generatePdf($fund);
@@ -266,24 +223,6 @@ class FundController extends Controller
     }
 
     /**
-     * Get a nested value from an array using dot notation.
-     */
-    private function getNestedValue($array, $path)
-    {
-        $keys = explode('.', $path);
-        $current = $array;
-
-        foreach ($keys as $key) {
-            if (!is_array($current) || !array_key_exists($key, $current)) {
-                return null;
-            }
-            $current = $current[$key];
-        }
-
-        return $current;
-    }
-
-    /**
      * Display all revisions for a fund.
      */
     public function revisions(Fund $fund): View
@@ -298,7 +237,7 @@ class FundController extends Controller
     /**
      * Restore a fund to a specific revision.
      */
-    public function restoreRevision(Fund $fund, \App\Models\FundRevision $revision)
+    public function restoreRevision(Fund $fund, FundRevision $revision)
     {
         $this->authorize('update', $fund);
         
@@ -329,7 +268,7 @@ class FundController extends Controller
     /**
      * Show a specific revision.
      */
-    public function showRevision(Fund $fund, \App\Models\FundRevision $revision): View
+    public function showRevision(Fund $fund, FundRevision $revision): View
     {
         $this->authorize('view', $fund);
         

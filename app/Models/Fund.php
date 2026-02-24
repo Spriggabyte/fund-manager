@@ -41,4 +41,51 @@ class Fund extends Model
             'new_value' => $newValue,
         ]);
     }
+
+    /**
+     * Get a nested value from the fund's data array using dot notation.
+     */
+    public function getDataValue(string $path): mixed
+    {
+        $keys = explode('.', $path);
+        $current = $this->data ?? [];
+
+        foreach ($keys as $key) {
+            if (!is_array($current) || !array_key_exists($key, $current)) {
+                return null;
+            }
+            $current = $current[$key];
+        }
+
+        return $current;
+    }
+
+    /**
+     * Set a nested value in the fund's data array using dot notation.
+     * Automatically casts numeric strings to int/float except for designated string fields.
+     */
+    public function setDataValue(array &$data, string $path, mixed $value): void
+    {
+        $keys = explode('.', $path);
+        $current = &$data;
+
+        $stringFields = ['phone', 'email', 'website', 'date', 'name', 'description'];
+
+        foreach ($keys as $i => $key) {
+            if ($i === count($keys) - 1) {
+                if ($value === '' || $value === null) {
+                    unset($current[$key]);
+                } elseif (is_numeric($value) && !in_array($key, $stringFields)) {
+                    $current[$key] = is_float($value + 0) ? (float) $value : (int) $value;
+                } else {
+                    $current[$key] = $value;
+                }
+            } else {
+                if (!isset($current[$key]) || !is_array($current[$key])) {
+                    $current[$key] = [];
+                }
+                $current = &$current[$key];
+            }
+        }
+    }
 }
