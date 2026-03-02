@@ -20,3 +20,20 @@ Checklist:
 - [ ] Repeat until done
 
 Output <promise>REFACTORED</promise> when complete.
+
+
+Refactor all the templates and views, seperate concerns and ensure everything functions as it should. Ensure its human readable and maintainable and make suggestions on how to improve it.
+
+Constraints:
+- All existing tests must pass
+- No behavior changes
+- Incremental commits
+- No visual changes
+- Javascript and css is split into sperate files
+- No reused code, split into sperate files
+
+Checklist:
+- [ ] Tests passing before start
+- [ ] Apply refactoring step
+- [ ] Tests still passing
+- [ ] Repeat until done
