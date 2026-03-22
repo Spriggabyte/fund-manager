@@ -76,7 +76,7 @@
         /* === Header Area === */
         .header-row {
             display: flex;
-            height: 46px;
+            height: 68px;
             position: relative;
         }
 
@@ -96,7 +96,7 @@
             font-weight: 500;
             font-size: 10pt;
             letter-spacing: 0.03em;
-            padding: 6px 14px;
+            padding: 8px 18px;
             white-space: nowrap;
         }
 
@@ -109,7 +109,7 @@
         }
 
         .foord-logo {
-            height: 40px;
+            height: 46px;
             width: auto;
         }
 
@@ -239,7 +239,7 @@
         /* === Content Area === */
         .content-area {
             flex: 1;
-            padding: 8px 14px 10px 12px;
+            padding: 6px 14px 8px 12px;
         }
 
         /* === Section Headings === */
@@ -472,7 +472,7 @@
 
         /* === Chart === */
         canvas {
-            max-height: 150px;
+            max-height: 142px;
             width: 100% !important;
         }
 
@@ -1033,7 +1033,7 @@
                                     <div style="position: relative;">
                                         <div style="position: absolute; left: -2px; top: 40%; transform: rotate(-90deg) translateX(-50%); font-size: 5.5pt; color: var(--dark-grey); white-space: nowrap; transform-origin: left center;">Cash Value ($'000)</div>
                                         <div style="padding-left: 10px;">
-                                            <canvas id="performanceChart" style="height: 145px;"></canvas>
+                                            <canvas id="performanceChart" style="height: 138px;"></canvas>
                                         </div>
                                     </div>
                                     <div class="chart-legend" style="flex-wrap: wrap; justify-content: center; gap: 4px 14px;">
