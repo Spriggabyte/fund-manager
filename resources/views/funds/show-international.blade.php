@@ -52,6 +52,7 @@
             width: 100%;
             position: relative;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 1123px;
         }
 
         .page + .page {
@@ -542,7 +543,7 @@
         /* === Footer === */
         .footer-divider {
             border-top: 1px solid var(--naartjie);
-            margin-top: 14px;
+            margin-top: auto;
             padding-top: 10px;
         }
 
@@ -1171,13 +1172,13 @@
         </div>
 
         <!-- ==================== PAGE 2 ==================== -->
-        <div class="page page-break">
+        <div class="page page-break" style="display: flex; flex-direction: column;">
             <!-- Beige header area (matches PDF page 2 top) -->
             <div style="display: flex;">
                 <div style="width: 174px; min-width: 174px; background-color: var(--dark-navy-15); height: 55px;"></div>
                 <div style="flex: 1; background-color: #f0ebe3; height: 55px;"></div>
             </div>
-            <div class="main-body">
+            <div class="main-body" style="flex: 1;">
                 <!-- Left Sidebar - Important Information -->
                 @if(isset($fund->data['importantInfo']))
                     <div class="sidebar" style="padding-top: 8px;">
@@ -1209,7 +1210,7 @@
                 @endif
 
                 <!-- Right Content -->
-                <div class="content-area" style="padding-top: 16px;">
+                <div class="content-area" style="padding-top: 16px; display: flex; flex-direction: column;">
                     <!-- Annualised Cost Ratio -->
                     @if(isset($fund->data['fees']['annualisedCostRatio']))
                         <div style="margin-bottom: 14px;">
