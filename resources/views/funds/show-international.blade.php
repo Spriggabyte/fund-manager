@@ -77,7 +77,7 @@
         /* === Header Area === */
         .header-row {
             display: flex;
-            height: 74px;
+            height: 78px;
             position: relative;
         }
 
@@ -118,7 +118,7 @@
         .fund-banner {
             background-color: var(--dark-navy);
             color: white;
-            padding: 10px 16px 8px 16px;
+            padding: 8px 16px 6px 16px;
         }
 
         .fund-banner h1 {

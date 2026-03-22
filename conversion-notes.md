@@ -6,7 +6,7 @@
 ## Reference PDF
 `reference-docs/Foord International Fund Class R at 2026-01-31.pdf`
 
-## Status: Near pixel-perfect (16 iterations)
+## Status: Near pixel-perfect (18 iterations)
 
 Both pages: 1123px each (exact A4 at 794px width)
 
@@ -36,11 +36,11 @@ The footer feather icon is a simplified 2-tone SVG approximation of
 Foord's branded feather asset. **Requires** the actual brand asset to
 match exactly.
 
-### 5. Header proportions (~4px difference)
-The PDF header grey area appears to be ~78px tall. The template uses 74px
-because increasing further would push page 1 beyond A4 height (1123px).
-The header grey width is 218px vs PDF's estimated ~220px. These are
-within 2% tolerance.
+### 5. Header proportions (~2px difference)
+The PDF header grey area appears to be ~78px tall. The template now uses
+78px (updated in iteration 18 from 74px, with compensating banner padding
+reduction from 10px/8px to 8px/6px top/bottom). The header grey width is
+218px vs PDF's estimated ~220px. These are within 1% tolerance.
 
 ## What matches accurately
 - All colors per design reference (#d25347, #29363d, #313131, #9a9a9a, etc.)
