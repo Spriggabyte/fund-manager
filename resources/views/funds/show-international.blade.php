@@ -1030,7 +1030,7 @@
                                             <canvas id="performanceChart" style="height: 160px;"></canvas>
                                         </div>
                                     </div>
-                                    <div class="chart-legend">
+                                    <div class="chart-legend" style="flex-wrap: wrap; justify-content: center; gap: 4px 14px;">
                                         <span><span class="legend-line" style="background: var(--naartjie);"></span> Fund</span>
                                         <span><span class="legend-line" style="background: var(--medium-grey);"></span> US inflation</span>
                                         <span><span class="legend-line" style="background: var(--dark-navy);"></span> World equities</span>
