@@ -193,8 +193,8 @@
 
         /* Equity indicator dots */
         .equity-dot {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             display: inline-block;
             margin-right: 1.5px;
@@ -405,7 +405,7 @@
             padding: 4px 6px;
             text-align: left;
             letter-spacing: 0.02em;
-            border-right: 1px solid rgba(255,255,255,0.2);
+            border-right: 1px solid rgba(255,255,255,0.4);
         }
 
         .foord-table th:last-child {
