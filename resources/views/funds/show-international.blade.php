@@ -76,13 +76,13 @@
         /* === Header Area === */
         .header-row {
             display: flex;
-            height: 68px;
+            height: 72px;
             position: relative;
         }
 
         .header-grey {
-            width: 200px;
-            min-width: 200px;
+            width: 210px;
+            min-width: 210px;
             background-color: var(--dark-navy-15);
             display: flex;
             align-items: center;
@@ -665,7 +665,7 @@
         }
 
         .legend-line {
-            width: 16px;
+            width: 18px;
             height: 2px;
             display: inline-block;
         }
