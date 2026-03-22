@@ -1181,7 +1181,7 @@
             <!-- Beige header area (matches PDF page 2 top) -->
             <div style="display: flex;">
                 <div style="width: 174px; min-width: 174px; background-color: var(--dark-navy-15); height: 55px;"></div>
-                <div style="flex: 1; background-color: #f0ebe3; height: 55px;"></div>
+                <div style="flex: 1; background-color: #f1e7d2; height: 55px;"></div>
             </div>
             <div class="main-body" style="flex: 1;">
                 <!-- Left Sidebar - Important Information -->
