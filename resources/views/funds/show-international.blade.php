@@ -81,8 +81,8 @@
         }
 
         .header-grey {
-            width: 210px;
-            min-width: 210px;
+            width: 218px;
+            min-width: 218px;
             background-color: var(--dark-navy-15);
             display: flex;
             align-items: center;
