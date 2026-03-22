@@ -76,13 +76,13 @@
         /* === Header Area === */
         .header-row {
             display: flex;
-            height: 50px;
+            height: 46px;
             position: relative;
         }
 
         .header-grey {
-            width: 174px;
-            min-width: 174px;
+            width: 200px;
+            min-width: 200px;
             background-color: var(--dark-navy-15);
             display: flex;
             align-items: center;
@@ -96,7 +96,6 @@
             font-weight: 500;
             font-size: 10pt;
             letter-spacing: 0.03em;
-            text-transform: uppercase;
             padding: 6px 14px;
             white-space: nowrap;
         }
@@ -118,27 +117,27 @@
         .fund-banner {
             background-color: var(--dark-navy);
             color: white;
-            padding: 14px 16px 12px 16px;
+            padding: 10px 16px 8px 16px;
         }
 
         .fund-banner h1 {
             font-family: 'Avenir Next', system-ui, sans-serif;
             font-weight: 500;
-            font-size: 22pt;
+            font-size: 23pt;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             line-height: 1.1;
         }
 
         .fund-banner .description {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
-            font-size: 7.5pt;
-            line-height: 10pt;
+            font-size: 7pt;
+            line-height: 9.5pt;
             letter-spacing: 0.02em;
             color: rgba(255,255,255,0.9);
-            max-width: 95%;
+            max-width: 100%;
         }
 
         /* === Naartjie Stripe === */
@@ -158,11 +157,11 @@
             width: 174px;
             min-width: 174px;
             background-color: var(--dark-navy-15);
-            padding: 12px 12px 16px 16px;
+            padding: 10px 10px 10px 14px;
         }
 
         .sidebar-section {
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .sidebar-section h3 {
@@ -240,7 +239,7 @@
         /* === Content Area === */
         .content-area {
             flex: 1;
-            padding: 12px 16px 16px 14px;
+            padding: 8px 14px 10px 12px;
         }
 
         /* === Section Headings === */
@@ -252,7 +251,7 @@
             letter-spacing: 0.03em;
             text-transform: uppercase;
             color: var(--off-black);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .section-subtitle {
@@ -261,14 +260,14 @@
             font-size: 6pt;
             line-height: 7pt;
             color: var(--dark-grey);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         /* === Two-Column Layout === */
         .two-col {
             display: flex;
-            gap: 14px;
-            margin-bottom: 10px;
+            gap: 10px;
+            margin-bottom: 6px;
         }
 
         .two-col .col-left {
@@ -288,7 +287,7 @@
             gap: 4px;
             font-family: 'Avenir Next', system-ui, sans-serif;
             font-size: 7.5pt;
-            line-height: 13px;
+            line-height: 11px;
             color: var(--off-black);
         }
 
@@ -338,7 +337,7 @@
             gap: 4px;
             font-family: 'Avenir Next', system-ui, sans-serif;
             font-size: 7.5pt;
-            line-height: 12px;
+            line-height: 11px;
             color: var(--off-black);
         }
 
@@ -397,7 +396,7 @@
             text-transform: uppercase;
             font-size: 7pt;
             line-height: 7.5pt;
-            padding: 5px 6px;
+            padding: 4px 6px;
             text-align: left;
             letter-spacing: 0.02em;
             border-right: 1px solid rgba(255,255,255,0.2);
@@ -413,8 +412,8 @@
 
         .foord-table td {
             font-size: 7.5pt;
-            line-height: 11pt;
-            padding: 3.5px 6px;
+            line-height: 10pt;
+            padding: 2.5px 6px;
             border-bottom: 1px solid #e5e5e5;
             font-weight: 400;
         }
@@ -473,7 +472,7 @@
 
         /* === Chart === */
         canvas {
-            max-height: 170px;
+            max-height: 150px;
             width: 100% !important;
         }
 
@@ -808,6 +807,13 @@
 
                                 @if ($key === 'lipperAward' && is_array($value))
                                     <div class="lipper-award">
+                                        <div style="margin-bottom: 3px;">
+                                            <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <!-- Trophy/shield shape matching Refinitiv Lipper Award logo -->
+                                                <path d="M11 0L2 4V12C2 18 6 23 11 26C16 23 20 18 20 12V4L11 0Z" fill="#29363d"/>
+                                                <path d="M11 3L5 6V12C5 16.5 7.5 20.5 11 23C14.5 20.5 17 16.5 17 12V6L11 3Z" fill="#29363d" stroke="#dde1e2" stroke-width="0.5"/>
+                                            </svg>
+                                        </div>
                                         <div class="award-title">REFINITIV LIPPER<br>FUND AWARDS</div>
                                         <div class="award-winner">{{ $value['year'] ?? '' }} WINNER<br>{{ $value['region'] ?? '' }}</div>
                                         <div class="award-detail">
@@ -872,7 +878,7 @@
                         <!-- Left: Asset Allocation -->
                         <div class="col-left">
                             @if(isset($fund->data['mainContent']['assetAllocation']))
-                                <div style="margin-bottom: 14px;">
+                                <div style="margin-bottom: 8px;">
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.assetAllocation.title', '{{ $fund->data['mainContent']['assetAllocation']['title'] }}')"
                                               @click="editMode && startEdit()"
@@ -917,7 +923,7 @@
 
                             <!-- Equity Sector Allocation -->
                             @if(isset($fund->data['mainContent']['equitySectorAllocation']))
-                                <div style="margin-bottom: 14px;">
+                                <div style="margin-bottom: 6px;">
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.equitySectorAllocation.title', '{{ $fund->data['mainContent']['equitySectorAllocation']['title'] }}')"
                                               @click="editMode && startEdit()"
@@ -952,7 +958,7 @@
                         <!-- Right: Geographic Exposure + Chart -->
                         <div class="col-right">
                             @if(isset($fund->data['mainContent']['geographicExposure']))
-                                <div style="margin-bottom: 14px;">
+                                <div style="margin-bottom: 6px;">
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.geographicExposure.title', '{{ $fund->data['mainContent']['geographicExposure']['title'] }}')"
                                               @click="editMode && startEdit()"
@@ -1027,7 +1033,7 @@
                                     <div style="position: relative;">
                                         <div style="position: absolute; left: -2px; top: 40%; transform: rotate(-90deg) translateX(-50%); font-size: 5.5pt; color: var(--dark-grey); white-space: nowrap; transform-origin: left center;">Cash Value ($'000)</div>
                                         <div style="padding-left: 10px;">
-                                            <canvas id="performanceChart" style="height: 160px;"></canvas>
+                                            <canvas id="performanceChart" style="height: 145px;"></canvas>
                                         </div>
                                     </div>
                                     <div class="chart-legend" style="flex-wrap: wrap; justify-content: center; gap: 4px 14px;">
@@ -1043,7 +1049,7 @@
 
                     <!-- Top 10 Investments Table (full width) -->
                     @if(isset($fund->data['mainContent']['topInvestments']))
-                        <div style="margin-bottom: 10px;">
+                        <div style="margin-bottom: 6px;">
                             <h3 class="section-heading">
                                 <span x-data="editableField('mainContent.topInvestments.title', '{{ $fund->data['mainContent']['topInvestments']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -1147,7 +1153,7 @@
 
                             <!-- Footnotes -->
                             @if(isset($fund->data['mainContent']['performanceTable']['footnotes']))
-                                <div style="margin-top: 5px;">
+                                <div style="margin-top: 3px;">
                                     @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $footnote)
                                         <p class="footnote">
                                             <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($footnote) !!}')"
@@ -1166,10 +1172,15 @@
 
         <!-- ==================== PAGE 2 ==================== -->
         <div class="page page-break">
+            <!-- Beige header area (matches PDF page 2 top) -->
+            <div style="display: flex;">
+                <div style="width: 174px; min-width: 174px; background-color: var(--dark-navy-15); height: 40px;"></div>
+                <div style="flex: 1; background-color: #f0ebe3; height: 40px;"></div>
+            </div>
             <div class="main-body">
                 <!-- Left Sidebar - Important Information -->
                 @if(isset($fund->data['importantInfo']))
-                    <div class="sidebar" style="padding-top: 16px;">
+                    <div class="sidebar" style="padding-top: 8px;">
                         <div class="important-info-header">
                             <h2>
                                 <span x-data="editableField('importantInfo.title', '{{ $fund->data['importantInfo']['title'] }}')"
@@ -1350,7 +1361,7 @@
                                       :class="editMode ? 'editable' : ''"
                                       x-text="value"></span>
                             </p>
-                            <div class="footer-contact" style="margin-top: 6px;">
+                            <div class="footer-contact" style="margin-top: 6px; position: relative;">
                                 <p>T. <span x-data="editableField('footer.contact.phone', '{{ $fund->data['footer']['contact']['phone'] }}')"
                                            @click="editMode && startEdit()"
                                            :class="editMode ? 'editable' : ''"
@@ -1363,6 +1374,11 @@
                                          @click="editMode && startEdit()"
                                          :class="editMode ? 'editable' : ''"
                                          x-text="value"></span></p>
+                                <!-- Foord feather icon -->
+                                <svg style="position: absolute; right: 0; bottom: -5px; width: 28px; height: 35px; opacity: 0.7;" viewBox="0 0 28 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M14 0C8 3 3 10 2 18C1 26 3 35 3 35C3 35 6 30 10 28C14 26 18 27 18 27C18 27 14 22 10 20C6 18 2 18 2 18C2 18 4 12 8 8C12 4 14 0 14 0Z" fill="#c4956a"/>
+                                    <path d="M14 0C20 3 25 10 26 18C27 26 25 35 25 35C25 35 22 30 18 28C14 26 10 27 10 27C10 27 14 22 18 20C22 18 26 18 26 18C26 18 24 12 20 8C16 4 14 0 14 0Z" fill="#b07850"/>
+                                </svg>
                             </div>
                         </div>
                     @endif
