@@ -162,7 +162,7 @@
         }
 
         .sidebar-section {
-            margin-bottom: 3px;
+            margin-bottom: 1px;
         }
 
         .sidebar-section h3 {
@@ -173,7 +173,12 @@
             text-transform: uppercase;
             letter-spacing: 0.03em;
             color: var(--dark-navy);
+            margin-top: 4px;
             margin-bottom: 1px;
+        }
+
+        .sidebar-section:first-child h3 {
+            margin-top: 0;
         }
 
         .sidebar-section p,
@@ -181,7 +186,7 @@
             font-family: 'Avenir Next', system-ui, sans-serif;
             font-weight: 400;
             font-size: 7pt;
-            line-height: 8.5pt;
+            line-height: 7.5pt;
             letter-spacing: 0.02em;
             color: var(--off-black);
         }
@@ -481,7 +486,7 @@
         .footnote {
             font-family: 'Lato', sans-serif;
             font-size: 5.5pt;
-            line-height: 7pt;
+            line-height: 6.5pt;
             color: var(--dark-grey);
             letter-spacing: 0.01em;
         }
