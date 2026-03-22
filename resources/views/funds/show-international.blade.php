@@ -166,7 +166,7 @@
 
         .sidebar-section h3 {
             font-family: 'Avenir Next', system-ui, sans-serif;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 6pt;
             line-height: 7.5pt;
             text-transform: uppercase;
@@ -302,7 +302,7 @@
         .alloc-bar-container {
             flex: 1;
             height: 9px;
-            background-color: #f0f0f0;
+            background-color: #eeeeee;
             position: relative;
         }
 
