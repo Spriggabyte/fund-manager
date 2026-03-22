@@ -6,9 +6,9 @@
 ## Reference PDF
 `reference-docs/Foord International Fund Class R at 2026-01-31.pdf`
 
-## Status: Near pixel-perfect (10 iterations)
+## Status: Near pixel-perfect (16 iterations)
 
-Page 1 height: 1123px (exact A4 at 794px width)
+Both pages: 1123px each (exact A4 at 794px width)
 
 ## Remaining differences (inherent limitations)
 
@@ -39,21 +39,25 @@ match exactly.
 ### 5. Header proportions (~4px difference)
 The PDF header grey area appears to be ~78px tall. The template uses 74px
 because increasing further would push page 1 beyond A4 height (1123px).
-The header grey width is 210px vs PDF's estimated ~220px. These are
-within 5% tolerance.
+The header grey width is 218px vs PDF's estimated ~220px. These are
+within 2% tolerance.
 
 ## What matches accurately
 - All colors per design reference (#d25347, #29363d, #313131, #9a9a9a, etc.)
-- Font sizes per design reference (23pt title, 7pt description, 7.5pt body, etc.)
-- 174px sidebar (46mm per grid spec)
+- Font sizes per design reference (23pt title, 7pt description, 7.5pt body, 6pt sidebar headings, 5.5pt footnotes)
+- Sidebar body line-height: 7.5pt per design spec
+- 174px sidebar (46mm per grid spec), 218px header grey
 - All 20 sidebar fields in correct PDF order
-- Asset allocation horizontal bars with change indicators
-- Equity sector allocation bars
-- Geographic exposure table with naartjie left border
+- Asset allocation horizontal bars with change indicators and light grey track
+- Equity sector allocation bars in dark navy
+- Geographic exposure table with 3px naartjie left border
 - Portfolio performance chart with 4 series and $ end-value annotations
-- Top 10 investments table
-- Performance table with highlight rows, separators, footnotes
+- Chart legend in 2-line layout matching PDF (Fund/US inflation, World equities/World bonds)
+- Top 10 investments table with naartjie left border
+- Performance table with highlight rows, separators, footnotes, naartjie left border
 - Page 2: Important Info sidebar, cost ratio table, all text sections
+- Page 2: Full 1123px A4 height with footer pushed to bottom via flexbox
 - Footer with naartjie divider, contact info, feather icon
 - Alpine.js inline editing functionality preserved
-- A4 page proportions (794 x 1123px)
+- Both pages at exact A4 proportions (794 x 1123px)
+- All table row borders, alternating colors, and naartjie accents verified at 3x resolution
