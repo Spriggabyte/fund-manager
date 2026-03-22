@@ -1039,10 +1039,10 @@
                                     <div style="position: relative;">
                                         <div style="position: absolute; left: -2px; top: 40%; transform: rotate(-90deg) translateX(-50%); font-size: 5.5pt; color: var(--dark-grey); white-space: nowrap; transform-origin: left center;">Cash Value ($'000)</div>
                                         <div style="padding-left: 10px;">
-                                            <canvas id="performanceChart" style="height: 138px;"></canvas>
+                                            <canvas id="performanceChart" style="height: 133px;"></canvas>
                                         </div>
                                     </div>
-                                    <div class="chart-legend" style="flex-wrap: wrap; justify-content: center; gap: 4px 14px;">
+                                    <div class="chart-legend" style="flex-wrap: wrap; justify-content: center; gap: 1px 16px; max-width: 190px; margin: 2px auto 0;">
                                         <span><span class="legend-line" style="background: var(--naartjie);"></span> Fund</span>
                                         <span><span class="legend-line" style="background: var(--medium-grey);"></span> US inflation</span>
                                         <span><span class="legend-line" style="background: var(--dark-navy);"></span> World equities</span>
