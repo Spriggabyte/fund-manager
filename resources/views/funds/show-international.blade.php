@@ -76,7 +76,7 @@
         /* === Header Area === */
         .header-row {
             display: flex;
-            height: 72px;
+            height: 74px;
             position: relative;
         }
 
