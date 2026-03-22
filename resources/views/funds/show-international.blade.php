@@ -301,13 +301,13 @@
 
         .alloc-bar-container {
             flex: 1;
-            height: 10px;
-            background-color: var(--dark-navy-10);
+            height: 9px;
+            background-color: #f0f0f0;
             position: relative;
         }
 
         .alloc-bar {
-            height: 10px;
+            height: 9px;
             background-color: var(--dark-navy);
         }
 
@@ -351,12 +351,12 @@
 
         .sector-bar-container {
             flex: 1;
-            height: 10px;
+            height: 9px;
             position: relative;
         }
 
         .sector-bar {
-            height: 10px;
+            height: 9px;
             background-color: var(--dark-navy);
         }
 
@@ -489,15 +489,15 @@
         .important-info-header {
             background-color: var(--dark-navy);
             color: white;
-            padding: 8px 10px;
+            padding: 8px 8px;
             margin-bottom: 10px;
         }
 
         .important-info-header h2 {
             font-family: 'Avenir Next', system-ui, sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 8pt;
+            font-size: 7pt;
+            line-height: 8.5pt;
             text-transform: uppercase;
             letter-spacing: 0.03em;
         }
