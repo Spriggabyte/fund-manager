@@ -55,6 +55,8 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             min-height: 1123px;
             padding-bottom: 42px;
+            display: flex;
+            flex-direction: column;
         }
 
         .page + .page {
@@ -153,6 +155,7 @@
         /* === Main Body Layout === */
         .main-body {
             display: flex;
+            flex: 1;
             min-height: 200px;
         }
 
