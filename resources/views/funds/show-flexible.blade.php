@@ -681,46 +681,92 @@
                 <!-- Sidebar -->
                 <div class="sidebar">
                     @if(isset($fund->data['sidebar']))
-                        @foreach ($fund->data['sidebar'] as $key => $value)
-                            @if ($key === 'equityIndicator' && is_array($value))
-                                <div class="sidebar-section">
-                                    <h3>EQUITY INDICATOR</h3>
-                                    <div style="display: flex; align-items: center; margin: 2px 0;">
-                                        @php
-                                            $filledDots = $value['filled'] ?? 7;
-                                            $totalDots = $value['total'] ?? 10;
-                                        @endphp
-                                        @for ($i = 0; $i < $totalDots; $i++)
-                                            <span class="equity-dot {{ $i < $filledDots ? 'filled' : 'empty' }}"></span>
-                                        @endfor
+                        @php
+                            $sidebar = $fund->data['sidebar'];
+                            $labelMap = [
+                                'domicile' => 'DOMICILE',
+                                'managementCompany' => 'MANAGEMENT COMPANY',
+                                'fundManager' => 'FUND MANAGER',
+                                'fundManagers' => 'FUND MANAGERS',
+                                'inceptionDate' => 'INCEPTION DATE',
+                                'baseCurrency' => 'BASE CURRENCY',
+                                'equityIndicator' => 'EQUITY INDICATOR',
+                                'category' => 'CATEGORY',
+                                'benchmark' => 'BENCHMARK',
+                                'minimumLumpSum' => 'MINIMUM LUMP SUM / MONTHLY',
+                                'minimumLumpSumMonthly' => 'MINIMUM LUMP SUM / MONTHLY',
+                                'portfolioSize' => 'PORTFOLIO SIZE',
+                                'unitPrice' => 'UNIT PRICE',
+                                'numberOfUnits' => 'NUMBER OF UNITS',
+                                'lastDistributions' => 'LAST DISTRIBUTIONS',
+                                'incomeDistributions' => 'INCOME DISTRIBUTIONS',
+                                'incomeCharacteristics' => 'INCOME CHARACTERISTICS',
+                                'portfolioOrientation' => 'PORTFOLIO ORIENTATION',
+                                'significantRestrictions' => 'SIGNIFICANT RESTRICTIONS',
+                                'foreignAssets' => 'FOREIGN ASSETS',
+                                'riskOfLoss' => 'RISK OF LOSS',
+                                'timeHorizon' => 'TIME HORIZON',
+                                'isinNumber' => 'ISIN NUMBER',
+                            ];
+
+                            $displayOrder = [
+                                'domicile', 'managementCompany', 'fundManager', 'fundManagers',
+                                'inceptionDate', 'baseCurrency', 'equityIndicator',
+                                'category', 'benchmark', 'minimumLumpSum', 'minimumLumpSumMonthly',
+                                'portfolioSize', 'unitPrice', 'numberOfUnits',
+                                'lastDistributions', 'incomeDistributions', 'incomeCharacteristics',
+                                'portfolioOrientation', 'significantRestrictions',
+                                'foreignAssets', 'riskOfLoss', 'timeHorizon', 'isinNumber',
+                            ];
+                        @endphp
+
+                        @foreach ($displayOrder as $key)
+                            @if(isset($sidebar[$key]))
+                                @php
+                                    $value = $sidebar[$key];
+                                    $label = $labelMap[$key] ?? strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY)));
+                                @endphp
+
+                                @if ($key === 'equityIndicator' && is_array($value))
+                                    <div class="sidebar-section">
+                                        <h3>{{ $label }}</h3>
+                                        <div style="display: flex; align-items: center; margin: 2px 0;">
+                                            @php
+                                                $filledDots = $value['filled'] ?? 7;
+                                                $totalDots = $value['total'] ?? 10;
+                                            @endphp
+                                            @for ($i = 0; $i < $totalDots; $i++)
+                                                <span class="equity-dot {{ $i < $filledDots ? 'filled' : 'empty' }}"></span>
+                                            @endfor
+                                        </div>
+                                        <p>
+                                            <span x-data="editableField('sidebar.{{ $key }}.description', '{{ addslashes($value['description'] ?? '') }}')"
+                                                  @click="editMode && startEdit()"
+                                                  :class="editMode ? 'editable' : ''"
+                                                  x-text="value"></span>
+                                        </p>
                                     </div>
-                                    <p>
-                                        <span x-data="editableField('sidebar.{{ $key }}.description', '{{ addslashes($value['description'] ?? '') }}')"
-                                              @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-text="value"></span>
-                                    </p>
-                                </div>
-                            @elseif (is_array($value) && isset($value['description']))
-                                <div class="sidebar-section">
-                                    <h3>{{ strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY))) }}</h3>
-                                    <p>
-                                        <span x-data="editableField('sidebar.{{ $key }}.description', '{{ addslashes($value['description'] ?? '') }}')"
-                                              @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-text="value"></span>
-                                    </p>
-                                </div>
-                            @elseif (!is_array($value))
-                                <div class="sidebar-section">
-                                    <h3>{{ strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY))) }}</h3>
-                                    <p>
-                                        <span x-data="editableField('sidebar.{{ $key }}', '{!! addslashes($value) !!}')"
-                                              @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-html="value"></span>
-                                    </p>
-                                </div>
+                                @elseif (!is_array($value))
+                                    <div class="sidebar-section">
+                                        <h3>{{ $label }}</h3>
+                                        <p>
+                                            <span x-data="editableField('sidebar.{{ $key }}', '{!! addslashes($value) !!}')"
+                                                  @click="editMode && startEdit()"
+                                                  :class="editMode ? 'editable' : ''"
+                                                  x-html="value"></span>
+                                        </p>
+                                    </div>
+                                @elseif (is_array($value) && isset($value['description']))
+                                    <div class="sidebar-section">
+                                        <h3>{{ $label }}</h3>
+                                        <p>
+                                            <span x-data="editableField('sidebar.{{ $key }}.description', '{{ addslashes($value['description'] ?? '') }}')"
+                                                  @click="editMode && startEdit()"
+                                                  :class="editMode ? 'editable' : ''"
+                                                  x-text="value"></span>
+                                        </p>
+                                    </div>
+                                @endif
                             @endif
                         @endforeach
                     @endif
