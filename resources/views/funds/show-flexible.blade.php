@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         /* === Base Reset & Fonts === */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -135,6 +135,7 @@
         .fund-banner .description {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
+            font-style: italic;
             font-size: 7pt;
             line-height: 9.5pt;
             letter-spacing: 0.02em;
@@ -461,6 +462,7 @@
         .footer-info {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
+            font-style: italic;
             font-size: 7.5pt;
             line-height: 10pt;
             letter-spacing: 0.02em;
@@ -823,7 +825,7 @@
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
                                                 </td>
-                                                <td class="{{ ($row['changeDirection'] ?? '') === 'up' ? 'change-up' : (($row['changeDirection'] ?? '') === 'down' ? 'change-down' : '') }}">
+                                                <td>
                                                     @if(isset($row['changeDirection']))
                                                         <span class="{{ $row['changeDirection'] === 'up' ? 'change-up' : 'change-down' }}"></span>
                                                     @endif
