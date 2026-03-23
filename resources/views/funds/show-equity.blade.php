@@ -256,11 +256,11 @@
             font-family: 'Lato', sans-serif;
         }
         .sector-bar-label {
-            width: 85px;
+            width: 105px;
             flex-shrink: 0;
             color: #313131;
-            font-size: 6.5pt;
-            line-height: 8pt;
+            font-size: 6pt;
+            line-height: 7.5pt;
             text-align: left;
             padding-right: 4px;
         }
@@ -1091,22 +1091,22 @@
 
                     <!-- Footer -->
                     @if(isset($fund->data['footer']))
-                        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #d25347;">
+                        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #d25347; position: relative;">
                             <div style="color: #d25347; font-family: 'Merriweather', Georgia, serif; margin-bottom: 6px;">
-                                <p style="font-size: 7pt; line-height: 9pt; letter-spacing: 0.02em;">
+                                <p style="font-size: 6.5pt; line-height: 8.5pt; letter-spacing: 0.02em;">
                                     <span x-data="editableField('footer.info', '{{ $fund->data['footer']['info'] }}')"
                                           @click="editMode && startEdit()"
                                           :class="editMode ? 'editable' : ''"
                                           x-text="value"></span>
                                 </p>
-                                <p style="font-size: 7pt; line-height: 9pt; letter-spacing: 0.02em; margin-top: 4px; font-style: italic;">
+                                <p style="font-size: 6.5pt; line-height: 8.5pt; letter-spacing: 0.02em; margin-top: 4px; font-style: italic;">
                                     <span x-data="editableField('footer.freeOfCharge', '{{ $fund->data['footer']['freeOfCharge'] }}')"
                                           @click="editMode && startEdit()"
                                           :class="editMode ? 'editable' : ''"
                                           x-text="value"></span>
                                 </p>
                             </div>
-                            <div style="color: #d25347; font-family: 'Lato', sans-serif; font-size: 7pt; line-height: 9pt; font-weight: 500; letter-spacing: 0.03em;">
+                            <div style="color: #d25347; font-family: 'Lato', sans-serif; font-size: 6.5pt; line-height: 8.5pt; font-weight: 500; letter-spacing: 0.03em;">
                                 <p>T. <span x-data="editableField('footer.contact.phone', '{{ $fund->data['footer']['contact']['phone'] }}')"
                                            @click="editMode && startEdit()"
                                            :class="editMode ? 'editable' : ''"
@@ -1120,6 +1120,8 @@
                                          :class="editMode ? 'editable' : ''"
                                          x-text="value"></span></p>
                             </div>
+                            <!-- Foord logo bottom-right -->
+                            <img src="{{ $fund->data['fund']['logoUrl'] ?? '' }}" alt="Foord" style="position: absolute; bottom: 0; right: 0; height: 22px; opacity: 0.8;">
                         </div>
                     @endif
                 </div>
@@ -1214,6 +1216,29 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Plugin to draw end-value labels on line chart
+        const endValueLabelsPlugin = {
+            id: 'endValueLabels',
+            afterDraw(chart, args, options) {
+                if (!options || !options.fundLabel) return;
+                const ctx = chart.ctx;
+                const datasets = chart.data.datasets;
+                datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    if (meta.data.length === 0) return;
+                    const lastPoint = meta.data[meta.data.length - 1];
+                    const label = i === 0 ? options.fundLabel : options.benchmarkLabel;
+                    ctx.save();
+                    ctx.font = '600 7px Lato, sans-serif';
+                    ctx.fillStyle = '#313131';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(label, chart.chartArea.right, lastPoint.y - (i === 0 ? 6 : -12));
+                    ctx.restore();
+                });
+            }
+        };
+        Chart.register(endValueLabelsPlugin);
+
         // Foord color palette
         const colors = {
             naartjie: '#d25347',
@@ -1262,26 +1287,33 @@
                             position: 'bottom',
                             labels: {
                                 usePointStyle: true,
-                                boxWidth: 6,
-                                padding: 15,
-                                font: { size: 8, family: 'Lato' }
+                                pointStyle: 'line',
+                                boxWidth: 12,
+                                boxHeight: 0,
+                                padding: 12,
+                                font: { size: 7, family: 'Lato' }
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
                             callbacks: { label: (c) => `${c.dataset.label}: R ${c.parsed.y.toLocaleString()}` }
+                        },
+                        // End-value annotations
+                        endValueLabels: {
+                            fundLabel: portfolioData.length ? 'R ' + Math.round(portfolioData[portfolioData.length-1].fund).toLocaleString() : '',
+                            benchmarkLabel: portfolioData.length ? 'R ' + Math.round(portfolioData[portfolioData.length-1].benchmark).toLocaleString() : ''
                         }
                     },
                     scales: {
                         x: {
                             grid: { display: false },
-                            ticks: { font: { size: 7, family: 'Lato' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }
+                            ticks: { font: { size: 6, family: 'Lato' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }
                         },
                         y: {
                             type: 'logarithmic',
                             ticks: {
-                                font: { size: 7, family: 'Lato' },
+                                font: { size: 6, family: 'Lato' },
                                 callback: (v) => {
                                     if (v === 100 || v === 1000 || v === 10000) return 'R ' + v.toLocaleString();
                                     return null;
@@ -1330,7 +1362,7 @@
                         x: {
                             grid: { display: false },
                             ticks: {
-                                font: { size: 7, family: 'Lato' },
+                                font: { size: 6, family: 'Lato' },
                                 maxRotation: 0,
                                 autoSkip: true,
                                 maxTicksLimit: 6
@@ -1339,7 +1371,7 @@
                         y: {
                             grid: { color: '#e5e5e5' },
                             ticks: {
-                                font: { size: 7, family: 'Lato' },
+                                font: { size: 6, family: 'Lato' },
                                 callback: (v) => v + '%'
                             }
                         }
