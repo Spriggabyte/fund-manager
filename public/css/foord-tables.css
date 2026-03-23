@@ -1,0 +1,78 @@
+/*
+ * Foord Table Styles
+ * ------------------
+ * Styling for .foord-table, .table-container accent bar, and row variants.
+ * Used by: show.blade.php
+ */
+
+.foord-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: 'Lato', sans-serif;
+}
+
+.foord-table th {
+    background-color: #29363d;
+    color: white;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 7.5px;
+    line-height: 7.5px;
+    padding: 6px 8px;
+    text-align: left;
+    letter-spacing: 0.02em;
+}
+
+.foord-table th:not(:first-child) {
+    text-align: center;
+}
+
+.foord-table td {
+    font-size: 8px;
+    line-height: 12px;
+    padding: 5px 8px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.foord-table td:not(:first-child) {
+    text-align: center;
+}
+
+.foord-table tbody tr:nth-child(odd) {
+    background-color: #f4f4f4;
+}
+
+.foord-table tbody tr:nth-child(even) {
+    background-color: white;
+}
+
+.foord-table .total-row {
+    background-color: #d25347 !important;
+    color: white;
+    font-weight: 500;
+}
+
+.foord-table .highlight-row {
+    background-color: #f6dcd9 !important;
+}
+
+.foord-table .highlight-row td:first-child {
+    color: #d25347;
+    font-weight: 500;
+}
+
+/* Naartjie accent bar on left of tables */
+.table-container {
+    position: relative;
+    padding-left: 3px;
+}
+
+.table-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: #d25347;
+}

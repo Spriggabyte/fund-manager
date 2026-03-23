@@ -1,0 +1,10 @@
+{
+    "hooks": {
+      "stop": [
+        {
+          "command": "test -f ./ralph-complete && exit 0 || exit 1",
+          "description": "Stop looping when ralph-complete file exists"
+        }
+      ]
+    }
+  }

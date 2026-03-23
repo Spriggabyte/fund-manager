@@ -1,0 +1,8 @@
+/*
+ * Foord Brand Styles
+ * ------------------
+ * Font imports and base typography shared across the fund fact sheet views.
+ * Used by: show.blade.php, pdf.blade.php
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Merriweather:wght@400;700&display=swap');

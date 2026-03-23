@@ -55,11 +55,18 @@ class FundController extends Controller
     /**
      * Display the specified resource.
      */
+    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-international'];
+
     public function show(Fund $fund): View
     {
         $this->authorize('view', $fund);
 
-        return view('funds.show', compact('fund'));
+        $template = $fund->data['fund']['template'] ?? 'show';
+        if (! in_array($template, self::ALLOWED_TEMPLATES)) {
+            $template = 'show';
+        }
+
+        return view('funds.' . $template, compact('fund'));
     }
 
     /**
@@ -298,6 +305,12 @@ class FundController extends Controller
     {
         // No authorization check - this is for internal PDF generation only
         // Render the dedicated PDF template with proper A4 layout
-        return view('funds.pdf', compact('fund'));
+        $template = $fund->data['fund']['template'] ?? 'show';
+        $pdfTemplate = $template === 'show-equity' ? 'pdf-equity' : 'pdf';
+        if (! view()->exists('funds.' . $pdfTemplate)) {
+            $pdfTemplate = 'pdf';
+        }
+
+        return view('funds.' . $pdfTemplate, compact('fund'));
     }
 }
