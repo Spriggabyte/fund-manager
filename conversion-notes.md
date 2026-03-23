@@ -7,7 +7,7 @@
 ## Reference PDF
 `reference-docs/Foord Equity Fund Class A at 2026-01-31.pdf`
 
-## Status: In Progress
+## Status: Complete (Iteration 4)
 
 ## Known Limitations
 

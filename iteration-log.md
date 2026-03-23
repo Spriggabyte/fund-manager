@@ -45,3 +45,22 @@
 - Chart rendering: Chart.js vs original tool (conversion-notes.md)
 
 ### Status: RESOLVED
+
+## Iteration 4 — 2026-03-23
+### Changes:
+- Fixed description font size: 6.5pt → 8pt Merriweather, line-height 8.5pt → 10pt (now wraps to 4 lines matching reference)
+- Fixed portfolio chart legend: circles → line dashes (boxWidth: 15, boxHeight: 1, usePointStyle: false)
+- Fixed monthly chart X-axis: maxTicksLimit 5 → 6 (now shows Sep 02, Sep 06, Sep 10, Sep 14, Sep 18, Sep 22)
+- Fixed sector label wrapping: added white-space: nowrap, widened label to 30mm (prevents "Capital goods/construction" from wrapping)
+
+### Web view differences found:
+- None (web view uses separate template, unaffected by PDF changes)
+
+### PDF output differences found:
+- Description font size too small → fixed (8pt now matches reference's 4-line layout)
+- Portfolio chart legend used circles instead of line dashes → fixed
+- Monthly chart X-axis labels misaligned (auto-calculated) → fixed to September-aligned every 4 years
+- Sector label "Capital goods/construction" wrapped to 2 lines → fixed with nowrap + wider label
+
+### Remaining issues: 0 (new), 3 (accepted limitations from previous iterations)
+### Status: RESOLVED

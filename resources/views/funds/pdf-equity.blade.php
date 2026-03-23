@@ -128,8 +128,8 @@
         .fund-description {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
-            font-size: 6.5pt;
-            line-height: 8.5pt;
+            font-size: 8pt;
+            line-height: 10pt;
             letter-spacing: 0.02em;
             margin: 0;
             opacity: 0.95;
@@ -289,12 +289,13 @@
             margin-bottom: 0.3mm;
         }
         .sector-label {
-            width: 28mm;
+            width: 30mm;
             flex-shrink: 0;
             font-size: 6.5pt;
             line-height: 8pt;
             color: var(--off-black);
             padding-right: 1.5mm;
+            white-space: nowrap;
         }
         .sector-bar-track {
             flex: 1;
@@ -988,7 +989,13 @@
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                labels: { usePointStyle: true, boxWidth: 5, padding: 8, font: { size: 6 } }
+                                labels: {
+                                    usePointStyle: false,
+                                    boxWidth: 15,
+                                    boxHeight: 1,
+                                    padding: 8,
+                                    font: { size: 6 }
+                                }
                             },
                             tooltip: { enabled: false }
                         },
@@ -1042,7 +1049,7 @@
                         scales: {
                             x: {
                                 grid: { display: false },
-                                ticks: { font: { size: 5.5 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 }
+                                ticks: { font: { size: 5.5 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }
                             },
                             y: {
                                 min: -10,
