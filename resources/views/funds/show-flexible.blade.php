@@ -239,7 +239,7 @@
         .two-col {
             display: flex;
             gap: 10px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .two-col .col-left {
@@ -379,7 +379,7 @@
 
         /* === Chart === */
         canvas {
-            max-height: 142px;
+            max-height: 160px;
             width: 100% !important;
         }
 
@@ -776,7 +776,7 @@
                 <div class="content-area">
                     <!-- Asset Allocation Table -->
                     @if(isset($fund->data['mainContent']['assetAllocation']))
-                        <div style="margin-bottom: 6px;">
+                        <div style="margin-bottom: 10px;">
                             <h3 class="section-heading">
                                 <span x-data="editableField('mainContent.assetAllocation.title', '{{ $fund->data['mainContent']['assetAllocation']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -876,7 +876,7 @@
 
                     <!-- Top Investments Table -->
                     @if(isset($fund->data['mainContent']['topInvestments']))
-                        <div style="margin-bottom: 6px;">
+                        <div style="margin-bottom: 10px;">
                             <h3 class="section-heading">
                                 <span x-data="editableField('mainContent.topInvestments.title', '{{ $fund->data['mainContent']['topInvestments']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -945,7 +945,7 @@
                                 <div style="position: relative;">
                                     <div style="position: absolute; left: -2px; top: 40%; transform: rotate(-90deg) translateX(-50%); font-size: 5pt; color: var(--dark-grey); white-space: nowrap; transform-origin: left center;">Cash Value<sup>2</sup> (R'000)</div>
                                     <div style="padding-left: 10px;">
-                                        <canvas id="strategyChart" style="height: 130px;"></canvas>
+                                        <canvas id="strategyChart" style="height: 145px;"></canvas>
                                     </div>
                                 </div>
                                 <div class="chart-legend" style="gap: 8px;">
@@ -963,7 +963,7 @@
                                 <div style="position: relative;">
                                     <div style="position: absolute; left: -2px; top: 40%; transform: rotate(-90deg) translateX(-50%); font-size: 5pt; color: var(--dark-grey); white-space: nowrap; transform-origin: left center;">Cash Value<sup>2</sup> (R'000)</div>
                                     <div style="padding-left: 10px;">
-                                        <canvas id="portfolioChart" style="height: 130px;"></canvas>
+                                        <canvas id="portfolioChart" style="height: 145px;"></canvas>
                                     </div>
                                 </div>
                                 <div class="chart-legend" style="gap: 8px;">
@@ -974,7 +974,7 @@
                         </div>
 
                         <!-- Chart explanation text -->
-                        <p class="chart-explanation" style="margin-bottom: 6px;">
+                        <p class="chart-explanation" style="margin-bottom: 10px;">
                             <span x-data="editableField('mainContent.charts.explanation', '{{ addslashes($fund->data['mainContent']['charts']['explanation'] ?? '') }}')"
                                   @click="editMode && startEdit()"
                                   :class="editMode ? 'editable' : ''"
