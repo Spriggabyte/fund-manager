@@ -451,11 +451,19 @@
 
             <!-- Fund Name Banner -->
             <div style="background-color: #29363d; color: white; padding: 8px 12px 10px 12px;">
-                <h1 style="font-family: 'Lato', sans-serif; font-weight: 500; font-size: 16pt; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; line-height: 1.1;">
+                @php
+                    $fundNameParts = preg_split('/(–\s*)/', $fund->data['fund']['name'] ?? $fund->name, 2, PREG_SPLIT_DELIM_CAPTURE);
+                @endphp
+                <h1 style="font-family: 'Lato', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; line-height: 1.1;">
                     <span x-data="editableField('fund.name', '{{ $fund->data['fund']['name'] ?? $fund->name }}')"
                           @click="editMode && startEdit()"
-                          :class="editMode ? 'editable' : ''"
-                          x-text="value"></span>
+                          :class="editMode ? 'editable' : ''">
+                          @if(count($fundNameParts) >= 3)
+                              <span style="font-size: 16pt; font-weight: 500;">{{ $fundNameParts[0] }}</span><span style="font-size: 13pt; font-weight: 400;">{{ $fundNameParts[1] }}{{ $fundNameParts[2] }}</span>
+                          @else
+                              <span style="font-size: 16pt; font-weight: 500;" x-text="value"></span>
+                          @endif
+                    </span>
                 </h1>
                 <p style="font-family: 'Merriweather', Georgia, serif; font-size: 6.5pt; line-height: 8.5pt; letter-spacing: 0.02em; color: rgba(255,255,255,0.92);">
                     <span x-data="editableField('fund.description', '{{ $fund->data['fund']['description'] ?? '' }}')"
@@ -820,8 +828,8 @@
                 <!-- Left Sidebar - Important Information -->
                 @if(isset($fund->data['importantInfo']))
                     <div style="width: 174px; flex-shrink: 0; background-color: #dde1e2; padding: 8px 8px 8px 12px;">
-                        <div style="background-color: #29363d; color: white; padding: 5px 8px; margin-bottom: 8px;">
-                            <h2 style="font-family: 'Lato', sans-serif; font-weight: 600; font-size: 7pt; line-height: 8pt; text-transform: uppercase; letter-spacing: 0.02em;">
+                        <div style="background-color: #29363d; color: white; padding: 8px 10px; margin-bottom: 8px; text-align: center;">
+                            <h2 style="font-family: 'Lato', sans-serif; font-weight: 600; font-size: 7pt; line-height: 9pt; text-transform: uppercase; letter-spacing: 0.02em;">
                                 <span x-data="editableField('importantInfo.title', '{{ $fund->data['importantInfo']['title'] }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
@@ -1374,8 +1382,11 @@
                             }
                         },
                         y: {
+                            min: -10,
+                            max: 10,
                             grid: { color: '#e5e5e5' },
                             ticks: {
+                                stepSize: 5,
                                 font: { size: 6, family: 'Lato' },
                                 callback: (v) => v + '%'
                             }
