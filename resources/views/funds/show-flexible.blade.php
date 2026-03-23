@@ -350,7 +350,7 @@
             padding: 3px 4px;
         }
 
-        /* Fee rates table (no header, simple layout) */
+        /* Fee rates table (no header, simple layout, no naartjie bar) */
         .fee-table {
             border-collapse: collapse;
             width: 100%;
@@ -363,13 +363,6 @@
             padding: 3px 6px;
             border-bottom: 1px solid #e5e5e5;
             font-weight: 400;
-        }
-
-        .fee-table tbody tr:nth-child(odd) {
-            background-color: var(--very-light-grey);
-        }
-
-        .fee-table tbody tr:nth-child(even) {
             background-color: white;
         }
 
@@ -1148,28 +1141,26 @@
                                       :class="editMode ? 'editable' : ''"
                                       x-text="value"></span>
                             </h3>
-                            <div class="table-wrapper">
-                                <table class="fee-table">
-                                    <tbody>
-                                        @foreach ($fund->data['fees']['feeRates']['rates'] as $index => $rate)
-                                            <tr>
-                                                <td>
-                                                    <span x-data="editableField('fees.feeRates.rates.{{ $index }}.name', '{{ $rate['name'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.feeRates.rates.{{ $index }}.value', '{{ $rate['value'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                            <table class="fee-table">
+                                <tbody>
+                                    @foreach ($fund->data['fees']['feeRates']['rates'] as $index => $rate)
+                                        <tr>
+                                            <td>
+                                                <span x-data="editableField('fees.feeRates.rates.{{ $index }}.name', '{{ $rate['name'] }}')"
+                                                      @click="editMode && startEdit()"
+                                                      :class="editMode ? 'editable' : ''"
+                                                      x-text="value"></span>
+                                            </td>
+                                            <td>
+                                                <span x-data="editableField('fees.feeRates.rates.{{ $index }}.value', '{{ $rate['value'] }}')"
+                                                      @click="editMode && startEdit()"
+                                                      :class="editMode ? 'editable' : ''"
+                                                      x-text="value"></span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                             <p class="page2-body" style="margin-top: 5px;">
                                 <span x-data="editableField('fees.feeRates.description', '{{ addslashes($fund->data['fees']['feeRates']['description'] ?? '') }}')"
                                       @click="editMode && startEdit()"
