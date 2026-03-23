@@ -457,7 +457,7 @@
                           :class="editMode ? 'editable' : ''"
                           x-text="value"></span>
                 </h1>
-                <p style="font-family: 'Merriweather', Georgia, serif; font-size: 7pt; line-height: 9.5pt; letter-spacing: 0.02em; color: rgba(255,255,255,0.92); max-width: 680px;">
+                <p style="font-family: 'Merriweather', Georgia, serif; font-size: 6.5pt; line-height: 8.5pt; letter-spacing: 0.02em; color: rgba(255,255,255,0.92);">
                     <span x-data="editableField('fund.description', '{{ $fund->data['fund']['description'] ?? '' }}')"
                           @click="editMode && startEdit()"
                           :class="editMode ? 'editable' : ''"
@@ -1286,12 +1286,11 @@
                         legend: {
                             position: 'bottom',
                             labels: {
-                                usePointStyle: true,
-                                pointStyle: 'line',
-                                boxWidth: 12,
-                                boxHeight: 0,
+                                usePointStyle: false,
+                                boxWidth: 16,
+                                boxHeight: 1.5,
                                 padding: 12,
-                                font: { size: 7, family: 'Lato' }
+                                font: { size: 6, family: 'Lato' }
                             }
                         },
                         tooltip: {
@@ -1312,6 +1311,12 @@
                         },
                         y: {
                             type: 'logarithmic',
+                            title: {
+                                display: true,
+                                text: 'Cash Value (R\'000)',
+                                font: { size: 6, family: 'Lato', weight: '400' },
+                                color: '#535353'
+                            },
                             ticks: {
                                 font: { size: 6, family: 'Lato' },
                                 callback: (v) => {
