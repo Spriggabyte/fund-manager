@@ -413,6 +413,7 @@
             line-height: 8.5pt;
             text-transform: uppercase;
             letter-spacing: 0.03em;
+            text-align: center;
         }
 
         .important-info-text {
