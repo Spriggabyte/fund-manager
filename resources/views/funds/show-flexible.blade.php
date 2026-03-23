@@ -936,7 +936,7 @@
                     @if(isset($fund->data['mainContent']['charts']))
                         <div class="two-col" style="margin-bottom: 4px;">
                             <div class="col-left">
-                                <h3 class="section-heading" style="font-size: 6.5pt;">
+                                <h3 class="section-heading">
                                     <span x-data="editableField('mainContent.charts.leftTitle', '{{ $fund->data['mainContent']['charts']['leftTitle'] ?? 'INVESTMENT STRATEGY VS REG 28 PORTFOLIOS' }}')"
                                           @click="editMode && startEdit()"
                                           :class="editMode ? 'editable' : ''"
@@ -954,7 +954,7 @@
                                 </div>
                             </div>
                             <div class="col-right">
-                                <h3 class="section-heading" style="font-size: 6.5pt;">
+                                <h3 class="section-heading">
                                     <span x-data="editableField('mainContent.charts.rightTitle', '{{ $fund->data['mainContent']['charts']['rightTitle'] ?? 'PORTFOLIO PERFORMANCE VS BENCHMARK' }}')"
                                           @click="editMode && startEdit()"
                                           :class="editMode ? 'editable' : ''"
@@ -985,7 +985,7 @@
                     <!-- Performance Table -->
                     @if(isset($fund->data['mainContent']['performanceTable']))
                         <div>
-                            <h3 class="section-heading" style="font-size: 6.5pt; line-height: 7.5pt;">
+                            <h3 class="section-heading">
                                 <span x-data="editableField('mainContent.performanceTable.title', '{!! addslashes($fund->data['mainContent']['performanceTable']['title']) !!}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
