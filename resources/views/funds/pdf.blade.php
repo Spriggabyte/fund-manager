@@ -273,8 +273,10 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-left: 0;
+            border-collapse: separate;
+            border-spacing: 1.5px 1px;
+            margin-left: -1.5px;
+            margin-right: -1.5px;
             font-size: 6.5pt;
         }
 
@@ -289,51 +291,36 @@
             text-transform: uppercase;
             text-align: center;
             padding: 1.4mm 1.5mm;
-            border-right: 0.5pt solid var(--white);
         }
 
         table th:first-child {
             text-align: left;
         }
 
-        table th:last-child {
-            border-right: none;
-        }
-
         table td {
+            background-color: var(--very-light-grey);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 6.5pt;
             line-height: 7.5pt;
             padding: 1mm 2mm;
             text-align: center;
-            border-bottom: 0.25pt solid #e5e5e5;
         }
 
         table td:first-child {
             text-align: left;
         }
 
-        /* Alternating row colors */
-        table tbody tr:nth-child(odd) {
-            background-color: var(--very-light-grey);
-        }
-
-        table tbody tr:nth-child(even) {
-            background-color: var(--white);
-        }
-
         /* Performance Table - light grey header instead of dark navy */
         .performance-table table th {
-            background-color: var(--very-light-grey);
+            background-color: var(--dark-navy-15);
             color: var(--dark-navy);
-            border-right: 0.5pt solid var(--white);
             font-weight: 600;
         }
 
         /* Highlighted Foord fund rows */
-        table tbody tr.highlight-row {
-            background-color: var(--naartjie-20) !important;
+        table tbody tr.highlight-row td {
+            background-color: var(--naartjie-20);
         }
 
         table tbody tr.highlight-row td:first-child {
@@ -342,17 +329,11 @@
         }
 
         /* Total row */
-        table tbody tr.total-row,
-        table tfoot tr {
-            background-color: var(--naartjie) !important;
-            color: var(--white);
-        }
-
         table tbody tr.total-row td,
         table tfoot td {
+            background-color: var(--naartjie);
             font-weight: 500;
             color: var(--white);
-            border-bottom: none;
         }
 
         /* Change indicators - both use naartjie color to match reference */
@@ -498,7 +479,7 @@
 
         .fee-rates-table td {
             padding: 1mm 1.5mm;
-            border-bottom: 0.25pt solid #e5e5e5;
+            background-color: var(--very-light-grey);
         }
 
         .fee-rates-table td:last-child:not([colspan]) {
@@ -511,7 +492,7 @@
         }
 
         .fee-rates-table tr.global-funds-header td {
-            background-color: var(--naartjie-20);
+            background-color: var(--naartjie-20) !important;
             color: var(--naartjie);
             font-weight: 500;
             text-align: left;
