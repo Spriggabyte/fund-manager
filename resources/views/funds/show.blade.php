@@ -9,108 +9,459 @@
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'naartjie': '#d25347',
-                        'naartjie-75': '#dd7e75',
-                        'naartjie-50': '#e9a9a3',
-                        'naartjie-20': '#f6dcd9',
-                        'dark-navy': '#29363d',
-                        'dark-navy-70': '#697277',
-                        'dark-navy-30': '#bfc3c5',
-                        'dark-navy-15': '#dde1e2',
-                        'dark-navy-10': '#e9ebec',
-                        'light-grey': '#cccccc',
-                        'light-blue': '#7a9cb4',
-                        'light-blue-50': '#bdceda',
-                        'dark-grey': '#535353',
-                        'medium-grey': '#9a9a9a',
-                        'medium-grey-25': '#e6e6e6',
-                        'medium-grey-20': '#ebebeb',
-                        'medium-grey-15': '#f0f0f0',
-                        'very-light-grey': '#f4f4f4',
-                        'mushroom': '#e2cea4',
-                        'mushroom-50': '#f1e7d2',
-                        'off-black': '#313131',
-                    },
-                    fontFamily: {
-                        'avenir': ['Avenir Next', 'system-ui', 'sans-serif'],
-                        'merriweather': ['Merriweather', 'Georgia', 'serif'],
-                        'lato': ['Lato', 'sans-serif'],
-                    },
-                    fontSize: {
-                        'xxs': ['6px', { lineHeight: '7px' }],
-                        'xs-custom': ['7px', { lineHeight: '7.5px' }],
-                        'sm-custom': ['8px', { lineHeight: '9.5px' }],
-                        'base-custom': ['9px', { lineHeight: '11px' }],
-                        'table-head': ['7.5px', { lineHeight: '7.5px' }],
-                        'table-body': ['8px', { lineHeight: '12px' }],
-                        'section-head': ['10px', { lineHeight: '12px' }],
-                    },
-                    letterSpacing: {
-                        'wide-custom': '0.02em',
-                        'wider-custom': '0.03em',
-                        'widest-custom': '0.05em',
-                    }
-                }
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Merriweather:wght@400;700&display=swap');
-        
-        @media print {
-            .no-print { display: none; }
-            .page-break { page-break-before: always; }
+        /* =====================================================
+           FOORD FUND FACT SHEET - shared with pdf.blade.php
+           ===================================================== */
+
+        :root {
+            --naartjie: #d25347;
+            --naartjie-75: #dd7e75;
+            --naartjie-50: #e9a9a3;
+            --naartjie-20: #f6dcd9;
+            --dark-navy: #29363d;
+            --dark-navy-70: #697277;
+            --dark-navy-30: #bfc3c5;
+            --dark-navy-15: #dde1e2;
+            --dark-navy-10: #e9ebec;
+            --medium-grey: #9a9a9a;
+            --medium-grey-25: #e6e6e6;
+            --medium-grey-20: #ebebeb;
+            --medium-grey-15: #f0f0f0;
+            --light-grey: #cccccc;
+            --dark-grey: #535353;
+            --very-light-grey: #f4f4f4;
+            --off-black: #313131;
+            --white: #ffffff;
         }
 
-        /* PDF mode styles */
-        body.pdf-mode {
-            background: white;
+        body {
+            font-family: 'Avenir Next', 'Lato', -apple-system, sans-serif;
+            font-size: 7pt;
+            line-height: 1.2;
+            color: var(--off-black);
+            background: #e5e7eb;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        body.pdf-mode .max-w-4xl {
-            max-width: 100%;
+
+        /* Page container — matches the PDF's A4 page exactly */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 16px auto;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(to right, var(--dark-navy-15) 52mm, var(--white) 52mm);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        body.pdf-mode .bg-white {
-            box-shadow: none;
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4mm 12mm 4mm 5mm;
+            min-height: 26mm;
         }
-        body.pdf-mode .my-4 {
-            margin-top: 0;
-            margin-bottom: 0;
+
+        .date-badge {
+            background-color: var(--naartjie);
+            color: var(--white);
+            padding: 3mm 7mm;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 11pt;
+            letter-spacing: 0.02em;
         }
-        
-        /* Equity indicator dots */
+
+        .logo { height: 12mm; }
+        .logo img { height: 100%; width: auto; }
+
+        /* Title banner */
+        .title-banner {
+            background-color: var(--dark-navy);
+            color: var(--white);
+            padding: 6mm 12mm 7mm 5mm;
+            margin: 0;
+            width: 100%;
+        }
+
+        .fund-name {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 20pt;
+            letter-spacing: 0.01em;
+            text-transform: uppercase;
+            margin: 0 0 1.5mm 0;
+            line-height: 1.05;
+        }
+
+        .fund-name .class-suffix {
+            font-weight: 400;
+            font-size: 16pt;
+        }
+
+        .fund-description {
+            font-family: 'Merriweather', Georgia, serif;
+            font-weight: 400;
+            font-size: 8pt;
+            line-height: 12pt;
+            letter-spacing: 0.01em;
+            margin: 0;
+            color: var(--white);
+        }
+
+        /* Main content layout */
+        .content-wrapper {
+            display: flex;
+            flex-direction: row;
+            margin: 0;
+            width: 100%;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 52mm;
+            min-width: 52mm;
+            max-width: 52mm;
+            background-color: transparent;
+            padding: 4mm 4mm 4mm 5mm;
+            overflow: hidden;
+        }
+
+        .sidebar-section { margin-bottom: 2mm; }
+        .sidebar-section:last-child { margin-bottom: 0; }
+
+        .sidebar-heading {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 600;
+            font-size: 5pt;
+            line-height: 6pt;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: var(--dark-navy);
+            margin: 0 0 0.3mm 0;
+        }
+
+        .sidebar-text {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 6pt;
+            line-height: 7pt;
+            letter-spacing: 0.01em;
+            color: var(--off-black);
+            margin: 0;
+        }
+
+        .equity-indicator {
+            display: flex;
+            gap: 0.8mm;
+            margin: 1mm 0;
+        }
+
         .equity-dot {
-            width: 8px;
-            height: 8px;
+            width: 1.4mm;
+            height: 1.4mm;
             border-radius: 50%;
             display: inline-block;
-            margin-right: 2px;
         }
-        .equity-dot.filled { background-color: #d25347; }
-        .equity-dot.empty { background-color: #9a9a9a; }
-        
+
+        .equity-dot.filled { background-color: var(--naartjie); }
+        .equity-dot.empty  { background-color: var(--medium-grey); }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 4mm;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .section-heading {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 9pt;
+            line-height: 10pt;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: var(--off-black);
+            margin: 0 0 0.5mm 0;
+        }
+
+        .section-subheading {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 6pt;
+            line-height: 7pt;
+            letter-spacing: 0.01em;
+            color: var(--off-black);
+            margin: -0.3mm 0 0.8mm 0;
+        }
+
+        .section-heading .title-suffix {
+            font-size: 7pt;
+            font-weight: 400;
+            color: var(--off-black);
+            text-transform: uppercase;
+            letter-spacing: 0.01em;
+        }
+
+        /* Tables — separated cells with thin white gaps */
+        .table-container {
+            position: relative;
+            margin-bottom: 2.5mm;
+        }
+
+        .page table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 1.5px 1px;
+            margin-left: -1.5px;
+            margin-right: -1.5px;
+            font-size: 6.5pt;
+        }
+
+        .page table th {
+            background-color: var(--dark-navy);
+            color: var(--white);
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 6pt;
+            line-height: 6.5pt;
+            letter-spacing: 0;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 1.4mm 1.5mm;
+        }
+
+        .page table th:first-child { text-align: left; }
+
+        .page table td {
+            background-color: var(--very-light-grey);
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 6.5pt;
+            line-height: 7.5pt;
+            padding: 1mm 2mm;
+            text-align: center;
+        }
+
+        .page table td:first-child { text-align: left; }
+
+        .performance-table table th {
+            background-color: var(--dark-navy-15);
+            color: var(--dark-navy);
+            font-weight: 600;
+        }
+
+        .page table tbody tr.highlight-row td {
+            background-color: var(--naartjie-20);
+        }
+
+        .page table tbody tr.highlight-row td:first-child {
+            color: var(--naartjie);
+            font-weight: 500;
+        }
+
+        .page table tbody tr.total-row td,
+        .page table tfoot td {
+            background-color: var(--naartjie);
+            font-weight: 500;
+            color: var(--white);
+        }
+
+        .change-up   { color: var(--naartjie); }
+        .change-down { color: var(--naartjie); }
+
+        /* Charts */
+        .charts-row {
+            display: flex;
+            gap: 3mm;
+            margin: 2mm 0;
+        }
+
+        .chart-container { flex: 1; min-width: 0; }
+
+        .chart-title {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 600;
+            font-size: 6pt;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: var(--off-black);
+            margin-bottom: 1mm;
+        }
+
+        .chart-wrapper {
+            height: 32mm;
+            position: relative;
+        }
+
+        .chart-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .chart-explanation {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 5.5pt;
+            line-height: 7pt;
+            letter-spacing: 0.01em;
+            color: var(--dark-grey);
+            margin: 1.5mm 0 2mm 0;
+        }
+
+        .footnotes {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 5pt;
+            line-height: 6pt;
+            letter-spacing: 0.01em;
+            color: var(--dark-grey);
+            margin-top: 1mm;
+        }
+
+        .footnotes p { margin: 0.3mm 0; }
+        .footnotes sup { font-size: 4pt; vertical-align: super; }
+
+        /* Page 2 - important info sidebar */
+        .info-sidebar {
+            width: 52mm;
+            min-width: 52mm;
+            max-width: 52mm;
+            background-color: transparent;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .info-sidebar-header {
+            background-color: var(--dark-navy);
+            color: var(--white);
+            padding: 3mm 3mm;
+            margin: 8mm 3mm 6mm 3mm;
+            text-align: center;
+        }
+
+        .info-sidebar-header h2 {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 7.5pt;
+            line-height: 9pt;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .info-sidebar-content {
+            padding: 0 4mm 4mm 5mm;
+        }
+
+        .info-sidebar-content p {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 5.5pt;
+            line-height: 7pt;
+            letter-spacing: 0.01em;
+            color: var(--off-black);
+            margin: 0 0 2mm 0;
+            text-align: left;
+        }
+
+        .info-sidebar-content p:last-child { margin-bottom: 0; }
+
+        /* Page 2 - fees */
+        .fees-content {
+            flex: 1;
+            padding: 12mm 5mm 4mm 5mm;
+            overflow: hidden;
+        }
+
+        .fee-rates-table { margin-bottom: 2.5mm; }
+
+        .fee-rates-table table { margin-left: 0; }
+
+        .page .fee-rates-table td {
+            padding: 1mm 1.5mm;
+            background-color: var(--very-light-grey);
+        }
+
+        .fee-rates-table td:last-child:not([colspan]) {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .fee-rates-table tr.sub-item td:first-child {
+            padding-left: 3mm;
+        }
+
+        .page .fee-rates-table tr.global-funds-header td {
+            background-color: var(--naartjie-20) !important;
+            color: var(--naartjie);
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .fee-description {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 5.5pt;
+            line-height: 7pt;
+            color: var(--dark-grey);
+            margin: 1.5mm 0 2.5mm 0;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 4mm;
+            padding-top: 2mm;
+            border-top: 0.5pt solid var(--naartjie);
+        }
+
+        .footer-text {
+            font-family: 'Merriweather', Georgia, serif;
+            font-weight: 400;
+            font-size: 7pt;
+            line-height: 9pt;
+            letter-spacing: 0.02em;
+            color: var(--naartjie);
+            margin: 0 0 1.5mm 0;
+        }
+
+        .footer-contact {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 7pt;
+            line-height: 9pt;
+            letter-spacing: 0.02em;
+            color: var(--naartjie);
+        }
+
+        .footer-contact p { margin: 0; }
+
+        /* =====================================================
+           EDITOR-SPECIFIC STYLES (web only)
+           ===================================================== */
         .editable {
             cursor: text;
-            transition: all 0.2s;
-            min-height: 1.25rem;
+            transition: background-color 0.15s, outline-color 0.15s;
         }
+
         .editable:hover {
-            background-color: #f3f4f6;
-            outline: 1px solid #d1d5db;
-            border-radius: 0.25rem;
-            padding: 0.125rem 0.25rem;
+            background-color: rgba(255, 235, 153, 0.5);
+            outline: 1px solid #f59e0b;
+            border-radius: 2px;
         }
+
         .editing {
             background-color: #fef3c7;
             outline: 2px solid #f59e0b;
-            border-radius: 0.25rem;
-            padding: 0.125rem 0.25rem;
+            border-radius: 2px;
         }
+
         .edit-input {
             background: transparent;
             border: none;
@@ -119,8 +470,10 @@
             font-family: inherit;
             font-size: inherit;
             font-weight: inherit;
+            line-height: inherit;
             color: inherit;
         }
+
         .notification {
             position: fixed;
             top: 1rem;
@@ -129,111 +482,22 @@
             transform: translateX(100%);
             transition: transform 0.3s ease-in-out;
         }
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        /* Table styling */
-        .foord-table {
-            border-collapse: collapse;
-            width: 100%;
-            font-family: 'Lato', sans-serif;
-        }
-        .foord-table th {
-            background-color: #29363d;
-            color: white;
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: 7.5px;
-            line-height: 7.5px;
-            padding: 6px 8px;
-            text-align: left;
-            letter-spacing: 0.02em;
-        }
-        .foord-table th:not(:first-child) {
-            text-align: center;
-        }
-        .foord-table td {
-            font-size: 8px;
-            line-height: 12px;
-            padding: 5px 8px;
-            border-bottom: 1px solid #e5e5e5;
-        }
-        .foord-table td:not(:first-child) {
-            text-align: center;
-        }
-        .foord-table tbody tr:nth-child(odd) {
-            background-color: #f4f4f4;
-        }
-        .foord-table tbody tr:nth-child(even) {
-            background-color: white;
-        }
-        .foord-table .total-row {
-            background-color: #d25347 !important;
-            color: white;
-            font-weight: 500;
-        }
-        .foord-table .highlight-row {
-            background-color: #f6dcd9 !important;
-        }
-        .foord-table .highlight-row td:first-child {
-            color: #d25347;
-            font-weight: 500;
-        }
-        
-        /* Naartjie accent bar on left of tables */
-        .table-container {
-            position: relative;
-            padding-left: 3px;
-        }
-        .table-container::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background-color: #d25347;
-        }
-        
-        /* Chart container */
-        canvas {
-            max-height: 180px;
-        }
-        
-        /* Sidebar styling */
-        .sidebar-section h3 {
-            font-family: 'Lato', sans-serif;
-            font-weight: 500;
-            font-size: 6px;
-            line-height: 7.5px;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: #29363d;
-            margin-bottom: 2px;
-        }
-        .sidebar-section p {
-            font-family: 'Lato', sans-serif;
-            font-weight: 400;
-            font-size: 7px;
-            line-height: 8.5px;
-            color: #313131;
-        }
-        
-        /* Arrow indicators for change column */
-        .change-up::before {
-            content: '▲';
-            margin-right: 2px;
-            font-size: 6px;
-        }
-        .change-down::before {
-            content: '▼';
-            margin-right: 2px;
-            font-size: 6px;
+
+        .notification.show { transform: translateX(0); }
+
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .page {
+                margin: 0;
+                box-shadow: none;
+                page-break-after: always;
+            }
+            .page:last-child { page-break-after: auto; }
         }
     </style>
 </head>
-<body class="bg-gray-100 text-off-black font-lato @if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
+<body x-data="fundEditor()">
     <!-- Notification -->
     <div x-show="notification.show"
          x-transition:enter="transition ease-out duration-300"
@@ -260,753 +524,496 @@
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto">
-        <!-- Control Bar -->
-        <div class="no-print bg-dark-navy text-white my-4 p-4 rounded-lg flex justify-between items-center" @if(request()->has('pdf')) style="display: none;" @endif>
-            <div class="flex items-center space-x-4">
-                <button @click="toggleEditMode()"
-                        class="bg-naartjie hover:bg-naartjie-75 text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out">
-                    <span x-show="!editMode">Enable Edit Mode</span>
-                    <span x-show="editMode">Disable Edit Mode</span>
-                </button>
-                <span x-show="editMode" class="text-naartjie-50 text-sm">✏️ Edit mode active - Click any text to edit</span>
+    <!-- Control bar -->
+    <div class="no-print bg-[#29363d] text-white p-4 flex justify-between items-center" style="max-width: 210mm; margin: 16px auto;">
+        <div class="flex items-center space-x-4">
+            <button @click="toggleEditMode()"
+                    class="bg-[#d25347] hover:bg-[#dd7e75] text-white px-4 py-2 rounded transition">
+                <span x-show="!editMode">Enable Edit Mode</span>
+                <span x-show="editMode">Disable Edit Mode</span>
+            </button>
+            <span x-show="editMode" class="text-[#e9a9a3] text-sm">Edit mode active — click any text to edit</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="{{ route('funds.revisions', $fund) }}"
+               class="bg-[#697277] hover:bg-[#29363d] text-white px-4 py-2 rounded border border-[#bfc3c5]">
+                Revisions
+            </a>
+            <a href="{{ route('funds.pdf', $fund) }}"
+               class="bg-[#d25347] hover:bg-[#dd7e75] text-white px-4 py-2 rounded">
+                Export PDF
+            </a>
+            <a href="{{ route('funds.index') }}" class="bg-[#9a9a9a] hover:bg-[#535353] text-white px-4 py-2 rounded">
+                Back to Funds
+            </a>
+        </div>
+    </div>
+
+    @php
+        $fmt = function ($v, int $dp = 1) {
+            if ($v === null || $v === '') return '';
+            if (is_string($v) && str_starts_with(ltrim($v), '+')) return $v;
+            if (is_numeric($v)) return number_format((float) $v, $dp);
+            return (string) $v;
+        };
+        $renderHeading = function (string $title): string {
+            return preg_replace(
+                '/\s*\(([^)]+)\)\s*$/',
+                ' <span class="title-suffix">($1)</span>',
+                e($title)
+            );
+        };
+    @endphp
+
+    <!-- PAGE 1 -->
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="date-badge">
+                <span x-data="editableField('fund.date', '{{ $fund->data['fund']['date'] ?? now()->format('d F Y') }}')"
+                      @click="editMode && startEdit()"
+                      :class="editMode ? 'editable' : ''"
+                      x-text="value"></span>
             </div>
-            <div class="flex items-center space-x-3">
-                <a href="{{ route('funds.revisions', $fund) }}"
-                   class="bg-dark-navy-70 hover:bg-dark-navy text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out flex items-center space-x-2 border border-dark-navy-30">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span>Revisions</span>
-                </a>
-                <a href="{{ route('funds.pdf', $fund) }}"
-                   class="bg-naartjie hover:bg-naartjie-75 text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out flex items-center space-x-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <span>Export PDF</span>
-                </a>
-                <a href="{{ route('funds.index') }}" class="bg-medium-grey hover:bg-dark-grey text-white px-4 py-2 rounded-lg">
-                    Back to Funds
-                </a>
+            <div class="logo">
+                <img src="{{ $fund->data['fund']['logoUrl'] ?? 'https://foord.co.za/themes/custom/mirum/logo.png' }}" alt="FOORD">
             </div>
         </div>
 
-        <!-- Page 1 -->
-        <div class="bg-white shadow-lg">
-            <!-- Header Section -->
-            <div class="relative">
-                <!-- Date Badge -->
-                <div class="absolute top-4 left-4">
-                    <div class="bg-naartjie text-white px-4 py-2 font-medium text-xs uppercase tracking-wider">
-                        <span x-data="editableField('fund.date', '{{ $fund->data['fund']['date'] ?? $fund->updated_at->format('d F Y') }}')"
-                              @click="editMode && startEdit()"
-                              :class="editMode ? 'editable' : ''"
-                              x-text="value"></span>
-                    </div>
-                </div>
-                
-                <!-- Logo -->
-                <div class="absolute top-4 right-4">
-                    <img src="{{ $fund->data['fund']['logoUrl'] ?? '' }}" alt="Foord Logo" class="h-10">
-                </div>
-            </div>
+        <!-- Title Banner -->
+        <div class="title-banner">
+            @php
+                $fundName = $fund->data['fund']['name'] ?? $fund->name;
+                if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z])$/iu', $fundName, $matches)) {
+                    $mainName = trim($matches[1]);
+                    $classText = mb_strtoupper(trim($matches[2]));
+                } else {
+                    $mainName = $fundName;
+                    $classText = '';
+                }
+            @endphp
+            <h1 class="fund-name">
+                <span x-data="editableField('fund.name', '{{ addslashes($fundName) }}')"
+                      @click="editMode && startEdit()"
+                      :class="editMode ? 'editable' : ''"
+                      x-text="value.toUpperCase()"></span>
+            </h1>
+            <p class="fund-description">
+                <span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')"
+                      @click="editMode && startEdit()"
+                      :class="editMode ? 'editable' : ''"
+                      x-text="value"></span>
+            </p>
+        </div>
 
-            <!-- Fund Name Banner -->
-            <div class="bg-dark-navy text-white pt-16 pb-4 px-6">
-                <h1 class="text-2xl font-medium uppercase tracking-widest mb-2">
-                    <span x-data="editableField('fund.name', '{{ $fund->data['fund']['name'] ?? $fund->name }}')"
-                          @click="editMode && startEdit()"
-                          :class="editMode ? 'editable' : ''"
-                          x-text="value"></span>
-                </h1>
-                <p class="font-merriweather text-sm leading-relaxed text-gray-200 max-w-3xl">
-                    <span x-data="editableField('fund.description', '{{ $fund->data['fund']['description'] ?? '' }}')"
-                          @click="editMode && startEdit()"
-                          :class="editMode ? 'editable' : ''"
-                          x-text="value"></span>
-                </p>
-            </div>
+        <!-- Main content -->
+        <div class="content-wrapper">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                @php
+                    $sidebarOrder = [
+                        'domicile','managementCompany','fundManagers','inceptionDate','baseCurrency',
+                        'equityIndicator','category','benchmark','minimums','portfolioSize','unitPrice',
+                        'numberOfUnits','lastDistributions','incomeDistributions','incomeCharacteristics',
+                        'portfolioOrientation','significantRestrictions','foreignAssets','riskOfLoss',
+                        'timeHorizon','isinNumber',
+                    ];
+                    $sidebar = $fund->data['sidebar'] ?? [];
+                    $labels = [
+                        'domicile' => 'DOMICILE',
+                        'managementCompany' => 'MANAGEMENT COMPANY',
+                        'fundManagers' => 'FUND MANAGERS',
+                        'inceptionDate' => 'INCEPTION DATE',
+                        'baseCurrency' => 'BASE CURRENCY',
+                        'equityIndicator' => 'EQUITY INDICATOR',
+                        'category' => 'CATEGORY',
+                        'benchmark' => 'BENCHMARK',
+                        'minimums' => 'MINIMUM LUMP SUM / MONTHLY',
+                        'portfolioSize' => 'PORTFOLIO SIZE',
+                        'unitPrice' => 'UNIT PRICE',
+                        'numberOfUnits' => 'NUMBER OF UNITS',
+                        'lastDistributions' => 'LAST DISTRIBUTIONS',
+                        'incomeDistributions' => 'INCOME DISTRIBUTIONS',
+                        'incomeCharacteristics' => 'INCOME CHARACTERISTICS',
+                        'portfolioOrientation' => 'PORTFOLIO ORIENTATION',
+                        'significantRestrictions' => 'SIGNIFICANT RESTRICTIONS',
+                        'foreignAssets' => 'FOREIGN ASSETS',
+                        'riskOfLoss' => 'RISK OF LOSS',
+                        'timeHorizon' => 'TIME HORIZON',
+                        'isinNumber' => 'ISIN NUMBER',
+                    ];
+                @endphp
 
-            <!-- Main Content Area -->
-            <div class="flex flex-col md:flex-row">
-                <!-- Left Sidebar -->
-                <div class="w-full md:w-48 bg-dark-navy-15 p-4">
-                    <div class="space-y-3">
-                        @if(isset($fund->data['sidebar']))
-                            @foreach ($fund->data['sidebar'] as $key => $value)
-                                <div class="sidebar-section">
-                                    <h3 class="font-medium text-dark-navy uppercase tracking-wide" style="font-size: 6px; line-height: 7.5px;">
-                                        {{ strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY))) }}
-                                    </h3>
-                                    @if ($key === 'equityIndicator' && is_array($value))
-                                        <div class="flex items-center my-1">
-                                            @php
-                                                $filledDots = $value['filled'] ?? 7;
-                                                $totalDots = $value['total'] ?? 10;
-                                            @endphp
-                                            @for ($i = 0; $i < $totalDots; $i++)
-                                                <span class="equity-dot {{ $i < $filledDots ? 'filled' : 'empty' }}"></span>
-                                            @endfor
-                                        </div>
-                                        <p class="text-off-black" style="font-size: 7px; line-height: 8.5px;">
-                                            <span x-data="editableField('sidebar.{{ $key }}.description', '{{ $value['description'] ?? '' }}')"
-                                                  @click="editMode && startEdit()"
-                                                  :class="editMode ? 'editable' : ''"
-                                                  x-text="value"></span>
-                                        </p>
-                                    @elseif (is_array($value))
-                                        <p class="text-off-black" style="font-size: 7px; line-height: 8.5px;">
-                                            <span x-data="editableField('sidebar.{{ $key }}.description', '{{ $value['description'] ?? '' }}')"
-                                                  @click="editMode && startEdit()"
-                                                  :class="editMode ? 'editable' : ''"
-                                                  x-text="value"></span>
-                                        </p>
-                                    @else
-                                        <p class="text-off-black" style="font-size: 7px; line-height: 8.5px;">
-                                            <span x-data="editableField('sidebar.{{ $key }}', '{!! addslashes($value) !!}')"
-                                                  @click="editMode && startEdit()"
-                                                  :class="editMode ? 'editable' : ''"
-                                                  x-html="value"></span>
-                                        </p>
-                                    @endif
+                @foreach ($sidebarOrder as $key)
+                    @if(isset($sidebar[$key]))
+                        @php $value = $sidebar[$key]; @endphp
+                        <div class="sidebar-section">
+                            <h3 class="sidebar-heading">{{ $labels[$key] ?? strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY))) }}</h3>
+                            @if ($key === 'equityIndicator' && is_array($value))
+                                <div class="equity-indicator">
+                                    @php
+                                        $filled = $value['filled'] ?? 7;
+                                        $total = $value['total'] ?? 10;
+                                    @endphp
+                                    @for ($i = 0; $i < $total; $i++)
+                                        <span class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}"></span>
+                                    @endfor
                                 </div>
-                            @endforeach
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Right Content -->
-                <div class="flex-1 p-4">
-                    <!-- Asset Allocation Table -->
-                    @if(isset($fund->data['mainContent']['assetAllocation']))
-                        <div class="mb-5">
-                            <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-1">
-                                <span x-data="editableField('mainContent.assetAllocation.title', '{{ $fund->data['mainContent']['assetAllocation']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <p class="text-xxs text-dark-grey mb-2">
-                                <span x-data="editableField('mainContent.assetAllocation.subtitle', '{{ $fund->data['mainContent']['assetAllocation']['subtitle'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </p>
-                            <div class="table-container">
-                                <table class="foord-table">
-                                    <thead>
-                                        <tr>
-                                            @foreach ($fund->data['mainContent']['assetAllocation']['headers'] as $index => $header)
-                                                <th class="{{ $loop->first ? 'text-left' : 'text-center' }}">
-                                                    <span x-data="editableField('mainContent.assetAllocation.headers.{{ $index }}', '{!! addslashes($header) !!}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-html="value"></span>
-                                                </th>
-                                            @endforeach
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($fund->data['mainContent']['assetAllocation']['rows'] as $rowIndex => $row)
-                                            <tr>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.sa', '{{ $row['sa'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.foreign', '{{ $row['foreign'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.total', '{{ $row['total'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td class="{{ ($row['changeDirection'] ?? '') === 'up' ? 'text-naartjie' : (($row['changeDirection'] ?? '') === 'down' ? 'text-dark-navy' : '') }}">
-                                                    @if(isset($row['changeDirection']))
-                                                        <span class="{{ $row['changeDirection'] === 'up' ? 'change-up' : 'change-down' }}"></span>
-                                                    @endif
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ $row['change'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                        <tr class="total-row">
-                                            <td class="font-medium">
-                                                <span x-data="editableField('mainContent.assetAllocation.total.name', '{{ $fund->data['mainContent']['assetAllocation']['total']['name'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('mainContent.assetAllocation.total.sa', '{{ $fund->data['mainContent']['assetAllocation']['total']['sa'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('mainContent.assetAllocation.total.foreign', '{{ $fund->data['mainContent']['assetAllocation']['total']['foreign'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('mainContent.assetAllocation.total.total', '{{ $fund->data['mainContent']['assetAllocation']['total']['total'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                @if(isset($value['description']))
+                                    <p class="sidebar-text">
+                                        <span x-data="editableField('sidebar.{{ $key }}.description', '{{ addslashes($value['description']) }}')"
+                                              @click="editMode && startEdit()"
+                                              :class="editMode ? 'editable' : ''"
+                                              x-text="value"></span>
+                                    </p>
+                                @endif
+                            @elseif (is_array($value))
+                                <p class="sidebar-text">
+                                    <span x-data="editableField('sidebar.{{ $key }}.description', '{{ addslashes($value['description'] ?? '') }}')"
+                                          @click="editMode && startEdit()"
+                                          :class="editMode ? 'editable' : ''"
+                                          x-text="value"></span>
+                                </p>
+                            @else
+                                <p class="sidebar-text">
+                                    <span x-data="editableField('sidebar.{{ $key }}', '{{ addslashes($value) }}')"
+                                          @click="editMode && startEdit()"
+                                          :class="editMode ? 'editable' : ''"
+                                          x-text="value"></span>
+                                </p>
+                            @endif
                         </div>
                     @endif
+                @endforeach
+            </div>
 
-                    <!-- Top Investments Table -->
-                    @if(isset($fund->data['mainContent']['topInvestments']))
-                        <div class="mb-5">
-                            <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-2">
-                                <span x-data="editableField('mainContent.topInvestments.title', '{{ $fund->data['mainContent']['topInvestments']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <div class="table-container">
-                                <table class="foord-table">
-                                    <thead>
-                                        <tr>
-                                            @foreach ($fund->data['mainContent']['topInvestments']['headers'] as $index => $header)
-                                                <th class="{{ $loop->first ? 'text-left' : ($loop->last ? 'text-center' : 'text-left') }}">
-                                                    <span x-data="editableField('mainContent.topInvestments.headers.{{ $index }}', '{{ $header }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </th>
-                                            @endforeach
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($fund->data['mainContent']['topInvestments']['rows'] as $rowIndex => $row)
-                                            <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
-                                                <td class="{{ ($row['highlight'] ?? false) ? 'text-naartjie font-medium' : '' }}">
-                                                    <span x-data="editableField('mainContent.topInvestments.rows.{{ $rowIndex }}.security', '{{ $row['security'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td class="text-left">
-                                                    <span x-data="editableField('mainContent.topInvestments.rows.{{ $rowIndex }}.assetClass', '{{ $row['assetClass'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.topInvestments.rows.{{ $rowIndex }}.market', '{{ $row['market'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.topInvestments.rows.{{ $rowIndex }}.percentage', '{{ $row['percentage'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- Charts Section -->
-                    @if(isset($fund->data['mainContent']['charts']))
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
-                            <div>
-                                <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-2">INVESTMENT STRATEGY VS SA INFLATION</h3>
-                                <canvas id="inflationChart" style="max-height: 160px;"></canvas>
-                            </div>
-                            <div>
-                                <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-2">PORTFOLIO PERFORMANCE VS BENCHMARK</h3>
-                                <canvas id="portfolioChart" style="max-height: 160px;"></canvas>
-                            </div>
-                        </div>
-                        
-                        <!-- Chart explanation text -->
-                        <p class="text-xxs text-dark-grey mb-4 leading-relaxed">
-                            In managing retirement portfolios, Foord aims to achieve returns that exceed inflation plus 5% per annum over any rolling five-year period. The chart illustrates that a composite return of similarly managed portfolios over any rolling five-year period has only once dipped below the South African inflation rate. It also demonstrates that real returns of 5% per annum are consistently achievable in mandates of this nature when measured over the appropriate long-term period.
+            <!-- Main content -->
+            <div class="main-content">
+                <!-- Asset Allocation Table -->
+                @if(isset($fund->data['mainContent']['assetAllocation']))
+                    <h3 class="section-heading">{!! $renderHeading($fund->data['mainContent']['assetAllocation']['title'] ?? 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)') !!}</h3>
+                    @if(isset($fund->data['mainContent']['assetAllocation']['subtitle']))
+                        <p class="section-subheading">
+                            <span x-data="editableField('mainContent.assetAllocation.subtitle', '{{ addslashes($fund->data['mainContent']['assetAllocation']['subtitle']) }}')"
+                                  @click="editMode && startEdit()"
+                                  :class="editMode ? 'editable' : ''"
+                                  x-text="value"></span>
                         </p>
                     @endif
 
-                    <!-- Performance Table -->
-                    @if(isset($fund->data['mainContent']['performanceTable']))
-                        <div>
-                            <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-2">
-                                <span x-data="editableField('mainContent.performanceTable.title', '{{ $fund->data['mainContent']['performanceTable']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <div class="table-container">
-                                <table class="foord-table">
-                                    <thead>
-                                        <tr>
-                                            @foreach ($fund->data['mainContent']['performanceTable']['headers'] as $index => $header)
-                                                <th class="{{ $loop->first ? 'text-left' : 'text-center' }}">
-                                                    <span x-data="editableField('mainContent.performanceTable.headers.{{ $index }}', '{!! addslashes($header) !!}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-html="value"></span>
-                                                </th>
-                                            @endforeach
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($fund->data['mainContent']['performanceTable']['rows'] as $rowIndex => $row)
-                                            <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
-                                                <td class="{{ ($row['highlight'] ?? false) ? 'text-naartjie font-medium' : '' }}">
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.name', '{!! addslashes($row['name']) !!}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-html="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.cashValue', '{{ $row['cashValue'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.sinceInception', '{{ $row['sinceInception'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                @if(isset($row['15yrs']))
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.15yrs', '{{ $row['15yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                @endif
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.10yrs', '{{ $row['10yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.7yrs', '{{ $row['7yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.5yrs', '{{ $row['5yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.3yrs', '{{ $row['3yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.1yr', '{{ $row['1yr'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.thisMonth', '{{ $row['thisMonth'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <!-- Footnotes -->
-                            <div class="mt-2 space-y-0.5">
-                                @if(isset($fund->data['mainContent']['performanceTable']['footnotes']))
-                                    @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $footnote)
-                                        <p class="text-xxs text-dark-grey">
-                                            <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($footnote) !!}')"
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    @foreach ($fund->data['mainContent']['assetAllocation']['headers'] as $header)
+                                        <th>{!! $header !!}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            @php
+                                $aaHeaders = $fund->data['mainContent']['assetAllocation']['headers'] ?? [];
+                                $aaColumnKeys = [];
+                                $keyMap = ['SA (100)' => 'sa', 'FOREIGN (45)' => 'foreign', 'TOTAL' => 'total', 'CHANGE' => 'change'];
+                                foreach (array_slice($aaHeaders, 1) as $h) {
+                                    $aaColumnKeys[] = $keyMap[strtoupper(trim($h))] ?? strtolower(preg_replace('/[^a-zA-Z]/', '', $h) ?: 'col');
+                                }
+                            @endphp
+                            <tbody>
+                                @foreach ($fund->data['mainContent']['assetAllocation']['rows'] as $rowIndex => $row)
+                                    <tr>
+                                        <td>
+                                            <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name']) }}')"
                                                   @click="editMode && startEdit()"
                                                   :class="editMode ? 'editable' : ''"
-                                                  x-html="value"></span>
-                                        </p>
-                                    @endforeach
+                                                  x-text="value"></span>
+                                        </td>
+                                        @foreach ($aaColumnKeys as $colKey)
+                                            <td class="{{ $colKey === 'change' ? (($row['changeDirection'] ?? '') === 'up' ? 'change-up' : (($row['changeDirection'] ?? '') === 'down' ? 'change-down' : '')) : '' }}">
+                                                {{ $colKey === 'change' ? ($row['change'] ?? '') : $fmt($row[$colKey] ?? '', 1) }}
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                                @if(isset($fund->data['mainContent']['assetAllocation']['total']))
+                                    @php $aaTotal = $fund->data['mainContent']['assetAllocation']['total']; @endphp
+                                    <tr class="total-row">
+                                        <td>{{ $aaTotal['name'] ?? 'TOTAL' }}</td>
+                                        @foreach ($aaColumnKeys as $colKey)
+                                            <td>{{ $colKey !== 'change' ? $fmt($aaTotal[$colKey] ?? '', 1) : '' }}</td>
+                                        @endforeach
+                                    </tr>
                                 @endif
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Page 2 -->
-        <div class="bg-white mt-4 shadow-lg page-break">
-            <div class="flex flex-col md:flex-row">
-                <!-- Left Sidebar - Important Information -->
-                @if(isset($fund->data['importantInfo']))
-                    <div class="w-full md:w-48 bg-dark-navy-15 p-4">
-                        <div class="bg-dark-navy text-white px-3 py-2 mb-4">
-                            <h2 class="text-xs font-medium uppercase tracking-wide">
-                                <span x-data="editableField('importantInfo.title', '{{ $fund->data['importantInfo']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h2>
-                        </div>
-                        <div class="space-y-2">
-                            @foreach ($fund->data['importantInfo']['paragraphs'] as $index => $paragraph)
-                                <p class="text-off-black" style="font-size: 6px; line-height: 7px;">
-                                    <span x-data="editableField('importantInfo.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}')"
-                                          @click="editMode && startEdit()"
-                                          :class="editMode ? 'editable' : ''"
-                                          x-text="value"></span>
-                                </p>
-                            @endforeach
-                            <p class="text-off-black pt-2" style="font-size: 6px; line-height: 7px;">
-                                <span x-data="editableField('importantInfo.publishedDate', '{{ $fund->data['importantInfo']['publishedDate'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </p>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
                 @endif
 
-                <!-- Right Content - Fees -->
-                <div class="flex-1 p-4">
-                    <!-- Fee Rates -->
-                    @if(isset($fund->data['fees']['feeRates']))
-                        <div class="mb-5">
-                            <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-2">
-                                <span x-data="editableField('fees.feeRates.title', '{{ $fund->data['fees']['feeRates']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <div class="table-container">
-                                <table class="foord-table">
-                                    <tbody>
-                                        @foreach ($fund->data['fees']['feeRates']['rates'] as $index => $rate)
-                                            <tr>
-                                                <td class="text-left">
-                                                    <span x-data="editableField('fees.feeRates.rates.{{ $index }}.name', '{{ $rate['name'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td class="text-left">
-                                                    <span x-data="editableField('fees.feeRates.rates.{{ $index }}.value', '{{ $rate['value'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                        @if(isset($fund->data['fees']['feeRates']['globalFunds']))
-                                            <tr class="highlight-row">
-                                                <td class="text-left text-naartjie font-medium">
-                                                    <span x-data="editableField('fees.feeRates.globalFunds.title', '{{ $fund->data['fees']['feeRates']['globalFunds']['title'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td></td>
-                                            </tr>
-                                            @foreach ($fund->data['fees']['feeRates']['globalFunds']['funds'] as $index => $fund_item)
-                                                <tr>
-                                                    <td class="text-left pl-6">
-                                                        <span x-data="editableField('fees.feeRates.globalFunds.funds.{{ $index }}.name', '{{ $fund_item['name'] }}')"
-                                                              @click="editMode && startEdit()"
-                                                              :class="editMode ? 'editable' : ''"
-                                                              x-text="value"></span>
-                                                    </td>
-                                                    <td class="text-left">
-                                                        <span x-data="editableField('fees.feeRates.globalFunds.funds.{{ $index }}.value', '{{ $fund_item['value'] }}')"
-                                                              @click="editMode && startEdit()"
-                                                              :class="editMode ? 'editable' : ''"
-                                                              x-text="value"></span>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                            <p class="text-xxs text-dark-grey mt-2">
-                                <span x-data="editableField('fees.feeRates.description', '{{ addslashes($fund->data['fees']['feeRates']['description'] ?? '') }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </p>
-                        </div>
-                    @endif
+                <!-- Top 10 Investments -->
+                @if(isset($fund->data['mainContent']['topInvestments']))
+                    <h3 class="section-heading">{!! $renderHeading($fund->data['mainContent']['topInvestments']['title'] ?? 'TOP 10 INVESTMENTS') !!}</h3>
 
-                    <!-- Total Investment Charge -->
-                    @if(isset($fund->data['fees']['totalInvestmentCharge']))
-                        <div class="mb-5">
-                            <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-2">
-                                <span x-data="editableField('fees.totalInvestmentCharge.title', '{{ $fund->data['fees']['totalInvestmentCharge']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <div class="table-container">
-                                <table class="foord-table">
-                                    <thead>
-                                        <tr>
-                                            @foreach ($fund->data['fees']['totalInvestmentCharge']['headers'] as $index => $header)
-                                                <th class="{{ $loop->first ? 'text-left' : 'text-center' }}">
-                                                    <span x-data="editableField('fees.totalInvestmentCharge.headers.{{ $index }}', '{{ $header }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </th>
-                                            @endforeach
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $rowIndex => $row)
-                                            <tr>
-                                                <td>
-                                                    <span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.12m', '{{ $row['12m'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.36m', '{{ $row['36m'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                        <tr class="total-row">
-                                            <td class="font-medium">
-                                                <span x-data="editableField('fees.totalInvestmentCharge.total.name', '{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('fees.totalInvestmentCharge.total.12m', '{{ $fund->data['fees']['totalInvestmentCharge']['total']['12m'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('fees.totalInvestmentCharge.total.36m', '{{ $fund->data['fees']['totalInvestmentCharge']['total']['36m'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <p class="text-xxs text-dark-grey mt-2">
-                                <span x-data="editableField('fees.totalInvestmentCharge.description', '{{ addslashes($fund->data['fees']['totalInvestmentCharge']['description'] ?? '') }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </p>
-                        </div>
-                    @endif
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    @foreach ($fund->data['mainContent']['topInvestments']['headers'] as $header)
+                                        <th>{{ $header }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($fund->data['mainContent']['topInvestments']['rows'] as $rowIndex => $row)
+                                    <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
+                                        <td>
+                                            <span x-data="editableField('mainContent.topInvestments.rows.{{ $rowIndex }}.security', '{{ addslashes($row['security']) }}')"
+                                                  @click="editMode && startEdit()"
+                                                  :class="editMode ? 'editable' : ''"
+                                                  x-text="value"></span>
+                                        </td>
+                                        <td>{{ $row['assetClass'] }}</td>
+                                        <td>{{ $row['market'] }}</td>
+                                        <td>{{ $fmt($row['percentage'] ?? '', 1) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
 
-                    <!-- Performance Fees -->
-                    @if(isset($fund->data['fees']['performanceFees']))
-                        <div class="mb-5">
-                            <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-2">
-                                <span x-data="editableField('fees.performanceFees.title', '{{ $fund->data['fees']['performanceFees']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            @foreach ($fund->data['fees']['performanceFees']['paragraphs'] as $index => $paragraph)
-                                <p class="text-xxs text-dark-grey mb-2 leading-relaxed">
-                                    <span x-data="editableField('fees.performanceFees.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}')"
-                                          @click="editMode && startEdit()"
-                                          :class="editMode ? 'editable' : ''"
-                                          x-text="value"></span>
-                                </p>
+                <!-- Charts -->
+                @if(isset($fund->data['mainContent']['charts']))
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h4 class="chart-title">INVESTMENT STRATEGY VS SA INFLATION</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="inflationChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4 class="chart-title">PORTFOLIO PERFORMANCE VS BENCHMARK</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="portfolioChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="chart-explanation">
+                        In managing retirement portfolios, Foord aims to achieve returns that exceed inflation plus 5% per annum over any rolling five-year period. The chart illustrates that a composite return of similarly managed portfolios over any rolling five-year period has only once dipped below the South African inflation rate. It also demonstrates that real returns of 5% per annum are consistently achievable in mandates of this nature when measured over the appropriate long-term period.
+                    </p>
+                @endif
+
+                <!-- Performance Table -->
+                @if(isset($fund->data['mainContent']['performanceTable']))
+                    @php
+                        $perfHeaders = $fund->data['mainContent']['performanceTable']['headers'] ?? [];
+                        $perfKeyMap = [
+                            'CASH VALUE' => 'cashValue',
+                            'SINCE INCEPTION' => 'sinceInception',
+                            '20 YRS' => '20yrs', '15 YRS' => '15yrs', '10 YRS' => '10yrs',
+                            '7 YRS' => '7yrs', '5 YRS' => '5yrs', '3 YRS' => '3yrs', '2 YRS' => '2yrs',
+                            '1 YR' => '1yr', 'YTD' => 'ytd', 'THIS MONTH' => 'thisMonth',
+                            '6 MONTHS' => '6months', '3 MONTHS' => '3months',
+                        ];
+                        $perfColKeys = [];
+                        foreach (array_slice($perfHeaders, 1) as $h) {
+                            $clean = preg_replace('/[¹²³⁴⁵⁶⁷⁸⁹⁰]/u', '', strip_tags(str_replace('<br>', ' ', $h)));
+                            $clean = strtoupper(trim(preg_replace('/\s+/', ' ', $clean)));
+                            $perfColKeys[] = $perfKeyMap[$clean] ?? null;
+                        }
+                    @endphp
+                    <h3 class="section-heading">{!! $renderHeading($fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED)') !!}</h3>
+
+                    <div class="table-container performance-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    @foreach ($perfHeaders as $header)
+                                        <th>{!! $header !!}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($fund->data['mainContent']['performanceTable']['rows'] as $row)
+                                    <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
+                                        <td>{!! $row['name'] !!}</td>
+                                        @foreach ($perfColKeys as $colKey)
+                                            <td>{{ $colKey && isset($row[$colKey]) ? (in_array($colKey, ['cashValue']) ? $row[$colKey] : $fmt($row[$colKey], 1)) : '' }}</td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if(isset($fund->data['mainContent']['performanceTable']['footnotes']))
+                        <div class="footnotes">
+                            @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $footnote)
+                                <p>{!! $footnote !!}</p>
                             @endforeach
                         </div>
                     @endif
+                @endif
+            </div>
+        </div>
+    </div>
 
-                    <!-- Performance Fee Examples -->
-                    @if(isset($fund->data['fees']['performanceFeeExamples']))
-                        <div class="mb-5">
-                            <h3 class="text-xs font-medium uppercase tracking-wide text-off-black mb-2">
-                                <span x-data="editableField('fees.performanceFeeExamples.title', '{{ $fund->data['fees']['performanceFeeExamples']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <div class="table-container">
-                                <table class="foord-table">
-                                    <thead>
-                                        <tr>
-                                            @foreach ($fund->data['fees']['performanceFeeExamples']['headers'] as $index => $header)
-                                                <th class="{{ $loop->first ? 'text-left' : 'text-center' }}">
-                                                    <span x-data="editableField('fees.performanceFeeExamples.headers.{{ $index }}', '{{ $header }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </th>
-                                            @endforeach
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($fund->data['fees']['performanceFeeExamples']['rows'] as $rowIndex => $row)
-                                            <tr>
-                                                <td>
-                                                    <span x-data="editableField('fees.performanceFeeExamples.rows.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.performanceFeeExamples.rows.{{ $rowIndex }}.a', '{{ $row['a'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.performanceFeeExamples.rows.{{ $rowIndex }}.b', '{{ $row['b'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.performanceFeeExamples.rows.{{ $rowIndex }}.c', '{{ $row['c'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.performanceFeeExamples.rows.{{ $rowIndex }}.d', '{{ $row['d'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                        <tr class="total-row">
-                                            <td class="font-medium">
-                                                <span x-data="editableField('fees.performanceFeeExamples.total.name', '{{ $fund->data['fees']['performanceFeeExamples']['total']['name'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('fees.performanceFeeExamples.total.a', '{{ $fund->data['fees']['performanceFeeExamples']['total']['a'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('fees.performanceFeeExamples.total.b', '{{ $fund->data['fees']['performanceFeeExamples']['total']['b'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('fees.performanceFeeExamples.total.c', '{{ $fund->data['fees']['performanceFeeExamples']['total']['c'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('fees.performanceFeeExamples.total.d', '{!! addslashes($fund->data['fees']['performanceFeeExamples']['total']['d']) !!}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-html="value"></span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <p class="text-xxs text-dark-grey mt-2">
-                                <span x-data="editableField('fees.performanceFeeExamples.footnote', '{{ addslashes($fund->data['fees']['performanceFeeExamples']['footnote'] ?? '') }}')"
+    <!-- PAGE 2 -->
+    <div class="page page-2">
+        <div class="content-wrapper">
+            <!-- Important Information Sidebar -->
+            <div class="info-sidebar">
+                <div class="info-sidebar-header">
+                    <h2>{{ $fund->data['importantInfo']['title'] ?? 'IMPORTANT INFORMATION FOR INVESTORS' }}</h2>
+                </div>
+                <div class="info-sidebar-content">
+                    @if(isset($fund->data['importantInfo']['paragraphs']))
+                        @foreach ($fund->data['importantInfo']['paragraphs'] as $i => $paragraph)
+                            <p>
+                                <span x-data="editableField('importantInfo.paragraphs.{{ $i }}', '{{ addslashes($paragraph) }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
                                       x-text="value"></span>
                             </p>
-                        </div>
+                        @endforeach
                     @endif
-
-                    <!-- Footer -->
-                    @if(isset($fund->data['footer']))
-                        <div class="mt-6 pt-4 border-t border-naartjie">
-                            <div class="text-naartjie font-merriweather mb-3">
-                                <p class="text-xs leading-relaxed">
-                                    <span x-data="editableField('footer.info', '{{ $fund->data['footer']['info'] }}')"
-                                          @click="editMode && startEdit()"
-                                          :class="editMode ? 'editable' : ''"
-                                          x-text="value"></span>
-                                </p>
-                                <p class="text-xs leading-relaxed mt-2">
-                                    <span x-data="editableField('footer.freeOfCharge', '{{ $fund->data['footer']['freeOfCharge'] }}')"
-                                          @click="editMode && startEdit()"
-                                          :class="editMode ? 'editable' : ''"
-                                          x-text="value"></span>
-                                </p>
-                            </div>
-                            <div class="text-naartjie text-xs font-medium">
-                                <p>T. <span x-data="editableField('footer.contact.phone', '{{ $fund->data['footer']['contact']['phone'] }}')"
-                                           @click="editMode && startEdit()"
-                                           :class="editMode ? 'editable' : ''"
-                                           x-text="value"></span></p>
-                                <p>E. <span x-data="editableField('footer.contact.email', '{{ $fund->data['footer']['contact']['email'] }}')"
-                                           @click="editMode && startEdit()"
-                                           :class="editMode ? 'editable' : ''"
-                                           x-text="value"></span></p>
-                                <p><span x-data="editableField('footer.contact.website', '{{ $fund->data['footer']['contact']['website'] }}')"
-                                         @click="editMode && startEdit()"
-                                         :class="editMode ? 'editable' : ''"
-                                         x-text="value"></span></p>
-                            </div>
-                        </div>
+                    @if(isset($fund->data['importantInfo']['publishedDate']))
+                        <p style="margin-top: 2mm; font-weight: 500;">{{ $fund->data['importantInfo']['publishedDate'] }}</p>
                     @endif
                 </div>
             </div>
-        </div>
 
+            <!-- Fees Content -->
+            <div class="fees-content">
+                <!-- Fee Rates -->
+                @if(isset($fund->data['fees']['feeRates']))
+                    <h3 class="section-heading">{!! $renderHeading($fund->data['fees']['feeRates']['title'] ?? 'FEE RATES') !!}</h3>
+
+                    <div class="table-container fee-rates-table">
+                        <table>
+                            <tbody>
+                                @foreach ($fund->data['fees']['feeRates']['rates'] as $rate)
+                                    <tr>
+                                        <td>{{ $rate['name'] }}</td>
+                                        <td>{{ $rate['value'] }}</td>
+                                    </tr>
+                                @endforeach
+                                @if(isset($fund->data['fees']['feeRates']['globalFunds']))
+                                    <tr class="global-funds-header">
+                                        <td colspan="2">{{ $fund->data['fees']['feeRates']['globalFunds']['title'] ?? 'Foord global funds:' }}</td>
+                                    </tr>
+                                    @foreach ($fund->data['fees']['feeRates']['globalFunds']['funds'] as $gfund)
+                                        @php $gName = ltrim($gfund['name'], "- \t"); @endphp
+                                        <tr class="sub-item">
+                                            <td>- {{ $gName }}</td>
+                                            <td>{{ $gfund['value'] }}</td>
+                                        </tr>
+                                    @endforeach
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if(isset($fund->data['fees']['feeRates']['description']))
+                        <p class="fee-description">{{ $fund->data['fees']['feeRates']['description'] }}</p>
+                    @endif
+                @endif
+
+                <!-- Total Investment Charge -->
+                @if(isset($fund->data['fees']['totalInvestmentCharge']))
+                    <h3 class="section-heading">{!! $renderHeading($fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %') !!}</h3>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    @foreach ($fund->data['fees']['totalInvestmentCharge']['headers'] as $header)
+                                        <th>{{ $header }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $row)
+                                    <tr>
+                                        <td>{{ $row['name'] }}</td>
+                                        <td>{{ $fmt($row['12m'] ?? '', 2) }}</td>
+                                        <td>{{ $fmt($row['36m'] ?? '', 2) }}</td>
+                                    </tr>
+                                @endforeach
+                                <tr class="total-row">
+                                    <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] ?? 'Total investment charge' }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? '', 2) }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? '', 2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if(isset($fund->data['fees']['totalInvestmentCharge']['description']))
+                        <p class="fee-description">{{ $fund->data['fees']['totalInvestmentCharge']['description'] }}</p>
+                    @endif
+                @endif
+
+                <!-- Performance Fees -->
+                @if(isset($fund->data['fees']['performanceFees']))
+                    <h3 class="section-heading">{!! $renderHeading($fund->data['fees']['performanceFees']['title'] ?? 'PERFORMANCE FEES') !!}</h3>
+                    @foreach ($fund->data['fees']['performanceFees']['paragraphs'] as $paragraph)
+                        <p class="fee-description">{{ $paragraph }}</p>
+                    @endforeach
+                @endif
+
+                <!-- Performance Fee Examples -->
+                @if(isset($fund->data['fees']['performanceFeeExamples']))
+                    <h3 class="section-heading">{!! $renderHeading($fund->data['fees']['performanceFeeExamples']['title'] ?? 'PERFORMANCE FEE EXAMPLES %') !!}</h3>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    @foreach ($fund->data['fees']['performanceFeeExamples']['headers'] as $header)
+                                        <th>{{ $header }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($fund->data['fees']['performanceFeeExamples']['rows'] as $row)
+                                    <tr>
+                                        <td>{{ $row['name'] }}</td>
+                                        <td>{{ $fmt($row['a'] ?? '', 1) }}</td>
+                                        <td>{{ $fmt($row['b'] ?? '', 1) }}</td>
+                                        <td>{{ $fmt($row['c'] ?? '', 1) }}</td>
+                                        <td>{{ $fmt($row['d'] ?? '', 1) }}</td>
+                                    </tr>
+                                @endforeach
+                                <tr class="total-row">
+                                    <td>{{ $fund->data['fees']['performanceFeeExamples']['total']['name'] ?? 'Annual fee rate applied (excl. VAT)' }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['a'] ?? '', 1) }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['b'] ?? '', 1) }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['c'] ?? '', 1) }}</td>
+                                    <td>{!! $fund->data['fees']['performanceFeeExamples']['total']['d'] ?? '' !!}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if(isset($fund->data['fees']['performanceFeeExamples']['footnote']))
+                        <p class="footnotes">{{ $fund->data['fees']['performanceFeeExamples']['footnote'] }}</p>
+                    @endif
+                @endif
+
+                <!-- Footer -->
+                @if(isset($fund->data['footer']))
+                    <div class="footer">
+                        <p class="footer-text">{{ $fund->data['footer']['info'] ?? 'Please visit our website for more information regarding our investment track record, the Foord team, current and archived news items, or forms and documents.' }}</p>
+                        <p class="footer-text">{{ $fund->data['footer']['freeOfCharge'] ?? 'This information is provided free of charge.' }}</p>
+                        <div class="footer-contact">
+                            <p>T. {{ $fund->data['footer']['contact']['phone'] ?? '+27 21 532 6969' }}</p>
+                            <p>E. {{ $fund->data['footer']['contact']['email'] ?? 'unittrusts@foord.co.za' }}</p>
+                            <p>{{ $fund->data['footer']['contact']['website'] ?? 'www.foord.co.za' }}</p>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1036,7 +1043,7 @@
                         this.editing = true;
                         this.$nextTick(() => {
                             const span = this.$el;
-                            span.innerHTML = `<input type="text" class="edit-input" value="${this.value.replace(/"/g, '&quot;')}" />`;
+                            span.innerHTML = `<input type="text" class="edit-input" value="${String(this.value).replace(/"/g, '&quot;')}" />`;
                             const input = span.querySelector('.edit-input');
                             if (input) {
                                 input.focus();
@@ -1095,165 +1102,94 @@
 
     @if(isset($fund->data['mainContent']['charts']))
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <script>
-        const inflationData = @json($fund->data['mainContent']['charts']['inflationData'] ?? []);
-        const portfolioData = @json($fund->data['mainContent']['charts']['portfolioData'] ?? []);
+        document.addEventListener('DOMContentLoaded', function () {
+            const inflationData = @json($fund->data['mainContent']['charts']['inflationData'] ?? []);
+            const portfolioData = @json($fund->data['mainContent']['charts']['portfolioData'] ?? []);
 
-        // Foord color palette
-        const colors = {
-            naartjie: '#d25347',
-            darkNavy: '#29363d',
-            mediumGrey: '#9a9a9a',
-            lightGrey: '#cccccc',
-            darkGrey: '#535353'
-        };
+            const colors = {
+                naartjie: '#d25347',
+                darkNavy: '#29363d',
+                mediumGrey: '#9a9a9a',
+                lightGrey: '#cccccc',
+                darkGrey: '#535353',
+            };
 
-        // Investment Strategy vs SA Inflation Chart
-        const inflationCtx = document.getElementById('inflationChart').getContext('2d');
-        new Chart(inflationCtx, {
-            type: 'line',
-            data: {
-                labels: inflationData.map(item => item.date),
-                datasets: [
-                    { 
-                        label: 'Composite', 
-                        data: inflationData.map(item => item.composite), 
-                        borderColor: colors.naartjie, 
-                        backgroundColor: 'transparent', 
-                        borderWidth: 2, 
-                        tension: 0.1, 
-                        pointRadius: 0, 
-                        order: 1 
+            Chart.defaults.font.family = "'Avenir Next', 'Lato', sans-serif";
+            Chart.defaults.font.size = 6;
+
+            if (inflationData.length > 0) {
+                const inflationCtx = document.getElementById('inflationChart').getContext('2d');
+                new Chart(inflationCtx, {
+                    type: 'line',
+                    data: {
+                        labels: inflationData.map(item => item.date),
+                        datasets: [
+                            { label: 'Composite', data: inflationData.map(item => item.composite), borderColor: colors.naartjie, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.1, pointRadius: 0, order: 1 },
+                            { label: 'Inflation', data: inflationData.map(item => item.inflation), borderColor: colors.mediumGrey, backgroundColor: colors.mediumGrey, borderWidth: 1.5, fill: '+1', pointRadius: 0, order: 3 },
+                            { label: '5% Hurdle', data: inflationData.map(item => item.hurdle), borderColor: colors.lightGrey, backgroundColor: colors.lightGrey, borderWidth: 1.5, fill: 'origin', pointRadius: 0, order: 4 },
+                            { label: 'Excess', data: inflationData.map(item => item.excess), borderColor: colors.darkNavy, backgroundColor: colors.darkNavy, borderWidth: 1.5, fill: '-2', pointRadius: 0, order: 2 },
+                        ],
                     },
-                    { 
-                        label: 'Excess', 
-                        data: inflationData.map(item => item.excess), 
-                        borderColor: 'transparent', 
-                        backgroundColor: colors.darkNavy, 
-                        fill: '+2', 
-                        order: 2 
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { usePointStyle: false, boxWidth: 15, boxHeight: 1, padding: 8, font: { size: 5.5 } } },
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 5.5 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } },
+                            y: { min: -10, max: 35, ticks: { stepSize: 5, font: { size: 5.5 }, callback: v => v + '%' }, grid: { color: '#e5e5e5' } },
+                        },
                     },
-                    { 
-                        label: 'Inflation', 
-                        data: inflationData.map(item => item.inflation), 
-                        borderColor: 'transparent', 
-                        backgroundColor: colors.mediumGrey, 
-                        fill: '+1', 
-                        order: 3 
-                    },
-                    { 
-                        label: '5% Hurdle', 
-                        data: inflationData.map(item => item.hurdle), 
-                        borderColor: 'transparent', 
-                        backgroundColor: colors.lightGrey, 
-                        fill: 'origin', 
-                        order: 4 
-                    }
-                ]
-            },
-            options: {
-                responsive: true, 
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { 
-                        position: 'bottom', 
-                        labels: { 
-                            usePointStyle: true, 
-                            boxWidth: 6, 
-                            padding: 15, 
-                            font: { size: 8, family: 'Lato' } 
-                        } 
-                    },
-                    tooltip: { 
-                        mode: 'index', 
-                        intersect: false, 
-                        callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` } 
-                    }
-                },
-                scales: {
-                    x: { 
-                        grid: { display: false }, 
-                        ticks: { font: { size: 7, family: 'Lato' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } 
-                    },
-                    y: { 
-                        min: -10, 
-                        max: 35, 
-                        ticks: { stepSize: 5, font: { size: 7, family: 'Lato' }, callback: (v) => v + '%' }, 
-                        grid: { color: '#e5e5e5' } 
-                    }
-                }
+                });
             }
-        });
 
-        // Portfolio Performance vs Benchmark Chart
-        const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
-        new Chart(portfolioCtx, {
-            type: 'line',
-            data: {
-                labels: portfolioData.map(item => item.date),
-                datasets: [
-                    { 
-                        label: 'Fund', 
-                        data: portfolioData.map(item => item.fund), 
-                        borderColor: colors.naartjie, 
-                        backgroundColor: 'transparent', 
-                        borderWidth: 2, 
-                        tension: 0.1, 
-                        pointRadius: 0 
+            if (portfolioData.length > 0) {
+                const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+                const lastFundValue = portfolioData[portfolioData.length - 1].fund;
+                const lastBenchmarkValue = portfolioData[portfolioData.length - 1].benchmark;
+                const formatValue = (val) => 'R ' + Math.round(val / 1000).toLocaleString('en-US');
+
+                new Chart(portfolioCtx, {
+                    type: 'line',
+                    data: {
+                        labels: portfolioData.map(item => item.date),
+                        datasets: [
+                            { label: 'Fund', data: portfolioData.map(item => item.fund), borderColor: colors.naartjie, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.1, pointRadius: 0 },
+                            { label: 'Benchmark', data: portfolioData.map(item => item.benchmark), borderColor: colors.darkNavy, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.1, pointRadius: 0 },
+                        ],
                     },
-                    { 
-                        label: 'Benchmark', 
-                        data: portfolioData.map(item => item.benchmark), 
-                        borderColor: colors.darkNavy, 
-                        backgroundColor: 'transparent', 
-                        borderWidth: 2, 
-                        tension: 0.1, 
-                        pointRadius: 0 
-                    }
-                ]
-            },
-            options: {
-                responsive: true, 
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { 
-                        position: 'bottom', 
-                        labels: { 
-                            usePointStyle: true, 
-                            boxWidth: 6, 
-                            padding: 15, 
-                            font: { size: 8, family: 'Lato' } 
-                        } 
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: false,
+                        layout: { padding: { right: 40 } },
+                        plugins: {
+                            legend: { position: 'bottom', labels: { usePointStyle: false, boxWidth: 15, boxHeight: 1, padding: 8, font: { size: 5.5 } } },
+                            annotation: {
+                                annotations: {
+                                    fundLabel: { type: 'label', xValue: portfolioData.length - 1, yValue: lastFundValue, content: [formatValue(lastFundValue)], color: colors.naartjie, font: { size: 6, weight: 'bold' }, position: 'end', xAdjust: 30, yAdjust: 0 },
+                                    benchmarkLabel: { type: 'label', xValue: portfolioData.length - 1, yValue: lastBenchmarkValue, content: [formatValue(lastBenchmarkValue)], color: colors.darkNavy, font: { size: 6, weight: 'bold' }, position: 'end', xAdjust: 30, yAdjust: 0 },
+                                },
+                            },
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 5.5 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
+                            y: {
+                                type: 'logarithmic',
+                                title: { display: true, text: "Cash Value² (R'000)", font: { size: 5.5 }, color: colors.darkGrey },
+                                ticks: { font: { size: 5.5 }, callback: v => (v === 100 ? '100' : null) },
+                                grid: { color: '#e5e5e5' },
+                            },
+                        },
                     },
-                    tooltip: { 
-                        mode: 'index', 
-                        intersect: false, 
-                        callbacks: { label: (c) => `${c.dataset.label}: R ${c.parsed.y.toLocaleString()}` } 
-                    }
-                },
-                scales: {
-                    x: { 
-                        grid: { display: false }, 
-                        ticks: { font: { size: 7, family: 'Lato' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } 
-                    },
-                    y: { 
-                        type: 'logarithmic', 
-                        ticks: { 
-                            font: { size: 7, family: 'Lato' }, 
-                            callback: (v) => {
-                                if (v === 100 || v === 1000 || v === 10000) return 'R ' + v.toLocaleString();
-                                return null;
-                            }
-                        }, 
-                        grid: { color: '#e5e5e5' } 
-                    }
-                }
+                });
             }
         });
     </script>
     @endif
-
 </body>
 </html>
