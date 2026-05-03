@@ -486,7 +486,7 @@
            ===================================================== */
         .fees-content {
             flex: 1;
-            padding: 4mm;
+            padding: 12mm 5mm 4mm 5mm;
             overflow: hidden;
         }
 
