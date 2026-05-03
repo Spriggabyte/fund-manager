@@ -6,6 +6,7 @@ use App\Http\Requests\StoreFundRequest;
 use App\Http\Requests\UpdateFundRequest;
 use App\Models\Fund;
 use App\Models\FundRevision;
+use App\Services\ExcelImportService;
 use App\Services\PuppeteerPdfService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
@@ -17,9 +18,6 @@ class FundController extends Controller
 {
     use AuthorizesRequests;
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(): View
     {
         $funds = auth()->user()->funds()->latest()->get();
@@ -27,24 +25,15 @@ class FundController extends Controller
         return view('funds.index', compact('funds'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(): View
     {
         return view('funds.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreFundRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-
-        if ($validated['data'] ?? null) {
-            $validated['data'] = json_decode($validated['data'], true);
-        }
+        $validated = $this->decodeJsonFields($validated);
 
         auth()->user()->funds()->create($validated);
 
@@ -52,26 +41,20 @@ class FundController extends Controller
             ->with('success', 'Fund created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-international'];
 
     public function show(Fund $fund): View
     {
         $this->authorize('view', $fund);
 
-        $template = $fund->data['fund']['template'] ?? 'show';
+        $template = $fund->template ?? 'show';
         if (! in_array($template, self::ALLOWED_TEMPLATES)) {
             $template = 'show';
         }
 
-        return view('funds.' . $template, compact('fund'));
+        return view('funds.'.$template, compact('fund'));
     }
 
-    /**
-     * Display the fund fact sheet.
-     */
     public function factSheet(Fund $fund): View
     {
         $this->authorize('view', $fund);
@@ -79,9 +62,6 @@ class FundController extends Controller
         return view('funds.fact-sheet', compact('fund'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Fund $fund): View
     {
         $this->authorize('update', $fund);
@@ -89,28 +69,19 @@ class FundController extends Controller
         return view('funds.edit', compact('fund'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateFundRequest $request, Fund $fund): RedirectResponse
     {
         $this->authorize('update', $fund);
 
         $validated = $request->validated();
-
-        if ($validated['data'] ?? null) {
-            $validated['data'] = json_decode($validated['data'], true);
-        }
+        $validated = $this->decodeJsonFields($validated);
 
         $fund->update($validated);
 
-        return redirect()->route('funds.index')
+        return redirect()->route('funds.show', $fund)
             ->with('success', 'Fund updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Fund $fund): RedirectResponse
     {
         $this->authorize('delete', $fund);
@@ -122,7 +93,7 @@ class FundController extends Controller
     }
 
     /**
-     * Update a specific field in the fund's JSON data.
+     * Update a specific field in the fund's data via inline editing.
      */
     public function updateData(Request $request, Fund $fund)
     {
@@ -133,13 +104,10 @@ class FundController extends Controller
             'value' => 'nullable',
         ]);
 
-        $data = $fund->data ?? [];
         $fieldPath = $validated['field'];
         $value = $validated['value'];
 
         $oldValue = $fund->getDataValue($fieldPath);
-
-        $fund->setDataValue($data, $fieldPath, $value);
 
         // Create revision before updating
         $fund->createRevision(
@@ -149,7 +117,8 @@ class FundController extends Controller
             "Updated {$fieldPath}"
         );
 
-        $fund->update(['data' => $data]);
+        $fund->setDataValueByPath($fieldPath, $value);
+        $fund->save();
 
         return response()->json([
             'success' => true,
@@ -172,17 +141,17 @@ class FundController extends Controller
             'holding.percentage' => 'required|numeric|min:0|max:100',
         ]);
 
-        $data = $fund->data ?? [];
-        $holdings = $data['holdings'] ?? [];
+        $topInvestments = $fund->top_investments ?? [];
+        $rows = $topInvestments['rows'] ?? [];
 
-        if (isset($holdings[$validated['index']])) {
-            $holdings[$validated['index']] = array_merge(
-                $holdings[$validated['index']],
+        if (isset($rows[$validated['index']])) {
+            $rows[$validated['index']] = array_merge(
+                $rows[$validated['index']],
                 $validated['holding']
             );
 
-            $data['holdings'] = $holdings;
-            $fund->update(['data' => $data]);
+            $topInvestments['rows'] = $rows;
+            $fund->update(['top_investments' => $topInvestments]);
 
             return response()->json([
                 'success' => true,
@@ -198,8 +167,50 @@ class FundController extends Controller
     }
 
     /**
-     * Export the fund data as a PDF using Puppeteer for pixel-perfect rendering.
+     * Import data from Excel files.
      */
+    public function import(Request $request, Fund $fund)
+    {
+        $this->authorize('update', $fund);
+
+        $request->validate([
+            'factsheet' => 'nullable|file|mimes:xlsx,xls',
+            'price_graph' => 'nullable|file|mimes:xlsx,xls',
+            'inflation_graph' => 'nullable|file|mimes:xlsx,xls',
+        ]);
+
+        if (! $request->hasFile('factsheet') && ! $request->hasFile('price_graph') && ! $request->hasFile('inflation_graph')) {
+            return redirect()->route('funds.edit', $fund)
+                ->with('error', 'Please upload at least one Excel file.');
+        }
+
+        // Create revision before import
+        $fund->createRevision(null, null, null, 'Before Excel import');
+
+        $service = new ExcelImportService;
+        $imported = [];
+
+        if ($request->hasFile('factsheet')) {
+            $service->importFactsheet($fund, $request->file('factsheet')->getRealPath());
+            $imported[] = 'factsheet';
+        }
+
+        if ($request->hasFile('price_graph')) {
+            $service->importPriceGraph($fund, $request->file('price_graph')->getRealPath());
+            $imported[] = 'price graph';
+        }
+
+        if ($request->hasFile('inflation_graph')) {
+            $service->importInflationGraph($fund, $request->file('inflation_graph')->getRealPath());
+            $imported[] = 'inflation graph';
+        }
+
+        $fund->save();
+
+        return redirect()->route('funds.edit', $fund)
+            ->with('success', 'Imported '.implode(' and ', $imported).' data successfully.');
+    }
+
     public function exportPdf(Fund $fund, PuppeteerPdfService $puppeteerService)
     {
         $this->authorize('view', $fund);
@@ -208,20 +219,15 @@ class FundController extends Controller
         ini_set('max_execution_time', 180);
 
         try {
-            // Generate PDF using Puppeteer
             $pdfPath = $puppeteerService->generatePdf($fund);
-
-            // Create filename for download
             $filename = 'fund-'.$fund->id.'-'.now()->format('Y-m-d').'.pdf';
 
-            // Return the PDF as download and clean up
             return response()->download($pdfPath, $filename)->deleteFileAfterSend(true);
 
         } catch (\Exception $e) {
             Log::error('PDF generation failed: '.$e->getMessage());
             Log::error('PDF error trace: '.$e->getTraceAsString());
 
-            // Return error response instead of fallback
             return response()->json([
                 'error' => 'PDF generation failed',
                 'message' => 'Unable to generate PDF. Please try again or contact support.',
@@ -230,9 +236,6 @@ class FundController extends Controller
         }
     }
 
-    /**
-     * Display all revisions for a fund.
-     */
     public function revisions(Fund $fund): View
     {
         $this->authorize('view', $fund);
@@ -242,14 +245,10 @@ class FundController extends Controller
         return view('funds.revisions', compact('fund', 'revisions'));
     }
 
-    /**
-     * Restore a fund to a specific revision.
-     */
     public function restoreRevision(Fund $fund, FundRevision $revision)
     {
         $this->authorize('update', $fund);
 
-        // Ensure the revision belongs to this fund
         if ($revision->fund_id !== $fund->id) {
             abort(404);
         }
@@ -262,55 +261,67 @@ class FundController extends Controller
             'Restored to revision from '.$revision->created_at->format('Y-m-d H:i:s')
         );
 
-        // Restore the fund to the revision state
-        $fund->update([
-            'name' => $revision->name,
-            'class' => $revision->class,
-            'data' => $revision->data,
-        ]);
+        // Restore from revision snapshot
+        $fund->name = $revision->name;
+        $fund->class = $revision->class;
+        $fund->restoreFromData($revision->data);
+        $fund->save();
 
         return redirect()->route('funds.show', $fund)
             ->with('success', 'Fund restored to revision from '.$revision->created_at->format('Y-m-d H:i:s'));
     }
 
-    /**
-     * Show a specific revision.
-     */
     public function showRevision(Fund $fund, FundRevision $revision): View
     {
         $this->authorize('view', $fund);
 
-        // Ensure the revision belongs to this fund
         if ($revision->fund_id !== $fund->id) {
             abort(404);
         }
 
         // Create a temporary fund object with revision data for display
-        $revisionFund = new Fund([
-            'id' => $fund->id,
-            'name' => $revision->name,
-            'class' => $revision->class,
-            'data' => $revision->data,
-            'created_at' => $fund->created_at,
-            'updated_at' => $revision->created_at,
-        ]);
+        $revisionFund = new Fund;
+        $revisionFund->id = $fund->id;
+        $revisionFund->name = $revision->name;
+        $revisionFund->class = $revision->class;
+        $revisionFund->created_at = $fund->created_at;
+        $revisionFund->updated_at = $revision->created_at;
+        $revisionFund->restoreFromData($revision->data);
 
         return view('funds.revision-show', compact('fund', 'revision', 'revisionFund'));
     }
 
-    /**
-     * Internal PDF view - bypasses authentication for Puppeteer access.
-     */
     public function internalPdfView(Fund $fund): View
     {
-        // No authorization check - this is for internal PDF generation only
-        // Render the dedicated PDF template with proper A4 layout
-        $template = $fund->data['fund']['template'] ?? 'show';
+        $template = $fund->template ?? 'show';
         $pdfTemplate = $template === 'show-equity' ? 'pdf-equity' : 'pdf';
-        if (! view()->exists('funds.' . $pdfTemplate)) {
+        if (! view()->exists('funds.'.$pdfTemplate)) {
             $pdfTemplate = 'pdf';
         }
 
-        return view('funds.' . $pdfTemplate, compact('fund'));
+        return view('funds.'.$pdfTemplate, compact('fund'));
+    }
+
+    /**
+     * Decode JSON string fields into arrays for storage.
+     */
+    private function decodeJsonFields(array $data): array
+    {
+        $jsonFields = [
+            'important_info_paragraphs',
+            'asset_allocation',
+            'top_investments',
+            'performance_table',
+            'chart_data',
+            'fees',
+        ];
+
+        foreach ($jsonFields as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = json_decode($data[$field], true);
+            }
+        }
+
+        return $data;
     }
 }

@@ -300,7 +300,7 @@
             position: relative;
         }
 
-        .chart-wrapper canvas {
+        .chart-wrapper > div {
             width: 100% !important;
             height: 100% !important;
         }
@@ -786,13 +786,13 @@
                         <div class="chart-container">
                             <h4 class="chart-title">INVESTMENT STRATEGY VS SA INFLATION</h4>
                             <div class="chart-wrapper">
-                                <canvas id="inflationChart"></canvas>
+                                <div id="inflationChart"></div>
                             </div>
                         </div>
                         <div class="chart-container">
                             <h4 class="chart-title">PORTFOLIO PERFORMANCE VS BENCHMARK</h4>
                             <div class="chart-wrapper">
-                                <canvas id="portfolioChart"></canvas>
+                                <div id="portfolioChart"></div>
                             </div>
                         </div>
                     </div>
@@ -1101,8 +1101,7 @@
     </script>
 
     @if(isset($fund->data['mainContent']['charts']))
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11/highcharts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const inflationData = @json($fund->data['mainContent']['charts']['inflationData'] ?? []);
@@ -1111,81 +1110,137 @@
             const colors = {
                 naartjie: '#d25347',
                 darkNavy: '#29363d',
-                mediumGrey: '#9a9a9a',
+                lightBlue: '#7a9cb4',
                 lightGrey: '#cccccc',
                 darkGrey: '#535353',
             };
 
-            Chart.defaults.font.family = "'Avenir Next', 'Lato', sans-serif";
-            Chart.defaults.font.size = 6;
+            Highcharts.setOptions({
+                chart: { style: { fontFamily: "'Avenir Next', 'Lato', sans-serif" } },
+                credits: { enabled: false },
+                accessibility: { enabled: false },
+            });
+
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const formatXTickInflation = (label) => {
+                if (!label) return '';
+                const m = label.match(/^(\d{4})-(\d{2})$/);
+                if (!m) return label;
+                return months[parseInt(m[2], 10) - 1] + '-' + m[1].slice(-2);
+            };
+            const formatXTickPortfolio = (label) => {
+                if (!label) return '';
+                const m = label.match(/^(\d{4})-(\d{2})$/);
+                if (!m) return label;
+                return months[parseInt(m[2], 10) - 1] + ' ' + m[1].slice(-2);
+            };
+            const evenlySpaced = (count) => function () {
+                const len = this.categories.length;
+                const positions = [];
+                for (let i = 0; i < count; i++) positions.push(Math.floor((len - 1) * i / (count - 1)));
+                return positions;
+            };
 
             if (inflationData.length > 0) {
-                const inflationCtx = document.getElementById('inflationChart').getContext('2d');
-                new Chart(inflationCtx, {
-                    type: 'line',
-                    data: {
-                        labels: inflationData.map(item => item.date),
-                        datasets: [
-                            { label: 'Composite', data: inflationData.map(item => item.composite), borderColor: colors.naartjie, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.1, pointRadius: 0, order: 1 },
-                            { label: 'Inflation', data: inflationData.map(item => item.inflation), borderColor: colors.mediumGrey, backgroundColor: colors.mediumGrey, borderWidth: 1.5, fill: '+1', pointRadius: 0, order: 3 },
-                            { label: '5% Hurdle', data: inflationData.map(item => item.hurdle), borderColor: colors.lightGrey, backgroundColor: colors.lightGrey, borderWidth: 1.5, fill: 'origin', pointRadius: 0, order: 4 },
-                            { label: 'Excess', data: inflationData.map(item => item.excess), borderColor: colors.darkNavy, backgroundColor: colors.darkNavy, borderWidth: 1.5, fill: '-2', pointRadius: 0, order: 2 },
-                        ],
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: false,
-                        plugins: {
-                            legend: { position: 'bottom', labels: { usePointStyle: false, boxWidth: 15, boxHeight: 1, padding: 8, font: { size: 5.5 } } },
+                Highcharts.chart('inflationChart', {
+                    chart: { type: 'area', backgroundColor: 'transparent', spacing: [4, 4, 4, 4], animation: false },
+                    title: { text: null },
+                    xAxis: {
+                        categories: inflationData.map(d => d.date),
+                        tickWidth: 0,
+                        lineColor: '#999',
+                        labels: {
+                            style: { fontSize: '7px', color: colors.darkGrey },
+                            formatter: function () { return formatXTickInflation(this.value); },
                         },
-                        scales: {
-                            x: { grid: { display: false }, ticks: { font: { size: 5.5 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } },
-                            y: { min: -10, max: 35, ticks: { stepSize: 5, font: { size: 5.5 }, callback: v => v + '%' }, grid: { color: '#e5e5e5' } },
+                        tickPositioner: evenlySpaced(5),
+                    },
+                    yAxis: {
+                        title: { text: null },
+                        min: -10, max: 35,
+                        tickPositions: [-10, -5, 0, 5, 10, 15, 20, 25, 30, 35],
+                        gridLineColor: '#e5e5e5',
+                        labels: {
+                            style: { fontSize: '7px', color: colors.darkGrey },
+                            formatter: function () { return this.value + '%'; },
                         },
                     },
+                    legend: {
+                        itemStyle: { fontSize: '7px', fontWeight: 'normal', color: colors.darkGrey },
+                        symbolWidth: 14, symbolHeight: 6, symbolRadius: 0,
+                        itemDistance: 12, margin: 4, padding: 0,
+                    },
+                    tooltip: { enabled: false },
+                    plotOptions: {
+                        area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 0, fillOpacity: 1 },
+                        spline: { marker: { enabled: false }, lineWidth: 1.5 },
+                        series: { animation: false },
+                    },
+                    series: [
+                        { name: 'Composite', type: 'spline', data: inflationData.map(d => d.composite), color: colors.naartjie, stacking: undefined, zIndex: 5 },
+                        { name: 'Inflation', type: 'area', data: inflationData.map(d => d.inflation), color: colors.lightBlue },
+                        { name: '5% Hurdle', type: 'area', data: inflationData.map(d => d.hurdle), color: colors.lightGrey },
+                        { name: 'Excess',    type: 'area', data: inflationData.map(d => d.excess),    color: colors.darkNavy },
+                    ],
                 });
             }
 
             if (portfolioData.length > 0) {
-                const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
-                const lastFundValue = portfolioData[portfolioData.length - 1].fund;
-                const lastBenchmarkValue = portfolioData[portfolioData.length - 1].benchmark;
-                const formatValue = (val) => 'R ' + Math.round(val / 1000).toLocaleString('en-US');
+                const formatCashLabel = (v) => 'R ' + Math.round(v).toLocaleString('en-US');
 
-                new Chart(portfolioCtx, {
-                    type: 'line',
-                    data: {
-                        labels: portfolioData.map(item => item.date),
-                        datasets: [
-                            { label: 'Fund', data: portfolioData.map(item => item.fund), borderColor: colors.naartjie, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.1, pointRadius: 0 },
-                            { label: 'Benchmark', data: portfolioData.map(item => item.benchmark), borderColor: colors.darkNavy, backgroundColor: 'transparent', borderWidth: 1.5, tension: 0.1, pointRadius: 0 },
-                        ],
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: false,
-                        layout: { padding: { right: 40 } },
-                        plugins: {
-                            legend: { position: 'bottom', labels: { usePointStyle: false, boxWidth: 15, boxHeight: 1, padding: 8, font: { size: 5.5 } } },
-                            annotation: {
-                                annotations: {
-                                    fundLabel: { type: 'label', xValue: portfolioData.length - 1, yValue: lastFundValue, content: [formatValue(lastFundValue)], color: colors.naartjie, font: { size: 6, weight: 'bold' }, position: 'end', xAdjust: 30, yAdjust: 0 },
-                                    benchmarkLabel: { type: 'label', xValue: portfolioData.length - 1, yValue: lastBenchmarkValue, content: [formatValue(lastBenchmarkValue)], color: colors.darkNavy, font: { size: 6, weight: 'bold' }, position: 'end', xAdjust: 30, yAdjust: 0 },
-                                },
-                            },
+                Highcharts.chart('portfolioChart', {
+                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 60, 4, 4], animation: false },
+                    title: { text: null },
+                    xAxis: {
+                        categories: portfolioData.map(d => d.date),
+                        tickWidth: 0,
+                        lineColor: '#999',
+                        labels: {
+                            style: { fontSize: '7px', color: colors.darkGrey },
+                            formatter: function () { return formatXTickPortfolio(this.value); },
                         },
-                        scales: {
-                            x: { grid: { display: false }, ticks: { font: { size: 5.5 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
-                            y: {
-                                type: 'logarithmic',
-                                title: { display: true, text: "Cash Value² (R'000)", font: { size: 5.5 }, color: colors.darkGrey },
-                                ticks: { font: { size: 5.5 }, callback: v => (v === 100 ? '100' : null) },
-                                grid: { color: '#e5e5e5' },
-                            },
+                        tickPositioner: evenlySpaced(6),
+                    },
+                    yAxis: {
+                        title: { text: "Cash Value² (R'000)", style: { fontSize: '7px', color: colors.darkGrey } },
+                        type: 'logarithmic',
+                        gridLineColor: '#e5e5e5',
+                        min: 100,
+                        labels: {
+                            style: { fontSize: '7px', color: colors.darkGrey },
+                            formatter: function () { return this.value === 100 ? '100' : ''; },
                         },
                     },
+                    legend: {
+                        itemStyle: { fontSize: '7px', fontWeight: 'normal', color: colors.darkGrey },
+                        symbolWidth: 14, symbolHeight: 2, symbolRadius: 0,
+                        itemDistance: 12, margin: 4, padding: 0,
+                    },
+                    tooltip: { enabled: false },
+                    plotOptions: {
+                        spline: { marker: { enabled: false }, lineWidth: 1.5 },
+                        series: { animation: false },
+                    },
+                    series: [
+                        {
+                            name: 'Fund', data: portfolioData.map(d => d.fund), color: colors.naartjie,
+                            dataLabels: [{
+                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6,
+                                style: { fontSize: '7px', fontWeight: 'bold', color: colors.naartjie, textOutline: 'none' },
+                                formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
+                                crop: false, overflow: 'allow', allowOverlap: true,
+                            }],
+                        },
+                        {
+                            name: 'Benchmark', data: portfolioData.map(d => d.benchmark), color: colors.darkNavy,
+                            dataLabels: [{
+                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6,
+                                style: { fontSize: '7px', fontWeight: 'bold', color: colors.darkNavy, textOutline: 'none' },
+                                formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
+                                crop: false, overflow: 'allow', allowOverlap: true,
+                            }],
+                        },
+                    ],
                 });
             }
         });

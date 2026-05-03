@@ -99,13 +99,13 @@ const puppeteer = require('puppeteer-core');
             });
 
             if (hasCharts) {
-                console.log('Chart containers found, waiting for Chart.js...');
+                console.log('Chart containers found, waiting for Highcharts...');
 
                 await page.waitForFunction(() => {
-                    return typeof window.Chart !== 'undefined';
+                    return typeof window.Highcharts !== 'undefined';
                 }, { timeout: 15000 });
 
-                console.log('Chart.js loaded, waiting for charts to render...');
+                console.log('Highcharts loaded, waiting for charts to render...');
 
                 // Wait for DOMContentLoaded event to fire (charts init)
                 await page.waitForTimeout(2000);
