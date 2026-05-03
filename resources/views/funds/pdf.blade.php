@@ -55,7 +55,7 @@
         }
 
         body {
-            font-family: 'Lato', 'Avenir Next', -apple-system, sans-serif;
+            font-family: 'Avenir Next', 'Lato', -apple-system, sans-serif;
             font-size: 7pt;
             line-height: 1.2;
             color: var(--off-black);
@@ -64,16 +64,16 @@
             print-color-adjust: exact;
         }
 
-        /* Page Container - with left/right margins */
+        /* Page Container - grey sidebar bg extends full height on left */
         .page {
             width: 210mm;
             height: 297mm;
             max-height: 297mm;
             overflow: hidden;
-            padding: 8mm 12mm 8mm 12mm;
+            padding: 0;
             position: relative;
             page-break-after: always;
-            background: var(--white);
+            background: linear-gradient(to right, var(--dark-navy-15) 52mm, var(--white) 52mm);
         }
 
         .page:last-child {
@@ -86,22 +86,24 @@
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 3mm;
+            align-items: center;
+            padding: 4mm 12mm 4mm 5mm;
+            margin-bottom: 0;
+            min-height: 26mm;
         }
 
         .date-badge {
             background-color: var(--naartjie);
             color: var(--white);
-            padding: 1.5mm 3mm;
-            font-family: 'Lato', sans-serif;
-            font-weight: 500;
-            font-size: 9pt;
-            letter-spacing: 0.03em;
+            padding: 3mm 7mm;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 11pt;
+            letter-spacing: 0.02em;
         }
 
         .logo {
-            height: 10mm;
+            height: 12mm;
         }
 
         .logo img {
@@ -115,36 +117,34 @@
         .title-banner {
             background-color: var(--dark-navy);
             color: var(--white);
-            padding: 4mm 5mm;
-            margin-bottom: 0;
-            margin-left: -12mm;
-            margin-right: -12mm;
-            width: calc(100% + 24mm);
+            padding: 6mm 12mm 7mm 5mm;
+            margin: 0;
+            width: 100%;
         }
 
         .fund-name {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 18pt;
-            letter-spacing: 0.05em;
+            font-size: 20pt;
+            letter-spacing: 0.01em;
             text-transform: uppercase;
             margin: 0 0 1.5mm 0;
-            line-height: 1.1;
+            line-height: 1.05;
         }
 
         .fund-name .class-suffix {
             font-weight: 400;
-            font-size: 14pt;
+            font-size: 16pt;
         }
 
         .fund-description {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
             font-size: 8pt;
-            line-height: 10pt;
-            letter-spacing: 0.02em;
+            line-height: 12pt;
+            letter-spacing: 0.01em;
             margin: 0;
-            opacity: 0.95;
+            color: var(--white);
         }
 
         /* =====================================================
@@ -153,23 +153,22 @@
         .content-wrapper {
             display: flex;
             flex-direction: row;
-            margin-left: -12mm;
-            margin-right: -12mm;
-            width: calc(100% + 24mm);
-            height: calc(297mm - 8mm - 8mm - 10mm - 28mm); /* page height - top padding - bottom padding - header - title */
+            margin: 0;
+            width: 100%;
+            min-height: calc(297mm - 28mm - 32mm); /* page - header - title banner */
         }
 
         .page-2 .content-wrapper {
-            height: calc(297mm - 8mm - 8mm); /* page height - top padding - bottom padding */
+            min-height: 297mm;
         }
 
-        /* Sidebar - 46mm width */
+        /* Sidebar - 52mm width */
         .sidebar {
-            width: 46mm;
-            min-width: 46mm;
-            max-width: 46mm;
-            background-color: var(--dark-navy-15);
-            padding: 4mm;
+            width: 52mm;
+            min-width: 52mm;
+            max-width: 52mm;
+            background-color: transparent;
+            padding: 4mm 4mm 4mm 5mm;
             overflow: hidden;
         }
 
@@ -182,10 +181,10 @@
         }
 
         .sidebar-heading {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 600;
-            font-size: 5.5pt;
-            line-height: 6.5pt;
+            font-size: 5pt;
+            line-height: 6pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
@@ -193,10 +192,10 @@
         }
 
         .sidebar-text {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 6.5pt;
-            line-height: 7.5pt;
+            font-size: 6pt;
+            line-height: 7pt;
             letter-spacing: 0.01em;
             color: var(--off-black);
             margin: 0;
@@ -235,7 +234,7 @@
            SECTION HEADINGS
            ===================================================== */
         .section-heading {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 600;
             font-size: 7pt;
             line-height: 8pt;
@@ -246,7 +245,7 @@
         }
 
         .section-subheading {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 5.5pt;
             line-height: 6pt;
@@ -284,7 +283,7 @@
         table th {
             background-color: var(--dark-navy);
             color: var(--white);
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
             font-size: 6pt;
             line-height: 6.5pt;
@@ -304,7 +303,7 @@
         }
 
         table td {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 6.5pt;
             line-height: 8pt;
@@ -374,7 +373,7 @@
         }
 
         .chart-title {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 600;
             font-size: 6pt;
             letter-spacing: 0.02em;
@@ -394,7 +393,7 @@
         }
 
         .chart-explanation {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 5.5pt;
             line-height: 7pt;
@@ -407,7 +406,7 @@
            FOOTNOTES
            ===================================================== */
         .footnotes {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 5pt;
             line-height: 6pt;
@@ -429,10 +428,10 @@
            PAGE 2 - IMPORTANT INFO SIDEBAR
            ===================================================== */
         .info-sidebar {
-            width: 46mm;
-            min-width: 46mm;
-            max-width: 46mm;
-            background-color: var(--dark-navy-15);
+            width: 52mm;
+            min-width: 52mm;
+            max-width: 52mm;
+            background-color: transparent;
             padding: 0;
             overflow: hidden;
         }
@@ -440,33 +439,34 @@
         .info-sidebar-header {
             background-color: var(--dark-navy);
             color: var(--white);
-            padding: 2.5mm 4mm;
-            margin-bottom: 0;
+            padding: 3mm 3mm;
+            margin: 8mm 3mm 6mm 3mm;
+            text-align: center;
         }
 
         .info-sidebar-header h2 {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 6.5pt;
-            line-height: 7.5pt;
-            letter-spacing: 0.02em;
+            font-size: 7.5pt;
+            line-height: 9pt;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
             margin: 0;
         }
 
         .info-sidebar-content {
-            padding: 3mm 4mm;
+            padding: 0 4mm 4mm 5mm;
         }
 
         .info-sidebar-content p {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 5pt;
-            line-height: 6pt;
+            font-size: 5.5pt;
+            line-height: 7pt;
             letter-spacing: 0.01em;
             color: var(--off-black);
-            margin: 0 0 1.5mm 0;
-            text-align: justify;
+            margin: 0 0 2mm 0;
+            text-align: left;
         }
 
         .info-sidebar-content p:last-child {
@@ -495,7 +495,7 @@
             border-bottom: 0.25pt solid #e5e5e5;
         }
 
-        .fee-rates-table td:last-child {
+        .fee-rates-table td:last-child:not([colspan]) {
             text-align: right;
             font-weight: 500;
         }
@@ -508,10 +508,11 @@
             background-color: var(--naartjie-20);
             color: var(--naartjie);
             font-weight: 500;
+            text-align: left;
         }
 
         .fee-description {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 5.5pt;
             line-height: 7pt;
@@ -539,7 +540,7 @@
         }
 
         .footer-contact {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
             font-size: 7pt;
             line-height: 9pt;
@@ -574,6 +575,20 @@
     </style>
 </head>
 <body>
+    @php
+        $fmt = function ($v, int $dp = 1) {
+            if ($v === null || $v === '') {
+                return '';
+            }
+            if (is_string($v) && str_starts_with(ltrim($v), '+')) {
+                return $v;
+            }
+            if (is_numeric($v)) {
+                return number_format((float) $v, $dp);
+            }
+            return (string) $v;
+        };
+    @endphp
     <!-- PAGE 1 -->
     <div class="page">
         <!-- Header -->
@@ -590,17 +605,16 @@
         <div class="title-banner">
             @php
                 $fundName = $fund->data['fund']['name'] ?? $fund->name;
-                // Split the fund name and class if present
-                if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z])$/i', $fundName, $matches)) {
+                if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z])$/iu', $fundName, $matches)) {
                     $mainName = trim($matches[1]);
-                    $classText = strtoupper(trim($matches[2]));
+                    $classText = mb_strtoupper(trim($matches[2]));
                 } else {
                     $mainName = $fundName;
                     $classText = '';
                 }
             @endphp
             <h1 class="fund-name">
-                {{ strtoupper($mainName) }}
+                {{ mb_strtoupper($mainName) }}
                 @if($classText)
                     <span class="class-suffix">&mdash; {{ $classText }}</span>
                 @endif
@@ -712,28 +726,34 @@
                                     @endforeach
                                 </tr>
                             </thead>
+                            @php
+                                $aaHeaders = $fund->data['mainContent']['assetAllocation']['headers'] ?? [];
+                                $aaColumnKeys = [];
+                                $keyMap = ['SA (100)' => 'sa', 'FOREIGN (45)' => 'foreign', 'TOTAL' => 'total', 'CHANGE' => 'change'];
+                                foreach (array_slice($aaHeaders, 1) as $h) {
+                                    $aaColumnKeys[] = $keyMap[strtoupper(trim($h))] ?? strtolower(preg_replace('/[^a-zA-Z]/', '', $h) ?: 'col');
+                                }
+                            @endphp
                             <tbody>
                                 @foreach ($fund->data['mainContent']['assetAllocation']['rows'] as $row)
                                     <tr>
                                         <td>{{ $row['name'] }}</td>
-                                        <td>{{ $row['sa'] }}</td>
-                                        <td>{{ $row['foreign'] }}</td>
-                                        <td>{{ $row['total'] }}</td>
-                                        <td class="{{ ($row['changeDirection'] ?? '') === 'up' ? 'change-up' : (($row['changeDirection'] ?? '') === 'down' ? 'change-down' : '') }}">
-                                            @if(isset($row['changeDirection']))
-                                                {{ $row['changeDirection'] === 'up' ? '▲' : '▼' }}
-                                            @endif
-                                            {{ $row['change'] ?? '' }}
-                                        </td>
+                                        @foreach ($aaColumnKeys as $colKey)
+                                            <td class="{{ $colKey === 'change' ? (($row['changeDirection'] ?? '') === 'up' ? 'change-up' : (($row['changeDirection'] ?? '') === 'down' ? 'change-down' : '')) : '' }}">
+                                                {{ $colKey === 'change' ? ($row['change'] ?? '') : $fmt($row[$colKey] ?? '', 1) }}
+                                            </td>
+                                        @endforeach
                                     </tr>
                                 @endforeach
-                                <tr class="total-row">
-                                    <td>{{ $fund->data['mainContent']['assetAllocation']['total']['name'] ?? 'TOTAL' }}</td>
-                                    <td>{{ $fund->data['mainContent']['assetAllocation']['total']['sa'] }}</td>
-                                    <td>{{ $fund->data['mainContent']['assetAllocation']['total']['foreign'] }}</td>
-                                    <td>{{ $fund->data['mainContent']['assetAllocation']['total']['total'] }}</td>
-                                    <td></td>
-                                </tr>
+                                @if(isset($fund->data['mainContent']['assetAllocation']['total']))
+                                    @php $aaTotal = $fund->data['mainContent']['assetAllocation']['total']; @endphp
+                                    <tr class="total-row">
+                                        <td>{{ $aaTotal['name'] ?? 'TOTAL' }}</td>
+                                        @foreach ($aaColumnKeys as $colKey)
+                                            <td>{{ $colKey !== 'change' ? $fmt($aaTotal[$colKey] ?? '', 1) : '' }}</td>
+                                        @endforeach
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -758,7 +778,7 @@
                                         <td>{{ $row['security'] }}</td>
                                         <td>{{ $row['assetClass'] }}</td>
                                         <td>{{ $row['market'] }}</td>
-                                        <td>{{ $row['percentage'] }}</td>
+                                        <td>{{ $fmt($row['percentage'] ?? '', 1) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -790,13 +810,30 @@
 
                 <!-- Performance Table -->
                 @if(isset($fund->data['mainContent']['performanceTable']))
+                    @php
+                        $perfHeaders = $fund->data['mainContent']['performanceTable']['headers'] ?? [];
+                        $perfKeyMap = [
+                            'CASH VALUE' => 'cashValue',
+                            'SINCE INCEPTION' => 'sinceInception',
+                            '20 YRS' => '20yrs', '15 YRS' => '15yrs', '10 YRS' => '10yrs',
+                            '7 YRS' => '7yrs', '5 YRS' => '5yrs', '3 YRS' => '3yrs', '2 YRS' => '2yrs',
+                            '1 YR' => '1yr', 'YTD' => 'ytd', 'THIS MONTH' => 'thisMonth',
+                            '6 MONTHS' => '6months', '3 MONTHS' => '3months',
+                        ];
+                        $perfColKeys = [];
+                        foreach (array_slice($perfHeaders, 1) as $h) {
+                            $clean = preg_replace('/[¹²³⁴⁵⁶⁷⁸⁹⁰]/u', '', strip_tags(str_replace('<br>', ' ', $h)));
+                            $clean = strtoupper(trim(preg_replace('/\s+/', ' ', $clean)));
+                            $perfColKeys[] = $perfKeyMap[$clean] ?? null;
+                        }
+                    @endphp
                     <h3 class="section-heading">{{ $fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED)' }}</h3>
 
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    @foreach ($fund->data['mainContent']['performanceTable']['headers'] as $header)
+                                    @foreach ($perfHeaders as $header)
                                         <th>{!! $header !!}</th>
                                     @endforeach
                                 </tr>
@@ -805,17 +842,9 @@
                                 @foreach ($fund->data['mainContent']['performanceTable']['rows'] as $row)
                                     <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
                                         <td>{!! $row['name'] !!}</td>
-                                        <td>{{ $row['cashValue'] ?? '' }}</td>
-                                        <td>{{ $row['sinceInception'] ?? '' }}</td>
-                                        @if(isset($row['15yrs']))
-                                            <td>{{ $row['15yrs'] }}</td>
-                                        @endif
-                                        <td>{{ $row['10yrs'] ?? '' }}</td>
-                                        <td>{{ $row['7yrs'] ?? '' }}</td>
-                                        <td>{{ $row['5yrs'] ?? '' }}</td>
-                                        <td>{{ $row['3yrs'] ?? '' }}</td>
-                                        <td>{{ $row['1yr'] ?? '' }}</td>
-                                        <td>{{ $row['thisMonth'] ?? '' }}</td>
+                                        @foreach ($perfColKeys as $colKey)
+                                            <td>{{ $colKey && isset($row[$colKey]) ? (in_array($colKey, ['cashValue']) ? $row[$colKey] : $fmt($row[$colKey], 1)) : '' }}</td>
+                                        @endforeach
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -874,8 +903,11 @@
                                         <td colspan="2">{{ $fund->data['fees']['feeRates']['globalFunds']['title'] ?? 'Foord global funds:' }}</td>
                                     </tr>
                                     @foreach ($fund->data['fees']['feeRates']['globalFunds']['funds'] as $gfund)
+                                        @php
+                                            $gName = ltrim($gfund['name'], "- \t");
+                                        @endphp
                                         <tr class="sub-item">
-                                            <td>- {{ $gfund['name'] }}</td>
+                                            <td>- {{ $gName }}</td>
                                             <td>{{ $gfund['value'] }}</td>
                                         </tr>
                                     @endforeach
@@ -906,14 +938,14 @@
                                 @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $row)
                                     <tr>
                                         <td>{{ $row['name'] }}</td>
-                                        <td>{{ $row['12m'] }}</td>
-                                        <td>{{ $row['36m'] }}</td>
+                                        <td>{{ $fmt($row['12m'] ?? '', 2) }}</td>
+                                        <td>{{ $fmt($row['36m'] ?? '', 2) }}</td>
                                     </tr>
                                 @endforeach
                                 <tr class="total-row">
                                     <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] ?? 'Total investment charge' }}</td>
-                                    <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['12m'] }}</td>
-                                    <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['36m'] }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? '', 2) }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? '', 2) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -949,18 +981,18 @@
                                 @foreach ($fund->data['fees']['performanceFeeExamples']['rows'] as $row)
                                     <tr>
                                         <td>{{ $row['name'] }}</td>
-                                        <td>{{ $row['a'] }}</td>
-                                        <td>{{ $row['b'] }}</td>
-                                        <td>{{ $row['c'] }}</td>
-                                        <td>{{ $row['d'] }}</td>
+                                        <td>{{ $fmt($row['a'] ?? '', 1) }}</td>
+                                        <td>{{ $fmt($row['b'] ?? '', 1) }}</td>
+                                        <td>{{ $fmt($row['c'] ?? '', 1) }}</td>
+                                        <td>{{ $fmt($row['d'] ?? '', 1) }}</td>
                                     </tr>
                                 @endforeach
                                 <tr class="total-row">
                                     <td>{{ $fund->data['fees']['performanceFeeExamples']['total']['name'] ?? 'Annual fee rate applied (excl. VAT)' }}</td>
-                                    <td>{{ $fund->data['fees']['performanceFeeExamples']['total']['a'] }}</td>
-                                    <td>{{ $fund->data['fees']['performanceFeeExamples']['total']['b'] }}</td>
-                                    <td>{{ $fund->data['fees']['performanceFeeExamples']['total']['c'] }}</td>
-                                    <td>{!! $fund->data['fees']['performanceFeeExamples']['total']['d'] !!}</td>
+                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['a'] ?? '', 1) }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['b'] ?? '', 1) }}</td>
+                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['c'] ?? '', 1) }}</td>
+                                    <td>{!! $fund->data['fees']['performanceFeeExamples']['total']['d'] ?? '' !!}</td>
                                 </tr>
                             </tbody>
                         </table>
