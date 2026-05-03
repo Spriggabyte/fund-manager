@@ -235,23 +235,23 @@
            ===================================================== */
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 600;
-            font-size: 7pt;
-            line-height: 8pt;
+            font-weight: 500;
+            font-size: 9pt;
+            line-height: 10pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--off-black);
-            margin: 0 0 1mm 0;
+            margin: 0 0 0.5mm 0;
         }
 
         .section-subheading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 5.5pt;
-            line-height: 6pt;
+            font-size: 5pt;
+            line-height: 5.5pt;
             letter-spacing: 0.01em;
             color: var(--dark-grey);
-            margin: -0.5mm 0 1mm 0;
+            margin: -0.3mm 0 0.5mm 0;
         }
 
         /* =====================================================
@@ -290,7 +290,7 @@
             letter-spacing: 0;
             text-transform: uppercase;
             text-align: center;
-            padding: 1.5mm 1.5mm;
+            padding: 1.4mm 1.5mm;
             border-right: 0.5pt solid var(--white);
         }
 
@@ -306,8 +306,8 @@
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 6.5pt;
-            line-height: 8pt;
-            padding: 1mm 1.5mm;
+            line-height: 7.5pt;
+            padding: 0.9mm 1.5mm;
             text-align: center;
             border-bottom: 0.25pt solid #e5e5e5;
         }
@@ -323,6 +323,14 @@
 
         table tbody tr:nth-child(even) {
             background-color: var(--white);
+        }
+
+        /* Performance Table - light grey header instead of dark navy */
+        .performance-table table th {
+            background-color: var(--very-light-grey);
+            color: var(--dark-navy);
+            border-right: 0.5pt solid var(--white);
+            font-weight: 600;
         }
 
         /* Highlighted Foord fund rows */
@@ -829,7 +837,7 @@
                     @endphp
                     <h3 class="section-heading">{{ $fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED)' }}</h3>
 
-                    <div class="table-container">
+                    <div class="table-container performance-table">
                         <table>
                             <thead>
                                 <tr>
