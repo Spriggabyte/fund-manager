@@ -247,11 +247,20 @@
         .section-subheading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 5pt;
-            line-height: 5.5pt;
+            font-size: 6pt;
+            line-height: 7pt;
             letter-spacing: 0.01em;
-            color: var(--dark-grey);
-            margin: -0.3mm 0 0.5mm 0;
+            color: var(--off-black);
+            margin: -0.3mm 0 0.8mm 0;
+        }
+
+        /* Smaller suffix style for parenthetical text in section headings */
+        .section-heading .title-suffix {
+            font-size: 7pt;
+            font-weight: 400;
+            color: var(--off-black);
+            text-transform: uppercase;
+            letter-spacing: 0.01em;
         }
 
         /* =====================================================
@@ -262,21 +271,10 @@
             margin-bottom: 2.5mm;
         }
 
-        /* Naartjie accent bar on left */
-        .table-container::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 0.8mm;
-            background-color: var(--naartjie);
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-left: 0.8mm;
+            margin-left: 0;
             font-size: 6.5pt;
         }
 
@@ -307,7 +305,7 @@
             font-weight: 400;
             font-size: 6.5pt;
             line-height: 7.5pt;
-            padding: 0.9mm 1.5mm;
+            padding: 1mm 2mm;
             text-align: center;
             border-bottom: 0.25pt solid #e5e5e5;
         }
@@ -495,7 +493,7 @@
         }
 
         .fee-rates-table table {
-            margin-left: 0.8mm;
+            margin-left: 0;
         }
 
         .fee-rates-table td {
@@ -595,6 +593,13 @@
                 return number_format((float) $v, $dp);
             }
             return (string) $v;
+        };
+        $renderHeading = function (string $title): string {
+            return preg_replace(
+                '/\s*\(([^)]+)\)\s*$/',
+                ' <span class="title-suffix">($1)</span>',
+                e($title)
+            );
         };
     @endphp
     <!-- PAGE 1 -->
@@ -720,7 +725,7 @@
             <div class="main-content">
                 <!-- Asset Allocation Table -->
                 @if(isset($fund->data['mainContent']['assetAllocation']))
-                    <h3 class="section-heading">{{ $fund->data['mainContent']['assetAllocation']['title'] ?? 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)' }}</h3>
+                    <h3 class="section-heading">{!! $renderHeading($fund->data['mainContent']['assetAllocation']['title'] ?? 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)') !!}</h3>
                     @if(isset($fund->data['mainContent']['assetAllocation']['subtitle']))
                         <p class="section-subheading">{{ $fund->data['mainContent']['assetAllocation']['subtitle'] }}</p>
                     @endif
