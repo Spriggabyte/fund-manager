@@ -907,10 +907,10 @@
                                                           x-text="value"></span>
                                                 </span>
                                                 <div class="alloc-bar-container">
-                                                    <div class="alloc-bar" style="width: {{ $row['value'] }}%;"></div>
+                                                    <div class="alloc-bar" style="width: {{ ($row['value'] ?? $row['total'] ?? '') }}%;"></div>
                                                 </div>
                                                 <span class="alloc-value">
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.value', '{{ $row['value'] }}')"
+                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.value', '{{ ($row['value'] ?? $row['total'] ?? '') }}')"
                                                           @click="editMode && startEdit()"
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
@@ -946,10 +946,10 @@
                                                           x-text="value"></span>
                                                 </span>
                                                 <div class="sector-bar-container">
-                                                    <div class="sector-bar" style="width: {{ ($row['value'] / 20) * 100 }}%;"></div>
+                                                    <div class="sector-bar" style="width: {{ (($row['value'] ?? $row['total'] ?? '') / 20) * 100 }}%;"></div>
                                                 </div>
                                                 <span class="sector-value">
-                                                    <span x-data="editableField('mainContent.equitySectorAllocation.rows.{{ $rowIndex }}.value', '{{ $row['value'] }}')"
+                                                    <span x-data="editableField('mainContent.equitySectorAllocation.rows.{{ $rowIndex }}.value', '{{ ($row['value'] ?? $row['total'] ?? '') }}')"
                                                           @click="editMode && startEdit()"
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>

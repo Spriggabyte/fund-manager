@@ -6,7 +6,7 @@
     <title>{{ $fund->data['fund']['name'] ?? $fund->name }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         /* =====================================================
            FOORD FUND FACT SHEET - PDF TEMPLATE
@@ -73,7 +73,7 @@
             padding: 0;
             position: relative;
             page-break-after: always;
-            background: linear-gradient(to right, var(--dark-navy-15) 52mm, var(--white) 52mm);
+            background: linear-gradient(to right, var(--white) 3mm, var(--dark-navy-15) 3mm, var(--dark-navy-15) 52mm, var(--white) 52mm);
         }
 
         .page:last-child {
@@ -85,25 +85,35 @@
            ===================================================== */
         .header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4mm 12mm 4mm 5mm;
+            align-items: flex-end;
+            padding: 4mm 6mm 3mm 0;
             margin-bottom: 0;
             min-height: 26mm;
         }
 
+        /* 52mm sidebar zone with white left-strip offset; centres the date badge */
+        .date-zone {
+            width: 52mm;
+            padding-left: 3mm;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+        }
+
         .date-badge {
             background-color: var(--naartjie);
-            color: var(--white);
-            padding: 3mm 7mm;
-            font-family: 'Avenir Next', 'Lato', sans-serif;
+            color: #ffffff;
+            padding: 2.2mm 5mm;
+            font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 400;
             font-size: 11pt;
             letter-spacing: 0.02em;
+            text-align: center;
         }
 
         .logo {
             height: 12mm;
+            margin-left: auto;
         }
 
         .logo img {
@@ -125,7 +135,7 @@
         .fund-name {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 20pt;
+            font-size: 22pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
             margin: 0 0 1.5mm 0;
@@ -133,7 +143,7 @@
         }
 
         .fund-name .class-suffix {
-            font-weight: 400;
+            font-weight: 500;
             font-size: 16pt;
         }
 
@@ -183,8 +193,8 @@
         .sidebar-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 600;
-            font-size: 5pt;
-            line-height: 6pt;
+            font-size: 5.5pt;
+            line-height: 6.5pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
@@ -194,8 +204,8 @@
         .sidebar-text {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 6pt;
-            line-height: 7pt;
+            font-size: 6.5pt;
+            line-height: 7.5pt;
             letter-spacing: 0.01em;
             color: var(--off-black);
             margin: 0;
@@ -212,14 +222,19 @@
             width: 1.4mm;
             height: 1.4mm;
             border-radius: 50%;
+            box-sizing: border-box;
+            display: inline-block;
+            flex: 0 0 1.4mm;
         }
 
         .equity-dot.filled {
             background-color: var(--naartjie);
+            border: 0.15mm solid var(--naartjie);
         }
 
         .equity-dot.empty {
-            background-color: var(--medium-grey);
+            background-color: transparent;
+            border: 0.15mm solid var(--medium-grey);
         }
 
         /* Main Content Area */
@@ -236,8 +251,8 @@
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 9pt;
-            line-height: 10pt;
+            font-size: 8pt;
+            line-height: 9pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--off-black);
@@ -246,9 +261,9 @@
 
         .section-subheading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 400;
-            font-size: 6pt;
-            line-height: 7pt;
+            font-weight: 500;
+            font-size: 6.5pt;
+            line-height: 7.5pt;
             letter-spacing: 0.01em;
             color: var(--off-black);
             margin: -0.3mm 0 0.8mm 0;
@@ -256,8 +271,8 @@
 
         /* Smaller suffix style for parenthetical text in section headings */
         .section-heading .title-suffix {
-            font-size: 7pt;
-            font-weight: 400;
+            font-size: 6.5pt;
+            font-weight: 500;
             color: var(--off-black);
             text-transform: uppercase;
             letter-spacing: 0.01em;
@@ -274,10 +289,10 @@
         table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 1.5px 1px;
-            margin-left: -1.5px;
-            margin-right: -1.5px;
-            font-size: 6.5pt;
+            border-spacing: 2.5px 1.5px;
+            margin-left: -2.5px;
+            margin-right: -2.5px;
+            font-size: 7pt;
         }
 
         table th {
@@ -289,8 +304,8 @@
             line-height: 6.5pt;
             letter-spacing: 0;
             text-transform: uppercase;
-            text-align: center;
-            padding: 1.4mm 1.5mm;
+            text-align: right;
+            padding: 0.9mm 1.5mm;
         }
 
         table th:first-child {
@@ -301,31 +316,97 @@
             background-color: var(--very-light-grey);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 6.5pt;
-            line-height: 7.5pt;
+            font-size: 7pt;
+            line-height: 8pt;
             padding: 1mm 2mm;
-            text-align: center;
+            text-align: right;
         }
 
         table td:first-child {
             text-align: left;
         }
 
-        /* Performance Table - light grey header instead of dark navy */
+        /* Performance Table — ticket #11: dark navy header w/ white text, darker grey body cells */
         .performance-table table th {
-            background-color: var(--dark-navy-15);
-            color: var(--dark-navy);
-            font-weight: 600;
+            background-color: var(--dark-navy);
+            color: var(--white);
+            font-weight: 500;
+            text-align: right;
+        }
+        .performance-table table th:first-child {
+            text-align: left;
+        }
+        .performance-table table td {
+            background-color: var(--medium-grey-25);
+            color: var(--off-black);
+            font-size: 7pt;
+            line-height: 8pt;
+        }
+        /* Blank spacer row between Benchmark and Fund highest */
+        .performance-table table tr.perf-spacer-row td {
+            background-color: transparent !important;
+            padding: 0;
+            height: 1.5mm;
+            line-height: 1.5mm;
+            font-size: 0;
         }
 
-        /* Highlighted Foord fund rows */
+        /* Highlighted Foord fund rows — pink background, text colour same as table */
         table tbody tr.highlight-row td {
             background-color: var(--naartjie-20);
+            color: var(--off-black);
         }
 
         table tbody tr.highlight-row td:first-child {
-            color: var(--naartjie);
+            color: var(--off-black);
+            font-weight: 400;
+        }
+
+        /* Top 10 Investments — second column (ASSET CLASS) left-aligned */
+        .top10-table table td:nth-child(2),
+        .top10-table table th:nth-child(2) {
+            text-align: left;
+        }
+
+        /* TIC table: first (TER) + last data row (Transaction costs) white;
+           middle sub-item rows grey. Total row (.total-row) keeps red styling. */
+        .tic-table table tbody tr td {
+            background-color: var(--medium-grey-25);
+        }
+        .tic-table table tbody tr:nth-child(1) td,
+        .tic-table table tbody tr:nth-child(6) td {
+            background-color: var(--white);
+        }
+
+        /* Performance fee examples — row 1 pink, middle rows grey + black text,
+           last row (.total-row) keeps the global red+white styling. */
+        .pfe-table table tbody tr td {
+            background-color: var(--medium-grey-25);
+            color: var(--off-black);
+            font-weight: 400;
+        }
+        .pfe-table table tbody tr:nth-child(1) td {
+            background-color: var(--naartjie-20);
+            color: var(--off-black);
             font-weight: 500;
+        }
+
+        /* #17: performance-fees text larger+darker, more spacing top/bottom */
+        .performance-fees-section {
+            margin: 4mm 0 4mm 0;
+        }
+
+        /* Match the vertical gap above other major fee sub-sections (TIC, PFE) so
+           "TOTAL INVESTMENT CHARGE" sits at the same distance from the body text
+           above it as "PERFORMANCE FEE EXAMPLES" does. */
+        .tic-section, .pfe-section {
+            margin-top: 4mm;
+        }
+        .performance-fees-text {
+            font-size: 6.5pt;
+            line-height: 8.5pt;
+            color: var(--off-black);
+            margin: 0 0 2mm 0;
         }
 
         /* Total row */
@@ -336,14 +417,10 @@
             color: var(--white);
         }
 
-        /* Change indicators - both use naartjie color to match reference */
-        .change-up {
-            color: var(--naartjie);
-        }
-
-        .change-down {
-            color: var(--naartjie);
-        }
+        /* Change indicators — arrow coloured only; number inherits table colour */
+        td.change-cell { color: var(--off-black); }
+        td.change-cell .change-arrow-up { color: #000; }
+        td.change-cell .change-arrow-down { color: #7A9CB4; }
 
         /* =====================================================
            CHARTS SECTION
@@ -361,16 +438,17 @@
 
         .chart-title {
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 600;
-            font-size: 6pt;
+            font-weight: 500;
+            font-size: 8pt;
+            line-height: 9pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--off-black);
-            margin-bottom: 1mm;
+            margin: 0 0 1mm 0;
         }
 
         .chart-wrapper {
-            height: 32mm;
+            height: 38mm;
             position: relative;
         }
 
@@ -382,10 +460,10 @@
         .chart-explanation {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 5.5pt;
-            line-height: 7pt;
+            font-size: 6.5pt;
+            line-height: 8pt;
             letter-spacing: 0.01em;
-            color: var(--dark-grey);
+            color: var(--off-black);
             margin: 1.5mm 0 2mm 0;
         }
 
@@ -395,10 +473,10 @@
         .footnotes {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 5pt;
-            line-height: 6pt;
+            font-size: 6pt;
+            line-height: 7.5pt;
             letter-spacing: 0.01em;
-            color: var(--dark-grey);
+            color: var(--off-black);
             margin-top: 1mm;
         }
 
@@ -407,7 +485,8 @@
         }
 
         .footnotes sup {
-            font-size: 4pt;
+            font-size: 5pt;
+            line-height: 0;
             vertical-align: super;
         }
 
@@ -426,7 +505,7 @@
         .info-sidebar-header {
             background-color: var(--dark-navy);
             color: var(--white);
-            padding: 3mm 3mm;
+            padding: 1.6mm 3mm;
             margin: 8mm 3mm 6mm 3mm;
             text-align: center;
         }
@@ -465,7 +544,9 @@
            ===================================================== */
         .fees-content {
             flex: 1;
-            padding: 12mm 5mm 4mm 5mm;
+            /* Align FEES heading with the first line of sidebar body text
+               (sidebar margin-top 8mm + dark box ~6.4mm + margin-bottom 6mm ≈ 20mm). */
+            padding: 20mm 5mm 4mm 5mm;
             overflow: hidden;
         }
 
@@ -477,33 +558,42 @@
             margin-left: 0;
         }
 
+        /* #15: first 5 rows darker grey, shorter rows, both columns left-aligned */
         .fee-rates-table td {
-            padding: 1mm 1.5mm;
-            background-color: var(--very-light-grey);
+            padding: 0.6mm 1.5mm;
+            background-color: var(--medium-grey-25);
+            text-align: left;
         }
 
         .fee-rates-table td:last-child:not([colspan]) {
-            text-align: right;
+            text-align: left;
             font-weight: 500;
         }
 
+        /* "Foord global funds:" — white background (not red), then next two rows red+heavier. */
         .fee-rates-table tr.sub-item td:first-child {
             padding-left: 3mm;
         }
 
         .fee-rates-table tr.global-funds-header td {
-            background-color: var(--naartjie-20) !important;
-            color: var(--naartjie);
+            background-color: var(--white) !important;
+            color: var(--off-black);
             font-weight: 500;
             text-align: left;
+        }
+
+        .fee-rates-table tr.sub-item td {
+            background-color: var(--naartjie-20) !important;
+            color: var(--off-black);
+            font-weight: 500;
         }
 
         .fee-description {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 5.5pt;
-            line-height: 7pt;
-            color: var(--dark-grey);
+            font-size: 6.5pt;
+            line-height: 8pt;
+            color: var(--off-black);
             margin: 1.5mm 0 2.5mm 0;
         }
 
@@ -511,32 +601,62 @@
            FOOTER
            ===================================================== */
         .footer {
-            margin-top: 4mm;
+            margin-top: 9mm;
             padding-top: 2mm;
             border-top: 0.5pt solid var(--naartjie);
+            /* #19: shorter top rule — span only the first half of the footer width */
+            position: relative;
+        }
+        .footer::before {
+            /* override border-top with a shorter visual rule */
+            content: "";
+        }
+
+        /* shorten top rule: clip via background trick — actual border-top is removed in favour of a fixed-width pseudo line */
+        .footer {
+            border-top: none;
+        }
+        .footer::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 40mm;
+            height: 0;
+            border-top: 0.6pt solid var(--naartjie);
         }
 
         .footer-text {
             font-family: 'Merriweather', Georgia, serif;
-            font-weight: 400;
+            font-weight: 300;
             font-size: 7pt;
-            line-height: 9pt;
+            line-height: 9.5pt;
             letter-spacing: 0.02em;
             color: var(--naartjie);
-            margin: 0 0 1.5mm 0;
+            margin: 0 0 2mm 0;
         }
 
         .footer-contact {
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 7pt;
             line-height: 9pt;
             letter-spacing: 0.02em;
             color: var(--naartjie);
+            position: relative;
         }
 
         .footer-contact p {
             margin: 0;
+        }
+
+        /* Red Foord acorn leaf next to contact info */
+        .footer-leaf {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 14mm;
+            height: auto;
         }
 
         /* =====================================================
@@ -582,13 +702,25 @@
                 e($title)
             );
         };
+        // Normalise Unicode superscript digits to <sup> tags so every footnote
+        // number renders at exactly the same size (¹ glyph weight differs from
+        // ³⁴⁵ across font families).
+        $normaliseSupers = function (string $text): string {
+            $map = ['⁰' => '0', '¹' => '1', '²' => '2', '³' => '3', '⁴' => '4', '⁵' => '5', '⁶' => '6', '⁷' => '7', '⁸' => '8', '⁹' => '9'];
+            // Group runs of consecutive superscript digits (e.g. "³,⁴") into one tag.
+            return preg_replace_callback('/[⁰¹²³⁴⁵⁶⁷⁸⁹](?:[,]?[⁰¹²³⁴⁵⁶⁷⁸⁹])*/u', function ($m) use ($map) {
+                return '<sup>'.strtr($m[0], $map).'</sup>';
+            }, $text);
+        };
     @endphp
     <!-- PAGE 1 -->
     <div class="page">
         <!-- Header -->
         <div class="header">
-            <div class="date-badge">
-                {{ $fund->data['fund']['date'] ?? now()->format('d F Y') }}
+            <div class="date-zone">
+                <div class="date-badge">
+                    {{ $fund->data['fund']['date'] ?? now()->format('d F Y') }}
+                </div>
             </div>
             <div class="logo">
                 <img src="{{ $fund->data['fund']['logoUrl'] ?? 'https://foord.co.za/themes/custom/mirum/logo.png' }}" alt="FOORD">
@@ -733,9 +865,25 @@
                                     <tr>
                                         <td>{{ $row['name'] }}</td>
                                         @foreach ($aaColumnKeys as $colKey)
-                                            <td class="{{ $colKey === 'change' ? (($row['changeDirection'] ?? '') === 'up' ? 'change-up' : (($row['changeDirection'] ?? '') === 'down' ? 'change-down' : '')) : '' }}">
-                                                {{ $colKey === 'change' ? ($row['change'] ?? '') : $fmt($row[$colKey] ?? '', 1) }}
-                                            </td>
+                                            @if ($colKey === 'change')
+                                                @php
+                                                    $dir = $row['changeDirection'] ?? '';
+                                                    $raw = trim((string)($row['change'] ?? ''));
+                                                    $arrowClass = $dir === 'up' ? 'change-arrow-up' : ($dir === 'down' ? 'change-arrow-down' : '');
+                                                    if (preg_match('/^([▲▼])\s*(.*)$/u', $raw, $cm)) {
+                                                        $arrowChar = $cm[1];
+                                                        $numPart = $cm[2];
+                                                    } else {
+                                                        $arrowChar = '';
+                                                        $numPart = $raw;
+                                                    }
+                                                @endphp
+                                                <td class="change-cell">
+                                                    @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span>@endif {{ $numPart }}
+                                                </td>
+                                            @else
+                                                <td>{{ $fmt($row[$colKey] ?? '', 1) }}</td>
+                                            @endif
                                         @endforeach
                                     </tr>
                                 @endforeach
@@ -757,7 +905,7 @@
                 @if(isset($fund->data['mainContent']['topInvestments']))
                     <h3 class="section-heading">{{ $fund->data['mainContent']['topInvestments']['title'] ?? 'TOP 10 INVESTMENTS' }}</h3>
 
-                    <div class="table-container">
+                    <div class="table-container top10-table">
                         <table>
                             <thead>
                                 <tr>
@@ -767,8 +915,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($fund->data['mainContent']['topInvestments']['rows'] as $row)
-                                    <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
+                                @foreach ($fund->data['mainContent']['topInvestments']['rows'] as $idx => $row)
+                                    <tr class="{{ ($row['highlight'] ?? false) || $idx < 2 ? 'highlight-row' : '' }}">
                                         <td>{{ $row['security'] }}</td>
                                         <td>{{ $row['assetClass'] }}</td>
                                         <td>{{ $row['market'] }}</td>
@@ -821,7 +969,7 @@
                             $perfColKeys[] = $perfKeyMap[$clean] ?? null;
                         }
                     @endphp
-                    <h3 class="section-heading">{{ $fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED)' }}</h3>
+                    <h3 class="section-heading">{!! $normaliseSupers($renderHeading($fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED)')) !!}</h3>
 
                     <div class="table-container performance-table">
                         <table>
@@ -833,13 +981,39 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($fund->data['mainContent']['performanceTable']['rows'] as $row)
-                                    <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
-                                        <td>{!! $row['name'] !!}</td>
+                                @php
+                                    $perfRows = $fund->data['mainContent']['performanceTable']['rows'] ?? [];
+                                    // Highlight only the very first data row (the Foord fund row).
+                                    // Insert a blank spacer row between "Benchmark" and "Fund highest".
+                                @endphp
+                                @foreach ($perfRows as $idx => $row)
+                                    @php
+                                        $nameStr = trim(strip_tags((string)$row['name']));
+                                        $isTopFundRow = $idx === 0;
+                                        $displayName = $row['name'];
+                                        $lowerName = strtolower($nameStr);
+                                        if (preg_match('/^fund\s+(highest|lowest)/i', $nameStr)) {
+                                            // Highest/Lowest historical rows take footnotes 3 and 5.
+                                            if (strpos($displayName, '3,5') === false && strpos($displayName, '³,⁵') === false) {
+                                                $displayName .= '<sup>3,5</sup>';
+                                            }
+                                        } elseif (stripos($nameStr, 'fund') === 0 && strpos($displayName, '³') === false && strpos($displayName, '<sup>3</sup>') === false) {
+                                            $displayName .= '<sup>3</sup>';
+                                        } elseif (stripos($nameStr, 'benchmark') === 0 && strpos($displayName, '³,⁴') === false && strpos($displayName, '3,4') === false) {
+                                            $displayName .= '<sup>3,4</sup>';
+                                        }
+                                    @endphp
+                                    <tr class="{{ $isTopFundRow ? 'highlight-row' : '' }}">
+                                        <td>{!! $displayName !!}</td>
                                         @foreach ($perfColKeys as $colKey)
                                             <td>{{ $colKey && isset($row[$colKey]) ? (in_array($colKey, ['cashValue']) ? $row[$colKey] : $fmt($row[$colKey], 1)) : '' }}</td>
                                         @endforeach
                                     </tr>
+                                    @if (stripos($nameStr, 'benchmark') === 0)
+                                        <tr class="perf-spacer-row">
+                                            <td colspan="{{ count($perfColKeys) + 1 }}">&nbsp;</td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
@@ -848,7 +1022,7 @@
                     @if(isset($fund->data['mainContent']['performanceTable']['footnotes']))
                         <div class="footnotes">
                             @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $footnote)
-                                <p>{!! $footnote !!}</p>
+                                <p>{!! $normaliseSupers($footnote) !!}</p>
                             @endforeach
                         </div>
                     @endif
@@ -872,7 +1046,7 @@
                         @endforeach
                     @endif
                     @if(isset($fund->data['importantInfo']['publishedDate']))
-                        <p style="margin-top: 2mm; font-weight: 500;">{{ $fund->data['importantInfo']['publishedDate'] }}</p>
+                        <p style="margin-top: 2mm;">{{ $fund->data['importantInfo']['publishedDate'] }}</p>
                     @endif
                 </div>
             </div>
@@ -917,52 +1091,57 @@
 
                 <!-- Total Investment Charge -->
                 @if(isset($fund->data['fees']['totalInvestmentCharge']))
-                    <h3 class="section-heading">{{ $fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %' }}</h3>
+                    <div class="tic-section">
+                        <h3 class="section-heading">{{ $fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %' }}</h3>
 
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    @foreach ($fund->data['fees']['totalInvestmentCharge']['headers'] as $header)
-                                        <th>{{ $header }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $row)
+                        <div class="table-container tic-table">
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td>{{ $row['name'] }}</td>
-                                        <td>{{ $fmt($row['12m'] ?? '', 2) }}</td>
-                                        <td>{{ $fmt($row['36m'] ?? '', 2) }}</td>
+                                        @foreach ($fund->data['fees']['totalInvestmentCharge']['headers'] as $header)
+                                            <th>{{ $header }}</th>
+                                        @endforeach
                                     </tr>
-                                @endforeach
-                                <tr class="total-row">
-                                    <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] ?? 'Total investment charge' }}</td>
-                                    <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? '', 2) }}</td>
-                                    <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? '', 2) }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $row)
+                                        <tr>
+                                            <td>{{ $row['name'] }}</td>
+                                            <td>{{ $fmt($row['12m'] ?? '', 2) }}</td>
+                                            <td>{{ $fmt($row['36m'] ?? '', 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="total-row">
+                                        <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] ?? 'Total investment charge' }}</td>
+                                        <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? '', 2) }}</td>
+                                        <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? '', 2) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                    @if(isset($fund->data['fees']['totalInvestmentCharge']['description']))
-                        <p class="fee-description">{{ $fund->data['fees']['totalInvestmentCharge']['description'] }}</p>
-                    @endif
+                        @if(isset($fund->data['fees']['totalInvestmentCharge']['description']))
+                            <p class="fee-description">{{ $fund->data['fees']['totalInvestmentCharge']['description'] }}</p>
+                        @endif
+                    </div>
                 @endif
 
                 <!-- Performance Fees -->
                 @if(isset($fund->data['fees']['performanceFees']))
-                    <h3 class="section-heading">{{ $fund->data['fees']['performanceFees']['title'] ?? 'PERFORMANCE FEES' }}</h3>
-                    @foreach ($fund->data['fees']['performanceFees']['paragraphs'] as $paragraph)
-                        <p class="fee-description">{{ $paragraph }}</p>
-                    @endforeach
+                    <div class="performance-fees-section">
+                        <h3 class="section-heading">{{ $fund->data['fees']['performanceFees']['title'] ?? 'PERFORMANCE FEES' }}</h3>
+                        @foreach ($fund->data['fees']['performanceFees']['paragraphs'] as $paragraph)
+                            <p class="fee-description performance-fees-text">{{ $paragraph }}</p>
+                        @endforeach
+                    </div>
                 @endif
 
                 <!-- Performance Fee Examples -->
                 @if(isset($fund->data['fees']['performanceFeeExamples']))
+                    <div class="pfe-section">
                     <h3 class="section-heading">{{ $fund->data['fees']['performanceFeeExamples']['title'] ?? 'PERFORMANCE FEE EXAMPLES %' }}</h3>
 
-                    <div class="table-container">
+                    <div class="table-container pfe-table">
                         <table>
                             <thead>
                                 <tr>
@@ -995,6 +1174,7 @@
                     @if(isset($fund->data['fees']['performanceFeeExamples']['footnote']))
                         <p class="footnotes">{{ $fund->data['fees']['performanceFeeExamples']['footnote'] }}</p>
                     @endif
+                    </div>
                 @endif
 
                 <!-- Footer -->
@@ -1006,6 +1186,8 @@
                             <p>T. {{ $fund->data['footer']['contact']['phone'] ?? '+27 21 532 6969' }}</p>
                             <p>E. {{ $fund->data['footer']['contact']['email'] ?? 'unittrusts@foord.co.za' }}</p>
                             <p>{{ $fund->data['footer']['contact']['website'] ?? 'www.foord.co.za' }}</p>
+                            <img class="footer-leaf" src="{{ asset('images/leaf.png') }}" alt="">
+
                         </div>
                     </div>
                 @endif
@@ -1027,6 +1209,7 @@
                 lightBlue: '#7a9cb4',
                 lightGrey: '#cccccc',
                 darkGrey: '#535353',
+                offBlack: '#313131',
             };
 
             Highcharts.setOptions({
@@ -1053,39 +1236,80 @@
 
             // Investment Strategy vs SA Inflation
             if (inflationData.length > 0) {
+                // Calendar-aligned ticks: every 8 years on December, plus the first available date.
+                const inflationDates = inflationData.map(d => d.date);
+                const inflationTickPositions = (function () {
+                    const idxByDate = {};
+                    inflationDates.forEach((d, i) => { idxByDate[d] = i; });
+                    const first = inflationDates[0];
+                    const firstYear = parseInt(first.slice(0, 4), 10);
+                    const positions = [0];
+                    // Step every 8 years from the first December that exists in the data.
+                    const startDec = firstYear + ((12 - parseInt(first.slice(5, 7), 10) + 12) % 12 === 0 ? 0 : 0); // start from same year if Dec, else next
+                    // Use first date's year as base for the December sequence
+                    for (let y = firstYear; y <= 2030; y += 8) {
+                        const key = y + '-12';
+                        if (idxByDate[key] !== undefined && idxByDate[key] !== 0) positions.push(idxByDate[key]);
+                    }
+                    return positions;
+                })();
+
+                // Band widths (so stacking renders correct bands):
+                //  - Inflation band:  0 → inflation
+                //  - 5% Hurdle band:  inflation → inflation + 5  (constant 5-wide gap above inflation)
+                //  - Excess band:     inflation + 5 → composite  (top equals composite spline)
+                // Composite spline overlays at the composite return level itself.
+                const inflationSeries = inflationData.map(d => d.inflation);
+                const hurdleSeries    = inflationData.map(() => 5);
+                const excessSeries    = inflationData.map(d => d.composite - d.inflation - 5);
+                const compositeSeries = inflationData.map(d => d.composite);
+
+                // Auto-fit the y-axis to actual data so there isn't a large empty band above the chart.
+                const inflationAllValues = inflationSeries.concat(compositeSeries);
+                const inflationDataMax = Math.max(...inflationAllValues);
+                const inflationDataMin = Math.min(...inflationAllValues, 0);
+                // Round up to nearest 5 above max, down to nearest 5 below min.
+                const inflationYMax = Math.ceil(inflationDataMax / 5) * 5;
+                const inflationYMin = Math.floor(inflationDataMin / 5) * 5;
+                const inflationTickPositionsY = [];
+                for (let v = inflationYMin; v <= inflationYMax; v += 5) { inflationTickPositionsY.push(v); }
+
                 Highcharts.chart('inflationChart', {
                     chart: { type: 'area', backgroundColor: 'transparent', spacing: [4, 4, 4, 4], animation: false },
                     title: { text: null },
                     xAxis: {
-                        categories: inflationData.map(d => d.date),
-                        tickWidth: 0,
-                        lineColor: '#999',
+                        categories: inflationDates,
+                        tickWidth: 1,
+                        tickLength: 3,
+                        tickColor: '#000',
+                        lineColor: '#000',
+                        lineWidth: 1,
                         labels: {
-                            style: { fontSize: '6px', color: colors.darkGrey },
+                            style: { fontSize: '6px', color: colors.offBlack },
                             formatter: function () { return formatXTickInflation(this.value); },
+                            rotation: 0,
                         },
-                        tickPositioner: function () {
-                            const len = this.categories.length;
-                            const positions = [];
-                            const count = 5;
-                            for (let i = 0; i < count; i++) {
-                                positions.push(Math.floor((len - 1) * i / (count - 1)));
-                            }
-                            return positions;
-                        },
+                        tickPositions: inflationTickPositions,
                     },
                     yAxis: {
                         title: { text: null },
-                        min: -10, max: 35,
-                        tickPositions: [-10, -5, 0, 5, 10, 15, 20, 25, 30, 35],
-                        gridLineColor: '#e5e5e5',
+                        min: inflationYMin, max: inflationYMax,
+                        tickPositions: inflationTickPositionsY,
+                        gridLineWidth: 0,
+                        lineColor: '#000',
+                        lineWidth: 1,
+                        tickWidth: 1,
+                        tickLength: 3,
+                        tickColor: '#000',
+                        endOnTick: false,
+                        startOnTick: false,
                         labels: {
-                            style: { fontSize: '6px', color: colors.darkGrey },
+                            style: { fontSize: '6px', color: colors.offBlack },
                             formatter: function () { return this.value + '%'; },
                         },
                     },
                     legend: {
-                        itemStyle: { fontSize: '6px', fontWeight: 'normal', color: colors.darkGrey },
+                        itemStyle: { fontSize: '6px', fontWeight: 'normal', color: colors.offBlack },
                         symbolWidth: 14,
                         symbolHeight: 6,
                         symbolRadius: 0,
@@ -1096,14 +1320,16 @@
                     tooltip: { enabled: false },
                     plotOptions: {
                         area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 0, fillOpacity: 1 },
-                        spline: { marker: { enabled: false }, lineWidth: 1.5 },
+                        spline: { marker: { enabled: false }, lineWidth: 1 },
                         series: { animation: false },
                     },
+                    // Stack order from bottom up: Inflation, 5% Hurdle, Excess. Composite is a separate spline overlay.
+                    // legendIndex pins legend order: Composite first, then stack from bottom.
                     series: [
-                        { name: 'Composite', type: 'spline', data: inflationData.map(d => d.composite), color: colors.naartjie, stacking: undefined, zIndex: 5 },
-                        { name: 'Inflation', type: 'area', data: inflationData.map(d => d.inflation), color: colors.lightBlue },
-                        { name: '5% Hurdle', type: 'area', data: inflationData.map(d => d.hurdle), color: colors.lightGrey },
-                        { name: 'Excess',    type: 'area', data: inflationData.map(d => d.excess),    color: colors.darkNavy },
+                        { name: 'Composite', type: 'spline', data: compositeSeries, color: colors.naartjie, stacking: undefined, zIndex: 5, legendIndex: 0 },
+                        { name: 'Inflation', type: 'area', data: inflationSeries, color: colors.lightBlue, zIndex: 1, legendIndex: 1 },
+                        { name: '5% Hurdle', type: 'area', data: hurdleSeries,    color: colors.lightGrey, zIndex: 2, legendIndex: 2 },
+                        { name: 'Excess',    type: 'area', data: excessSeries,    color: colors.darkNavy,  zIndex: 3, legendIndex: 3 },
                     ],
                 });
             }
@@ -1116,39 +1342,72 @@
                 // Display the cash values in thousands of R (the chart shows "R 1,487" for ~1,487,000 cents → R-thousand)
                 const formatCashLabel = (v) => 'R ' + Math.round(v).toLocaleString('en-US');
 
+                // Compute a tight log-scale max so the curves fill the plot (no large empty band above).
+                const portfolioMaxVal = Math.max(
+                    ...portfolioData.map(d => Math.max(d.fund || 0, d.benchmark || 0))
+                );
+                // Just ~10% above the peak so the data labels sit comfortably near the top.
+                const portfolioYMax = portfolioMaxVal * 1.1;
+
+                // Calendar-aligned ticks every 4 years on the inception month, no rotation.
+                const portfolioDates = portfolioData.map(d => d.date);
+                const portfolioTickPositions = (function () {
+                    const idxByDate = {};
+                    portfolioDates.forEach((d, i) => { idxByDate[d] = i; });
+                    const first = portfolioDates[0];
+                    const firstYear = parseInt(first.slice(0, 4), 10);
+                    const month = first.slice(5, 7);
+                    const positions = [0];
+                    for (let y = firstYear + 4; y <= 2030; y += 4) {
+                        const key = y + '-' + month;
+                        if (idxByDate[key] !== undefined) positions.push(idxByDate[key]);
+                    }
+                    return positions;
+                })();
+
                 Highcharts.chart('portfolioChart', {
-                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 60, 4, 4], animation: false },
+                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 90, 4, 4], animation: false },
                     title: { text: null },
                     xAxis: {
-                        categories: portfolioData.map(d => d.date),
-                        tickWidth: 0,
-                        lineColor: '#999',
+                        categories: portfolioDates,
+                        tickWidth: 1,
+                        tickLength: 3,
+                        tickColor: '#000',
+                        lineColor: '#000',
+                        lineWidth: 1,
                         labels: {
-                            style: { fontSize: '6px', color: colors.darkGrey },
+                            style: { fontSize: '6px', color: colors.offBlack },
                             formatter: function () { return formatXTickPortfolio(this.value); },
+                            rotation: 0,
+                            autoRotation: false,
                         },
-                        tickPositioner: function () {
-                            const len = this.categories.length;
-                            const positions = [];
-                            const count = 6;
-                            for (let i = 0; i < count; i++) {
-                                positions.push(Math.floor((len - 1) * i / (count - 1)));
-                            }
-                            return positions;
-                        },
+                        tickPositions: portfolioTickPositions,
                     },
                     yAxis: {
-                        title: { text: "Cash Value² (R'000)", style: { fontSize: '6px', color: colors.darkGrey } },
+                        title: { text: "Cash Value² (R'000)", style: { fontSize: '6px', color: colors.offBlack, fontWeight: '400' } },
                         type: 'logarithmic',
-                        gridLineColor: '#e5e5e5',
+                        gridLineWidth: 0,
+                        lineColor: '#000',
+                        lineWidth: 1,
+                        tickWidth: 1,
+                        tickLength: 3,
+                        tickColor: '#000',
                         min: 100,
+                        max: portfolioYMax,
+                        endOnTick: false,
+                        startOnTick: false,
+                        // One tick per decade — only the "100" label is rendered (see formatter).
+                        tickInterval: 1,
                         labels: {
-                            style: { fontSize: '6px', color: colors.darkGrey },
-                            formatter: function () { return this.value === 100 ? '100' : ''; },
+                            style: { fontSize: '6px', color: colors.offBlack },
+                            formatter: function () {
+                                // Per client amend: show only the 100 label.
+                                return this.value === 100 ? '100' : '';
+                            },
                         },
                     },
                     legend: {
-                        itemStyle: { fontSize: '6px', fontWeight: 'normal', color: colors.darkGrey },
+                        itemStyle: { fontSize: '6px', fontWeight: 'normal', color: colors.offBlack },
                         symbolWidth: 14,
                         symbolHeight: 2,
                         symbolRadius: 0,
@@ -1158,14 +1417,14 @@
                     },
                     tooltip: { enabled: false },
                     plotOptions: {
-                        spline: { marker: { enabled: false }, lineWidth: 1.5 },
+                        spline: { marker: { enabled: false }, lineWidth: 1 },
                         series: { animation: false },
                     },
                     series: [
                         {
                             name: 'Fund', data: portfolioData.map(d => d.fund), color: colors.naartjie,
                             dataLabels: [{
-                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6,
+                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: -4,
                                 style: { fontSize: '6px', fontWeight: 'bold', color: colors.naartjie, textOutline: 'none' },
                                 formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
                                 crop: false, overflow: 'allow', allowOverlap: true,
@@ -1174,7 +1433,7 @@
                         {
                             name: 'Benchmark', data: portfolioData.map(d => d.benchmark), color: colors.darkNavy,
                             dataLabels: [{
-                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6,
+                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: 4,
                                 style: { fontSize: '6px', fontWeight: 'bold', color: colors.darkNavy, textOutline: 'none' },
                                 formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
                                 crop: false, overflow: 'allow', allowOverlap: true,

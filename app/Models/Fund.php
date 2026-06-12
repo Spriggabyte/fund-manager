@@ -14,23 +14,179 @@ class Fund extends Model
     protected $fillable = [
         'name',
         'class',
-        'data',
+        // Fund metadata
+        'template',
+        'fund_date',
+        'description',
+        'logo_url',
+        // Sidebar fields
+        'category',
+        'domicile',
+        'minimums',
+        'benchmark',
+        'unit_price',
+        'isin_number',
+        'sedol',
+        'risk_of_loss',
+        'time_horizon',
+        'base_currency',
+        'fund_managers',
+        'foreign_assets',
+        'inception_date',
+        'number_of_units',
+        'portfolio_size',
+        'equity_indicator_description',
+        'last_distributions',
+        'management_company',
+        'income_distributions',
+        'portfolio_orientation',
+        'income_characteristics',
+        'significant_restrictions',
+        // Footer
+        'footer_info',
+        'footer_email',
+        'footer_phone',
+        'footer_website',
+        'footer_logo_url',
+        'footer_free_of_charge',
+        // Important info
+        'important_info_title',
+        'important_info_published_date',
+        'important_info_paragraphs',
+        // Complex structured data (JSON)
+        'asset_allocation',
+        'top_investments',
+        'performance_table',
+        'chart_data',
+        'fees',
     ];
 
     protected $casts = [
-        'data' => 'array',
+        'important_info_paragraphs' => 'array',
+        'asset_allocation' => 'array',
+        'top_investments' => 'array',
+        'performance_table' => 'array',
+        'chart_data' => 'array',
+        'fees' => 'array',
     ];
 
-    public function getDataAttribute(mixed $value): array
-    {
-        if (is_null($value)) {
-            return [];
-        }
-        if (is_string($value)) {
-            return json_decode($value, true) ?? [];
-        }
+    /**
+     * Map from old JSON dot-notation paths to database columns.
+     * Used by updateData() for inline editing and template backward compatibility.
+     */
+    public const FIELD_MAP = [
+        'fund.name' => 'name',
+        'fund.date' => 'fund_date',
+        'fund.description' => 'description',
+        'fund.logoUrl' => 'logo_url',
+        'fund.template' => 'template',
+        'sidebar.category' => 'category',
+        'sidebar.domicile' => 'domicile',
+        'sidebar.minimums' => 'minimums',
+        'sidebar.benchmark' => 'benchmark',
+        'sidebar.unitPrice' => 'unit_price',
+        'sidebar.isinNumber' => 'isin_number',
+        'sidebar.sedol' => 'sedol',
+        'sidebar.riskOfLoss' => 'risk_of_loss',
+        'sidebar.timeHorizon' => 'time_horizon',
+        'sidebar.baseCurrency' => 'base_currency',
+        'sidebar.fundManagers' => 'fund_managers',
+        'sidebar.foreignAssets' => 'foreign_assets',
+        'sidebar.inceptionDate' => 'inception_date',
+        'sidebar.numberOfUnits' => 'number_of_units',
+        'sidebar.portfolioSize' => 'portfolio_size',
+        'sidebar.equityIndicator.description' => 'equity_indicator_description',
+        'sidebar.lastDistributions' => 'last_distributions',
+        'sidebar.managementCompany' => 'management_company',
+        'sidebar.incomeDistributions' => 'income_distributions',
+        'sidebar.portfolioOrientation' => 'portfolio_orientation',
+        'sidebar.incomeCharacteristics' => 'income_characteristics',
+        'sidebar.significantRestrictions' => 'significant_restrictions',
+        'footer.info' => 'footer_info',
+        'footer.contact.email' => 'footer_email',
+        'footer.contact.phone' => 'footer_phone',
+        'footer.contact.website' => 'footer_website',
+        'footer.logoUrl' => 'footer_logo_url',
+        'footer.freeOfCharge' => 'footer_free_of_charge',
+        'importantInfo.title' => 'important_info_title',
+        'importantInfo.publishedDate' => 'important_info_published_date',
+    ];
 
-        return is_array($value) ? $value : [];
+    /**
+     * Map from dot-notation prefixes to JSON column names.
+     */
+    public const JSON_COLUMN_MAP = [
+        'mainContent.assetAllocation' => 'asset_allocation',
+        'mainContent.topInvestments' => 'top_investments',
+        'mainContent.performanceTable' => 'performance_table',
+        'mainContent.charts' => 'chart_data',
+        'fees' => 'fees',
+        'importantInfo.paragraphs' => 'important_info_paragraphs',
+    ];
+
+    /**
+     * Build the legacy data array from the new columns.
+     * This allows templates to continue using $fund->data['sidebar']['category'] etc.
+     */
+    public function getDataAttribute(): array
+    {
+        return [
+            'fund' => [
+                'name' => $this->attributes['name'] ?? '',
+                'date' => $this->fund_date ?? '',
+                'description' => $this->description ?? '',
+                'logoUrl' => $this->logo_url ?? '',
+                'template' => $this->template ?? 'show',
+            ],
+            'sidebar' => array_filter([
+                'equityIndicator' => $this->equity_indicator_description ? [
+                    'description' => $this->equity_indicator_description,
+                ] : null,
+                'category' => $this->category,
+                'domicile' => $this->domicile,
+                'minimums' => $this->minimums,
+                'benchmark' => $this->benchmark,
+                'unitPrice' => $this->unit_price,
+                'isinNumber' => $this->isin_number,
+                'sedol' => $this->sedol,
+                'riskOfLoss' => $this->risk_of_loss,
+                'timeHorizon' => $this->time_horizon,
+                'baseCurrency' => $this->base_currency,
+                'fundManagers' => $this->fund_managers,
+                'foreignAssets' => $this->foreign_assets,
+                'inceptionDate' => $this->inception_date,
+                'numberOfUnits' => $this->number_of_units,
+                'portfolioSize' => $this->portfolio_size,
+                'lastDistributions' => $this->last_distributions,
+                'managementCompany' => $this->management_company,
+                'incomeDistributions' => $this->income_distributions,
+                'portfolioOrientation' => $this->portfolio_orientation,
+                'incomeCharacteristics' => $this->income_characteristics,
+                'significantRestrictions' => $this->significant_restrictions,
+            ], fn ($v) => $v !== null),
+            'mainContent' => [
+                'assetAllocation' => $this->asset_allocation,
+                'topInvestments' => $this->top_investments,
+                'performanceTable' => $this->performance_table,
+                'charts' => $this->chart_data,
+            ],
+            'fees' => $this->fees,
+            'footer' => [
+                'info' => $this->footer_info ?? '',
+                'contact' => [
+                    'email' => $this->footer_email ?? '',
+                    'phone' => $this->footer_phone ?? '',
+                    'website' => $this->footer_website ?? '',
+                ],
+                'logoUrl' => $this->footer_logo_url ?? '',
+                'freeOfCharge' => $this->footer_free_of_charge ?? '',
+            ],
+            'importantInfo' => [
+                'title' => $this->important_info_title ?? '',
+                'paragraphs' => $this->important_info_paragraphs ?? [],
+                'publishedDate' => $this->important_info_published_date ?? '',
+            ],
+        ];
     }
 
     public function user(): BelongsTo
@@ -52,18 +208,97 @@ class Fund extends Model
             'data' => $this->data,
             'change_summary' => $changeSummary,
             'changed_field' => $changedField,
-            'old_value' => $oldValue,
-            'new_value' => $newValue,
+            'old_value' => is_array($oldValue) ? json_encode($oldValue) : $oldValue,
+            'new_value' => is_array($newValue) ? json_encode($newValue) : $newValue,
         ]);
     }
 
     /**
-     * Get a nested value from the fund's data array using dot notation.
+     * Restore fund state from a revision's data snapshot.
+     */
+    public function restoreFromData(array $data): void
+    {
+        // Scalar fields from FIELD_MAP
+        foreach (self::FIELD_MAP as $path => $column) {
+            $value = $this->getNestedValue($data, $path);
+            if ($value !== null) {
+                $this->{$column} = $value;
+            }
+        }
+
+        // JSON columns
+        $this->asset_allocation = $data['mainContent']['assetAllocation'] ?? null;
+        $this->top_investments = $data['mainContent']['topInvestments'] ?? null;
+        $this->performance_table = $data['mainContent']['performanceTable'] ?? null;
+        $this->chart_data = $data['mainContent']['charts'] ?? null;
+        $this->fees = $data['fees'] ?? null;
+        $this->important_info_paragraphs = $data['importantInfo']['paragraphs'] ?? null;
+    }
+
+    /**
+     * Get a value from the fund using dot notation (legacy data path or column name).
      */
     public function getDataValue(string $path): mixed
     {
+        // Check if it maps to a direct column
+        if (isset(self::FIELD_MAP[$path])) {
+            return $this->{self::FIELD_MAP[$path]};
+        }
+
+        // Check if it's within a JSON column
+        foreach (self::JSON_COLUMN_MAP as $prefix => $column) {
+            if (str_starts_with($path, $prefix . '.')) {
+                $subPath = substr($path, strlen($prefix) + 1);
+                $jsonData = $this->{$column} ?? [];
+
+                return $this->getNestedValue($jsonData, $subPath);
+            }
+            if ($path === $prefix) {
+                return $this->{$column};
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Set a value using dot notation path.
+     * Routes to the correct column or JSON column.
+     */
+    public function setDataValueByPath(string $path, mixed $value): void
+    {
+        // Check if it maps to a direct column
+        if (isset(self::FIELD_MAP[$path])) {
+            $this->{self::FIELD_MAP[$path]} = $value;
+
+            return;
+        }
+
+        // Check if it's within a JSON column
+        foreach (self::JSON_COLUMN_MAP as $prefix => $column) {
+            if (str_starts_with($path, $prefix . '.')) {
+                $subPath = substr($path, strlen($prefix) + 1);
+                $jsonData = $this->{$column} ?? [];
+                $this->setNestedValue($jsonData, $subPath, $value);
+                $this->{$column} = $jsonData;
+
+                return;
+            }
+            if ($path === $prefix) {
+                $this->{$column} = $value;
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * Get a nested value from an array using dot notation.
+     */
+    private function getNestedValue(array $data, string $path): mixed
+    {
         $keys = explode('.', $path);
-        $current = $this->data ?? [];
+        $current = $data;
 
         foreach ($keys as $key) {
             if (! is_array($current) || ! array_key_exists($key, $current)) {
@@ -76,14 +311,12 @@ class Fund extends Model
     }
 
     /**
-     * Set a nested value in the fund's data array using dot notation.
-     * Automatically casts numeric strings to int/float except for designated string fields.
+     * Set a nested value in an array using dot notation.
      */
-    public function setDataValue(array &$data, string $path, mixed $value): void
+    private function setNestedValue(array &$data, string $path, mixed $value): void
     {
         $keys = explode('.', $path);
         $current = &$data;
-
         $stringFields = ['phone', 'email', 'website', 'date', 'name', 'description'];
 
         foreach ($keys as $i => $key) {

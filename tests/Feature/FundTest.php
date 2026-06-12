@@ -106,7 +106,7 @@ class FundTest extends TestCase
             'class' => 'B',
         ]);
 
-        $response->assertRedirect(route('funds.index'));
+        $response->assertRedirect(route('funds.show', $fund));
         $this->assertDatabaseHas('funds', ['id' => $fund->id, 'name' => 'New Name']);
     }
 
@@ -149,7 +149,7 @@ class FundTest extends TestCase
     public function test_update_data_endpoint_updates_nested_field(): void
     {
         $user = User::factory()->create();
-        $fund = Fund::factory()->create(['user_id' => $user->id, 'data' => ['fund' => ['name' => 'Old']]]);
+        $fund = Fund::factory()->create(['user_id' => $user->id, 'name' => 'Old']);
 
         $response = $this->actingAs($user)->patchJson(route('funds.update-data', $fund), [
             'field' => 'fund.name',

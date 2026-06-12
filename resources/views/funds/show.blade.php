@@ -70,7 +70,7 @@
         .date-badge {
             background-color: var(--naartjie);
             color: var(--white);
-            padding: 3mm 7mm;
+            padding: 3mm 5mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 11pt;

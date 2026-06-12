@@ -176,9 +176,9 @@
 
         /* Equity Indicator Dots */
         .equity-indicator { display: flex; gap: 0.6mm; margin: 0.8mm 0; }
-        .equity-dot { width: 1.8mm; height: 1.8mm; border-radius: 50%; }
-        .equity-dot.filled { background-color: var(--naartjie); }
-        .equity-dot.empty { background-color: var(--medium-grey); }
+        .equity-dot { width: 1.8mm; height: 1.8mm; border-radius: 50%; box-sizing: border-box; display: inline-block; flex: 0 0 1.8mm; }
+        .equity-dot.filled { background-color: var(--naartjie); border: 0.15mm solid var(--naartjie); }
+        .equity-dot.empty { background-color: transparent; border: 0.15mm solid var(--medium-grey); }
 
         /* Low Carbon Badge */
         .low-carbon-badge { margin-top: 3mm; }

@@ -803,6 +803,14 @@
                                             @endforeach
                                         </tr>
                                     </thead>
+                                    @php
+                                        $aaHeaders = $fund->data['mainContent']['assetAllocation']['headers'] ?? [];
+                                        $aaColumnKeys = [];
+                                        $keyMap = ['SA (100)' => 'sa', 'FOREIGN (45)' => 'foreign', 'TOTAL' => 'total', 'CHANGE' => 'change'];
+                                        foreach (array_slice($aaHeaders, 1) as $h) {
+                                            $aaColumnKeys[] = $keyMap[strtoupper(trim($h))] ?? strtolower(preg_replace('/[^a-zA-Z]/', '', $h) ?: 'col');
+                                        }
+                                    @endphp
                                     <tbody>
                                         @foreach ($fund->data['mainContent']['assetAllocation']['rows'] as $rowIndex => $row)
                                             <tr>
@@ -812,61 +820,38 @@
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
                                                 </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.sa', '{{ $row['sa'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.foreign', '{{ $row['foreign'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.total', '{{ $row['total'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    @if(isset($row['changeDirection']))
-                                                        <span class="{{ $row['changeDirection'] === 'up' ? 'change-up' : 'change-down' }}"></span>
-                                                    @endif
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ $row['change'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
+                                                @foreach ($aaColumnKeys as $colKey)
+                                                    <td class="{{ $colKey === 'change' && ($row['changeDirection'] ?? '') === 'up' ? 'text-naartjie' : ($colKey === 'change' && ($row['changeDirection'] ?? '') === 'down' ? 'text-dark-navy' : '') }}">
+                                                        @if($colKey === 'change' && isset($row['changeDirection']))
+                                                            <span class="{{ $row['changeDirection'] === 'up' ? 'change-up' : 'change-down' }}"></span>
+                                                        @endif
+                                                        <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.{{ $colKey }}', '{{ $row[$colKey] ?? '' }}')"
+                                                              @click="editMode && startEdit()"
+                                                              :class="editMode ? 'editable' : ''"
+                                                              x-text="value"></span>
+                                                    </td>
+                                                @endforeach
                                             </tr>
                                         @endforeach
-                                        <tr class="total-row">
-                                            <td class="font-medium">
-                                                <span x-data="editableField('mainContent.assetAllocation.total.name', '{{ $fund->data['mainContent']['assetAllocation']['total']['name'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('mainContent.assetAllocation.total.sa', '{{ $fund->data['mainContent']['assetAllocation']['total']['sa'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('mainContent.assetAllocation.total.foreign', '{{ $fund->data['mainContent']['assetAllocation']['total']['foreign'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td class="font-medium">
-                                                <span x-data="editableField('mainContent.assetAllocation.total.total', '{{ $fund->data['mainContent']['assetAllocation']['total']['total'] }}')"
-                                                      @click="editMode && startEdit()"
-                                                      :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
-                                            </td>
-                                            <td></td>
+                                        @if(isset($fund->data['mainContent']['assetAllocation']['total']))
+                                            @php $aaTotal = $fund->data['mainContent']['assetAllocation']['total']; @endphp
+                                            <tr class="total-row">
+                                                <td class="font-medium">
+                                                    <span x-data="editableField('mainContent.assetAllocation.total.name', '{{ $aaTotal['name'] ?? 'TOTAL' }}')"
+                                                          @click="editMode && startEdit()"
+                                                          :class="editMode ? 'editable' : ''"
+                                                          x-text="value"></span>
+                                                </td>
+                                                @foreach ($aaColumnKeys as $colKey)
+                                                    <td class="font-medium">
+                                                        @if($colKey !== 'change' && isset($aaTotal[$colKey]))
+                                                            <span x-data="editableField('mainContent.assetAllocation.total.{{ $colKey }}', '{{ $aaTotal[$colKey] ?? '' }}')"
+                                                                  @click="editMode && startEdit()"
+                                                                  :class="editMode ? 'editable' : ''"
+                                                                  x-text="value"></span>
+                                                        @endif
+                                                    </td>
+                                                @endforeach
                                         </tr>
                                     </tbody>
                                 </table>

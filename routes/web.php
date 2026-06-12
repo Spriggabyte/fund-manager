@@ -37,6 +37,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('funds/{fund}/update-holding', [\App\Http\Controllers\FundController::class, 'updateHolding'])
         ->name('funds.update-holding');
 
+    // Excel import
+    Route::post('funds/{fund}/import', [\App\Http\Controllers\FundController::class, 'import'])
+        ->name('funds.import');
+
     // Revision management
     Route::get('funds/{fund}/revisions', [\App\Http\Controllers\FundController::class, 'revisions'])
         ->name('funds.revisions');

@@ -111,23 +111,32 @@
                                         @endforeach
                                     </tr>
                                 </thead>
+                                @php
+                                    $aaHeaders = $revisionFund->data['mainContent']['assetAllocation']['headers'] ?? [];
+                                    $aaColumnKeys = [];
+                                    $keyMap = ['SA (100)' => 'sa', 'FOREIGN (45)' => 'foreign', 'TOTAL' => 'total', 'CHANGE' => 'change'];
+                                    foreach (array_slice($aaHeaders, 1) as $h) {
+                                        $aaColumnKeys[] = $keyMap[strtoupper(trim($h))] ?? strtolower(preg_replace('/[^a-zA-Z]/', '', $h) ?: 'col');
+                                    }
+                                @endphp
                                 <tbody>
                                     @foreach ($revisionFund->data['mainContent']['assetAllocation']['rows'] as $row)
                                     <tr class="{{ $loop->odd ? 'bg-gray-50' : '' }}">
                                         <td class="border border-gray-300 px-4 py-2">{{ $row['name'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center">{{ $row['sa'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center">{{ $row['foreign'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center">{{ $row['total'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center">{{ $row['change'] }}</td>
+                                        @foreach ($aaColumnKeys as $colKey)
+                                            <td class="border border-gray-300 px-4 py-2 text-center">{{ $row[$colKey] ?? '' }}</td>
+                                        @endforeach
                                     </tr>
                                     @endforeach
-                                    <tr class="bg-red-600 text-white">
-                                        <td class="border border-gray-300 px-4 py-2 font-bold">{{ $revisionFund->data['mainContent']['assetAllocation']['total']['name'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center font-bold">{{ $revisionFund->data['mainContent']['assetAllocation']['total']['sa'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center font-bold">{{ $revisionFund->data['mainContent']['assetAllocation']['total']['foreign'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center font-bold">{{ $revisionFund->data['mainContent']['assetAllocation']['total']['total'] }}</td>
-                                        <td class="border border-gray-300 px-4 py-2 text-center"></td>
-                                    </tr>
+                                    @if(isset($revisionFund->data['mainContent']['assetAllocation']['total']))
+                                        @php $aaTotal = $revisionFund->data['mainContent']['assetAllocation']['total']; @endphp
+                                        <tr class="bg-red-600 text-white">
+                                            <td class="border border-gray-300 px-4 py-2 font-bold">{{ $aaTotal['name'] ?? 'TOTAL' }}</td>
+                                            @foreach ($aaColumnKeys as $colKey)
+                                                <td class="border border-gray-300 px-4 py-2 text-center font-bold">{{ $colKey !== 'change' ? ($aaTotal[$colKey] ?? '') : '' }}</td>
+                                            @endforeach
+                                        </tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>
