@@ -85,7 +85,7 @@
            ===================================================== */
         .header {
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             padding: 4mm 6mm 3mm 0;
             margin-bottom: 0;
             min-height: 26mm;
@@ -114,6 +114,7 @@
         .logo {
             height: 12mm;
             margin-left: auto;
+            align-self: flex-start;
         }
 
         .logo img {
@@ -211,11 +212,18 @@
             margin: 0;
         }
 
-        /* Equity Indicator Dots */
-        .equity-indicator {
+        /* Equity Indicator Dots — heading + dots share one line. */
+        .equity-heading {
             display: flex;
-            gap: 0.8mm;
-            margin: 1mm 0;
+            align-items: center;
+            gap: 1.2mm;
+            flex-wrap: nowrap;
+        }
+
+        .equity-indicator {
+            display: inline-flex;
+            gap: 0.5mm;
+            align-items: center;
         }
 
         .equity-dot {
@@ -229,12 +237,12 @@
 
         .equity-dot.filled {
             background-color: var(--naartjie);
-            border: 0.15mm solid var(--naartjie);
+            border: 0.12mm solid var(--naartjie);
         }
 
         .equity-dot.empty {
             background-color: transparent;
-            border: 0.15mm solid var(--medium-grey);
+            border: 0.12mm solid var(--medium-grey);
         }
 
         /* Main Content Area */
@@ -638,7 +646,7 @@
 
         .footer-contact {
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 600;
+            font-weight: 400;
             font-size: 7pt;
             line-height: 9pt;
             letter-spacing: 0.02em;
@@ -810,24 +818,31 @@
                     @if(isset($sidebar[$key]))
                         @php $value = $sidebar[$key]; @endphp
                         <div class="sidebar-section">
-                            <h3 class="sidebar-heading">{{ $labels[$key] ?? strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY))) }}</h3>
                             @if ($key === 'equityIndicator' && is_array($value))
-                                <div class="equity-indicator">
-                                    @php
-                                        $filled = $value['filled'] ?? 7;
-                                        $total = $value['total'] ?? 10;
-                                    @endphp
-                                    @for ($i = 0; $i < $total; $i++)
-                                        <span class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}"></span>
-                                    @endfor
-                                </div>
+                                @php
+                                    $filled = $value['filled'] ?? 7;
+                                    $total = $value['total'] ?? 10;
+                                @endphp
+                                {{-- Heading + dots share a single line so the dots sit
+                                     immediately to the right of "EQUITY INDICATOR". --}}
+                                <h3 class="sidebar-heading equity-heading">
+                                    {{ $labels[$key] }}
+                                    <span class="equity-indicator">
+                                        @for ($i = 0; $i < $total; $i++)
+                                            <span class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}"></span>
+                                        @endfor
+                                    </span>
+                                </h3>
                                 @if(isset($value['description']))
                                     <p class="sidebar-text">{!! $value['description'] !!}</p>
                                 @endif
-                            @elseif (is_array($value))
-                                <p class="sidebar-text">{!! $value['description'] ?? '' !!}</p>
                             @else
-                                <p class="sidebar-text">{!! $value !!}</p>
+                                <h3 class="sidebar-heading">{{ $labels[$key] ?? strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY))) }}</h3>
+                                @if (is_array($value))
+                                    <p class="sidebar-text">{!! $value['description'] ?? '' !!}</p>
+                                @else
+                                    <p class="sidebar-text">{!! $value !!}</p>
+                                @endif
                             @endif
                         </div>
                     @endif
@@ -1254,25 +1269,19 @@
                     return positions;
                 })();
 
-                // Band widths (so stacking renders correct bands):
-                //  - Inflation band:  0 → inflation
-                //  - 5% Hurdle band:  inflation → inflation + 5  (constant 5-wide gap above inflation)
-                //  - Excess band:     inflation + 5 → composite  (top equals composite spline)
-                // Composite spline overlays at the composite return level itself.
+                // IMPORTANT: keep this chart identical to the on-screen fund page (show.blade.php). Stacked
+                // areas with Highcharts' DEFAULT reversedStacks, so the LAST stacked series (Excess) renders at
+                // the bottom of the stack and Inflation as the upper band — matching what the page shows.
+                // Negative excess (fund below the CPI+5% hurdle) stacks below the 0 line → dark spikes out the bottom.
                 const inflationSeries = inflationData.map(d => d.inflation);
-                const hurdleSeries    = inflationData.map(() => 5);
-                const excessSeries    = inflationData.map(d => d.composite - d.inflation - 5);
+                const hurdleSeries    = inflationData.map(d => d.hurdle ?? 5);
+                const excessSeries    = inflationData.map(d => d.excess ?? (d.composite - d.inflation - (d.hurdle ?? 5)));
                 const compositeSeries = inflationData.map(d => d.composite);
 
-                // Auto-fit the y-axis to actual data so there isn't a large empty band above the chart.
-                const inflationAllValues = inflationSeries.concat(compositeSeries);
-                const inflationDataMax = Math.max(...inflationAllValues);
-                const inflationDataMin = Math.min(...inflationAllValues, 0);
-                // Round up to nearest 5 above max, down to nearest 5 below min.
-                const inflationYMax = Math.ceil(inflationDataMax / 5) * 5;
-                const inflationYMin = Math.floor(inflationDataMin / 5) * 5;
-                const inflationTickPositionsY = [];
-                for (let v = inflationYMin; v <= inflationYMax; v += 5) { inflationTickPositionsY.push(v); }
+                // Fixed Y-axis to match the published reference layout (-10% to 35%).
+                const inflationYMin = -10;
+                const inflationYMax = 35;
+                const inflationTickPositionsY = [-10, -5, 0, 5, 10, 15, 20, 25, 30, 35];
 
                 Highcharts.chart('inflationChart', {
                     chart: { type: 'area', backgroundColor: 'transparent', spacing: [4, 4, 4, 4], animation: false },
@@ -1323,13 +1332,15 @@
                         spline: { marker: { enabled: false }, lineWidth: 1 },
                         series: { animation: false },
                     },
-                    // Stack order from bottom up: Inflation, 5% Hurdle, Excess. Composite is a separate spline overlay.
-                    // legendIndex pins legend order: Composite first, then stack from bottom.
+                    // Identical series config to the on-screen fund page (show.blade.php): stacked areas with
+                    // DEFAULT reversedStacks and no per-area zIndex (last series, Excess, sits at the bottom).
+                    // Negative Excess stacks below the 0 line (dark spikes out the bottom). Composite spline on top.
+                    // Do NOT add reversedStacks or per-area zIndex here unless you make the SAME change in show.blade.php.
                     series: [
-                        { name: 'Composite', type: 'spline', data: compositeSeries, color: colors.naartjie, stacking: undefined, zIndex: 5, legendIndex: 0 },
-                        { name: 'Inflation', type: 'area', data: inflationSeries, color: colors.lightBlue, zIndex: 1, legendIndex: 1 },
-                        { name: '5% Hurdle', type: 'area', data: hurdleSeries,    color: colors.lightGrey, zIndex: 2, legendIndex: 2 },
-                        { name: 'Excess',    type: 'area', data: excessSeries,    color: colors.darkNavy,  zIndex: 3, legendIndex: 3 },
+                        { name: 'Composite', type: 'spline', data: compositeSeries, color: colors.naartjie, stacking: undefined, zIndex: 5 },
+                        { name: 'Inflation', type: 'area',   data: inflationSeries, color: colors.lightBlue },
+                        { name: '5% Hurdle', type: 'area',   data: hurdleSeries,    color: colors.lightGrey },
+                        { name: 'Excess',    type: 'area',   data: excessSeries,    color: colors.darkNavy },
                     ],
                 });
             }
@@ -1366,7 +1377,7 @@
                 })();
 
                 Highcharts.chart('portfolioChart', {
-                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 90, 4, 4], animation: false },
+                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 48, 4, 4], animation: false },
                     title: { text: null },
                     xAxis: {
                         categories: portfolioDates,
