@@ -4,14 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFundRequest;
 use App\Http\Requests\UpdateFundRequest;
+use App\Jobs\GenerateFundPdfJob;
 use App\Models\Fund;
+use App\Models\FundPdfExport;
 use App\Models\FundRevision;
 use App\Services\ExcelImportService;
-use App\Services\PuppeteerPdfService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class FundController extends Controller
@@ -211,29 +212,57 @@ class FundController extends Controller
             ->with('success', 'Imported '.implode(' and ', $imported).' data successfully.');
     }
 
-    public function exportPdf(Fund $fund, PuppeteerPdfService $puppeteerService)
+    /**
+     * Queue a fact-sheet PDF render and show a page that polls for completion.
+     * PDF generation is heavy (headless Chrome), so it must not block a web
+     * worker — it runs on the queue and the browser downloads it when ready.
+     */
+    public function exportPdf(Fund $fund): View
     {
         $this->authorize('view', $fund);
 
-        set_time_limit(180);
-        ini_set('max_execution_time', 180);
+        $export = FundPdfExport::create([
+            'fund_id' => $fund->id,
+            'user_id' => auth()->id(),
+            'template' => $fund->template ?? 'show',
+            'status' => FundPdfExport::STATUS_PENDING,
+        ]);
 
-        try {
-            $pdfPath = $puppeteerService->generatePdf($fund);
-            $filename = 'fund-'.$fund->id.'-'.now()->format('Y-m-d').'.pdf';
+        GenerateFundPdfJob::dispatch($export);
 
-            return response()->download($pdfPath, $filename)->deleteFileAfterSend(true);
+        return view('funds.pdf-preparing', compact('fund', 'export'));
+    }
 
-        } catch (\Exception $e) {
-            Log::error('PDF generation failed: '.$e->getMessage());
-            Log::error('PDF error trace: '.$e->getTraceAsString());
+    /**
+     * Report the status of an async PDF export (polled by the preparing page).
+     */
+    public function exportStatus(FundPdfExport $export)
+    {
+        $this->authorize('view', $export);
 
-            return response()->json([
-                'error' => 'PDF generation failed',
-                'message' => 'Unable to generate PDF. Please try again or contact support.',
-                'details' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
-        }
+        return response()->json([
+            'status' => $export->status,
+            'download_url' => $export->isDone()
+                ? route('funds.pdf.download', $export)
+                : null,
+            'error' => $export->isFailed()
+                ? 'Unable to generate the PDF. Please try again or contact support.'
+                : null,
+        ]);
+    }
+
+    /**
+     * Stream a finished PDF export to the owner.
+     */
+    public function downloadPdf(FundPdfExport $export)
+    {
+        $this->authorize('download', $export);
+
+        abort_unless($export->isDone() && $export->path, 404);
+
+        $filename = 'fund-'.$export->fund_id.'-'.$export->created_at->format('Y-m-d').'.pdf';
+
+        return Storage::disk($export->disk)->download($export->path, $filename);
     }
 
     public function revisions(Fund $fund): View

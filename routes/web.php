@@ -30,9 +30,13 @@ Route::middleware('auth')->group(function () {
     Route::get('funds/{fund}/fact-sheet', [\App\Http\Controllers\FundController::class, 'factSheet'])
         ->name('funds.fact-sheet');
 
-    // PDF export
+    // PDF export — dispatches a queued render, then polls + downloads
     Route::get('funds/{fund}/pdf', [\App\Http\Controllers\FundController::class, 'exportPdf'])
         ->name('funds.pdf');
+    Route::get('pdf-exports/{export}/status', [\App\Http\Controllers\FundController::class, 'exportStatus'])
+        ->name('funds.pdf.status');
+    Route::get('pdf-exports/{export}/download', [\App\Http\Controllers\FundController::class, 'downloadPdf'])
+        ->name('funds.pdf.download');
 
     // AJAX endpoints for inline editing
     Route::patch('funds/{fund}/update-data', [\App\Http\Controllers\FundController::class, 'updateData'])
