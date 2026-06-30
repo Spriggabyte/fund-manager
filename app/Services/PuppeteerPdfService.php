@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Fund;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class PuppeteerPdfService
 {
@@ -55,10 +56,19 @@ class PuppeteerPdfService
 
     /**
      * Build the URL Puppeteer navigates to in order to render the fact sheet.
+     *
+     * A short-lived signed URL keeps the unauthenticated render route private:
+     * only this service can produce a valid link, and it expires in minutes.
+     * The host comes from config('app.url'), which the worker must be able to
+     * reach for the signature to validate.
      */
     protected function pdfViewUrl(Fund $fund): string
     {
-        return config('app.url').'/internal/funds/'.$fund->id.'/pdf-view';
+        return URL::temporarySignedRoute(
+            'funds.internal.pdf-view',
+            now()->addMinutes(5),
+            ['fund' => $fund->id]
+        );
     }
 
     /**

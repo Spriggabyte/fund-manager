@@ -8,8 +8,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Special route for internal PDF generation (bypasses auth)
+// Internal PDF render target hit by Puppeteer. It bypasses session auth (the
+// headless browser has no session) but is protected by a short-lived signed
+// URL so fund fact-sheet HTML is never publicly reachable by id.
 Route::get('/internal/funds/{fund}/pdf-view', [\App\Http\Controllers\FundController::class, 'internalPdfView'])
+    ->middleware('signed')
     ->name('funds.internal.pdf-view');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
