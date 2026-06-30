@@ -14,5 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Report web request and queued job exceptions to Sentry. The SDK is a
+        // no-op until SENTRY_LARAVEL_DSN is set, so this is safe in every env.
+        \Sentry\Laravel\Integration::handles($exceptions);
     })->create();
