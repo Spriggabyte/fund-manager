@@ -247,7 +247,7 @@ class Fund extends Model
 
         // Check if it's within a JSON column
         foreach (self::JSON_COLUMN_MAP as $prefix => $column) {
-            if (str_starts_with($path, $prefix . '.')) {
+            if (str_starts_with($path, $prefix.'.')) {
                 $subPath = substr($path, strlen($prefix) + 1);
                 $jsonData = $this->{$column} ?? [];
 
@@ -276,7 +276,7 @@ class Fund extends Model
 
         // Check if it's within a JSON column
         foreach (self::JSON_COLUMN_MAP as $prefix => $column) {
-            if (str_starts_with($path, $prefix . '.')) {
+            if (str_starts_with($path, $prefix.'.')) {
                 $subPath = substr($path, strlen($prefix) + 1);
                 $jsonData = $this->{$column} ?? [];
                 $this->setNestedValue($jsonData, $subPath, $value);

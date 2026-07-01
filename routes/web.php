@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FundController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,7 +12,7 @@ Route::get('/', function () {
 // Internal PDF render target hit by Puppeteer. It bypasses session auth (the
 // headless browser has no session) but is protected by a short-lived signed
 // URL so fund fact-sheet HTML is never publicly reachable by id.
-Route::get('/internal/funds/{fund}/pdf-view', [\App\Http\Controllers\FundController::class, 'internalPdfView'])
+Route::get('/internal/funds/{fund}/pdf-view', [FundController::class, 'internalPdfView'])
     ->middleware('signed')
     ->name('funds.internal.pdf-view');
 
@@ -24,36 +25,36 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::resource('funds', \App\Http\Controllers\FundController::class);
+    Route::resource('funds', FundController::class);
 
     // Fact sheet view
-    Route::get('funds/{fund}/fact-sheet', [\App\Http\Controllers\FundController::class, 'factSheet'])
+    Route::get('funds/{fund}/fact-sheet', [FundController::class, 'factSheet'])
         ->name('funds.fact-sheet');
 
     // PDF export — dispatches a queued render, then polls + downloads
-    Route::get('funds/{fund}/pdf', [\App\Http\Controllers\FundController::class, 'exportPdf'])
+    Route::get('funds/{fund}/pdf', [FundController::class, 'exportPdf'])
         ->name('funds.pdf');
-    Route::get('pdf-exports/{export}/status', [\App\Http\Controllers\FundController::class, 'exportStatus'])
+    Route::get('pdf-exports/{export}/status', [FundController::class, 'exportStatus'])
         ->name('funds.pdf.status');
-    Route::get('pdf-exports/{export}/download', [\App\Http\Controllers\FundController::class, 'downloadPdf'])
+    Route::get('pdf-exports/{export}/download', [FundController::class, 'downloadPdf'])
         ->name('funds.pdf.download');
 
     // AJAX endpoints for inline editing
-    Route::patch('funds/{fund}/update-data', [\App\Http\Controllers\FundController::class, 'updateData'])
+    Route::patch('funds/{fund}/update-data', [FundController::class, 'updateData'])
         ->name('funds.update-data');
-    Route::patch('funds/{fund}/update-holding', [\App\Http\Controllers\FundController::class, 'updateHolding'])
+    Route::patch('funds/{fund}/update-holding', [FundController::class, 'updateHolding'])
         ->name('funds.update-holding');
 
     // Excel import
-    Route::post('funds/{fund}/import', [\App\Http\Controllers\FundController::class, 'import'])
+    Route::post('funds/{fund}/import', [FundController::class, 'import'])
         ->name('funds.import');
 
     // Revision management
-    Route::get('funds/{fund}/revisions', [\App\Http\Controllers\FundController::class, 'revisions'])
+    Route::get('funds/{fund}/revisions', [FundController::class, 'revisions'])
         ->name('funds.revisions');
-    Route::get('funds/{fund}/revisions/{revision}', [\App\Http\Controllers\FundController::class, 'showRevision'])
+    Route::get('funds/{fund}/revisions/{revision}', [FundController::class, 'showRevision'])
         ->name('funds.revisions.show');
-    Route::post('funds/{fund}/revisions/{revision}/restore', [\App\Http\Controllers\FundController::class, 'restoreRevision'])
+    Route::post('funds/{fund}/revisions/{revision}/restore', [FundController::class, 'restoreRevision'])
         ->name('funds.revisions.restore');
 });
 

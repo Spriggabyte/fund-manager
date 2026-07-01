@@ -154,6 +154,7 @@ class ExcelImportService
     {
         // Excel serial 1 = 1900-01-01 (with the legacy 1900 leap-year bug).
         $unix = ((int) $serial - 25569) * 86400;
+
         return gmdate('Y-m', $unix);
     }
 
