@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read Fund $fund
+ * @property-read User $user
+ */
 class FundPdfExport extends Model
 {
     use HasFactory;
