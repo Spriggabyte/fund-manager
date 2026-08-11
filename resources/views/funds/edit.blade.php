@@ -39,8 +39,47 @@
                 </div>
             @endif
 
+            <!-- Data Feed Import Section -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 text-gray-900">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                        Import from Data Feed
+                    </h3>
+                    @if (! $fund->fund_code)
+                        <p class="text-sm text-gray-600">Set this fund's <strong>Fund Code</strong> below to match its folder on the monthly data feed, then downloaded months will appear here.</p>
+                    @elseif (! $fund->class_code)
+                        <p class="text-sm text-gray-600">Set this fund's <strong>Class Code</strong> below (A, B2, B3, R&hellip;). Folder <strong>{{ $fund->fund_code }}</strong> holds every share class side by side, so without it an import would pull in another class's figures.</p>
+                    @elseif (empty($availableMonths))
+                        <p class="text-sm text-gray-600">No downloaded data for fund code <strong>{{ $fund->fund_code }}</strong> class <strong>{{ $fund->class_code }}</strong> yet. The feed is synced daily at 05:00 (or run <code class="text-xs bg-gray-100 px-1 rounded">php artisan funds:sync-data</code>).</p>
+                    @else
+                        <p class="text-sm text-gray-600 mb-4">Months downloaded from the data feed for fund code <strong>{{ $fund->fund_code }}</strong>, class <strong>{{ $fund->class_code }}</strong>. Only this class's exports are imported. Importing snapshots a revision first, so you can restore if needed.</p>
+                        <ul class="divide-y divide-gray-100 border border-gray-200 rounded-lg">
+                            @foreach ($availableMonths as $month => $fileCount)
+                                <li class="flex items-center justify-between px-4 py-3">
+                                    <div>
+                                        <span class="font-medium text-gray-800">{{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }}</span>
+                                        <span class="ml-2 text-xs text-gray-500">{{ $fileCount }} {{ Str::plural('file', $fileCount) }}</span>
+                                    </div>
+                                    <form method="POST" action="{{ route('funds.import-month', [$fund, $month]) }}"
+                                        onsubmit="return confirm('Import the {{ $month }} data feed into this fund? A revision snapshot will be taken first.');">
+                                        @csrf
+                                        <button type="submit"
+                                            style="background-color: #2563eb; padding: 0.375rem 1rem; border-radius: 0.5rem; color: white; font-weight: 700; cursor: pointer;"
+                                            onmouseover="this.style.backgroundColor='#1d4ed8'"
+                                            onmouseout="this.style.backgroundColor='#2563eb'">
+                                            Import {{ $month }}
+                                        </button>
+                                    </form>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            </div>
+
             <!-- Excel Import Section -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ factsheetName: '', priceGraphName: '', inflationGraphName: '' }">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ factsheetName: '', priceGraphName: '', inflationGraphName: '', alsiGraphName: '' }">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
@@ -49,7 +88,7 @@
                     <p class="text-sm text-gray-600 mb-4">Upload the factsheet and/or graph data Excel files to automatically populate fund fields and charts.</p>
                     <form method="POST" action="{{ route('funds.import', $fund) }}" enctype="multipart/form-data" class="space-y-4">
                         @csrf
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
                                 <x-input-label for="factsheet" :value="__('Factsheet (.xlsx)')" />
                                 <input type="file" id="factsheet" name="factsheet" accept=".xlsx,.xls"
@@ -73,6 +112,14 @@
                                     class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                                 <p class="mt-1 text-xs text-gray-500">e.g. 810_SA_INFLATION_GRAPH.xlsx — Investment Strategy vs SA Inflation chart.</p>
                                 <p x-show="inflationGraphName" class="mt-1 text-xs text-green-600 font-medium" x-text="'Selected: ' + inflationGraphName"></p>
+                            </div>
+                            <div>
+                                <x-input-label for="alsi_graph" :value="__('ALSI Graph (.xlsx)')" />
+                                <input type="file" id="alsi_graph" name="alsi_graph" accept=".xlsx,.xls"
+                                    @change="alsiGraphName = $event.target.files[0]?.name || ''"
+                                    class="block mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                <p class="mt-1 text-xs text-gray-500">e.g. 811_ALSI_GRAPH.xlsx — Monthly Portfolio Performance vs Benchmark chart (equity funds).</p>
+                                <p x-show="alsiGraphName" class="mt-1 text-xs text-green-600 font-medium" x-text="'Selected: ' + alsiGraphName"></p>
                             </div>
                         </div>
                         <div class="flex justify-end">
@@ -112,6 +159,18 @@
                                         @endforeach
                                     </select>
                                     <x-input-error :messages="$errors->get('class')" class="mt-2" />
+                                </div>
+                                <div>
+                                    <x-input-label for="fund_code" :value="__('Fund Code (SFTP data feed)')" />
+                                    <x-text-input id="fund_code" class="block mt-1 w-full" type="text" name="fund_code" :value="old('fund_code', $fund->fund_code)" placeholder="e.g. 817" />
+                                    <p class="mt-1 text-xs text-gray-500">Folder name for this fund on the monthly data feed (YYYY-MM/{{ '{' }}code{{ '}' }}).</p>
+                                    <x-input-error :messages="$errors->get('fund_code')" class="mt-2" />
+                                </div>
+                                <div>
+                                    <x-input-label for="class_code" :value="__('Class Code (share class)')" />
+                                    <x-text-input id="class_code" class="block mt-1 w-full" type="text" name="class_code" :value="old('class_code', $fund->class_code)" placeholder="e.g. A, B2, B3, R" />
+                                    <p class="mt-1 text-xs text-gray-500">Selects this fund's files in the feed folder ({{ '{' }}code{{ '}{' }}class{{ '}' }}_FACTSHEET.xlsx). Leave blank and every class in the folder would be imported.</p>
+                                    <x-input-error :messages="$errors->get('class_code')" class="mt-2" />
                                 </div>
                                 <div>
                                     <x-input-label for="template" :value="__('Template')" />
@@ -249,6 +308,7 @@
                                 'top_investments' => 'Top Investments',
                                 'performance_table' => 'Performance Table',
                                 'chart_data' => 'Chart Data',
+                                'sector_allocation' => 'Sector Allocation (equity funds)',
                                 'fees' => 'Fees',
                             ];
                         @endphp
@@ -266,6 +326,14 @@
                                 </div>
                             </fieldset>
                         @endforeach
+
+                        <fieldset class="border border-gray-200 rounded-lg p-4">
+                            <legend class="text-sm font-semibold text-gray-700 px-2">Chart Description (equity funds)</legend>
+                            <textarea id="chart_description" name="chart_description" rows="4"
+                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">{{ old('chart_description', $fund->chart_description) }}</textarea>
+                            <x-input-error :messages="$errors->get('chart_description')" class="mt-2" />
+                            <p class="mt-1 text-xs text-gray-500">Narrative paragraph shown under the monthly performance chart. The outperformance percentage is refreshed automatically on factsheet import.</p>
+                        </fieldset>
 
                         <!-- Fund Info Bar -->
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -301,23 +369,25 @@
                     </form>
 
                     <!-- Delete Section -->
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h3 class="text-lg font-medium text-gray-900">Danger Zone</h3>
-                                <p class="text-sm text-gray-600">Permanently delete this fund. This action cannot be undone.</p>
+                    @can('delete', $fund)
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">Danger Zone</h3>
+                                    <p class="text-sm text-gray-600">Permanently delete this fund. This action cannot be undone.</p>
+                                </div>
+                                <form method="POST" action="{{ route('funds.destroy', $fund) }}" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
+                                        onclick="return confirm('Are you sure you want to delete this fund? This action cannot be undone.')">
+                                        Delete Fund
+                                    </button>
+                                </form>
                             </div>
-                            <form method="POST" action="{{ route('funds.destroy', $fund) }}" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
-                                    onclick="return confirm('Are you sure you want to delete this fund? This action cannot be undone.')">
-                                    Delete Fund
-                                </button>
-                            </form>
                         </div>
-                    </div>
+                    @endcan
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreFundRequest extends FormRequest
 {
@@ -16,6 +17,17 @@ class StoreFundRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'class' => ['nullable', 'string', 'max:255'],
+            // Folder code on the monthly SFTP data feed; ignore(null) on store.
+            // A code covers several share classes, so it is the (fund_code,
+            // class_code) pair that must be unique — not the code alone.
+            'fund_code' => [
+                'nullable', 'string', 'max:10',
+                Rule::unique('funds', 'fund_code')
+                    ->where(fn ($query) => $query->where('class_code', $this->input('class_code')))
+                    ->ignore($this->route('fund')),
+            ],
+            // Share class token in the data-feed filenames: A, B, B2, B3, R, R1
+            'class_code' => ['nullable', 'string', 'max:6', 'regex:/^[A-Za-z][0-9]*$/'],
             // Fund metadata
             'template' => ['nullable', 'string', 'in:show,show-equity,show-flexible,show-international'],
             'fund_date' => ['nullable', 'string', 'max:255'],
@@ -60,6 +72,8 @@ class StoreFundRequest extends FormRequest
             'top_investments' => ['nullable', 'json'],
             'performance_table' => ['nullable', 'json'],
             'chart_data' => ['nullable', 'json'],
+            'sector_allocation' => ['nullable', 'json'],
+            'chart_description' => ['nullable', 'string'],
             'fees' => ['nullable', 'json'],
         ];
     }

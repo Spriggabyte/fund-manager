@@ -7,6 +7,10 @@ as queued work on Redis via Laravel Horizon.
 This runbook is for the IT team operating the app. It covers deploy, rollback,
 required configuration, and monitoring.
 
+Standing up a **staging/review server** from scratch (Ubuntu provisioning,
+scrubbed data, basic auth, and the gotchas that break PDF rendering behind a
+gated host): [`docs/staging.md`](docs/staging.md).
+
 ---
 
 ## 1. Architecture at a glance
@@ -60,14 +64,15 @@ persists across releases. Start from `.env.example`. Key values:
 | `QUEUE_CONNECTION=redis` | PDF work runs on Redis/Horizon |
 | `REDIS_CLIENT`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` | Redis connection (`predis` shipped; use `phpredis` for throughput) |
 | `REDIS_QUEUE_RETRY_AFTER=300` | Must exceed the Horizon supervisor timeout (240) — prevents duplicate renders |
-| `HORIZON_ADMINS` | Comma-separated emails allowed to open `/horizon` |
+| `HORIZON_ADMINS` | Extra emails allowed to open `/horizon`. App admins (`is_admin`) already have access — this is for ops staff with no app account |
 | `PUPPETEER_EXECUTABLE_PATH` | Path to Chrome, e.g. `/usr/bin/google-chrome-stable` (empty → bundled Chromium) |
 | `PUPPETEER_TIMEOUT=180` | Render ceiling (< worker timeout) |
 | `SENTRY_LARAVEL_DSN` | Sentry project DSN (empty disables reporting) |
 | `SENTRY_TRACES_SAMPLE_RATE=0.2` | Performance trace sampling |
 | `SENTRY_SEND_DEFAULT_PII=false` | Keep PII out of error reports |
 | `LOG_CHANNEL=stack`, `LOG_STACK=daily`, `LOG_DAILY_DAYS=30`, `LOG_LEVEL=info` | Rotated logs |
-| `MAIL_*` | Outgoing mail (Horizon/queue alerts) |
+| `MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | Outgoing mail. The app's **only** live email is the password-reset link — leave `MAIL_MAILER=log` and users cannot reset their own passwords. TLS follows the port (465 implicit, else auto-STARTTLS). Setup, worked examples, and troubleshooting: [`docs/mail.md`](docs/mail.md). |
+| `SFTP_HOST`, `SFTP_PORT`, `SFTP_USERNAME`, `SFTP_PASSWORD` / `SFTP_PRIVATE_KEY` (+`SFTP_PASSPHRASE`), `SFTP_ROOT` | Monthly fund-data feed. `funds:sync-data` (scheduled daily, 05:00) mirrors remote `YYYY-MM/{fund_code}/` xlsx exports to `storage/app/private/fund-data/`. Leave `SFTP_HOST` empty to disable the sync. Test with `php artisan funds:sync-data --dry-run`. Setup, import workflow, and troubleshooting: [`docs/sftp-data-feed.md`](docs/sftp-data-feed.md). |
 
 **Never commit secrets.** All of the above are env-only; `.env.example`
 documents every key with safe placeholders.
@@ -165,7 +170,8 @@ sudo supervisorctl status
 ```
 
 Deploys call `php artisan horizon:terminate`; Supervisor restarts Horizon on the
-new code. Dashboard: `/horizon` (restricted to `HORIZON_ADMINS`).
+new code. Dashboard: `/horizon` (restricted to app admins plus `HORIZON_ADMINS`
+— see `docs/users.md`).
 
 Ops commands:
 
@@ -178,7 +184,8 @@ php artisan queue:retry all         # retry failed jobs
 ### Scheduler
 
 Add the Laravel scheduler cron (runs `horizon:snapshot`, `queue:prune-failed`,
-`funds:prune-pdf-exports`):
+`funds:prune-pdf-exports`, and the 05:00 `funds:sync-data` data-feed mirror —
+see [`docs/sftp-data-feed.md`](docs/sftp-data-feed.md)):
 
 ```cron
 * * * * * cd /var/www/fund-manager/current && php artisan schedule:run >> /dev/null 2>&1
@@ -195,7 +202,10 @@ Add the Laravel scheduler cron (runs `horizon:snapshot`, `queue:prune-failed`,
   monitor here. The deploy also gates on it.
 - **Queue health:** `/horizon` shows throughput, wait times, and failures.
   Horizon fires `LongWaitDetected` past the `waits` threshold
-  (`config/horizon.php`); route notifications in `HorizonServiceProvider::boot`.
+  (`config/horizon.php`), but **no notification routing is currently wired** —
+  the `Horizon::routeMailNotificationsTo()` / `routeSlackNotificationsTo()` calls
+  in `HorizonServiceProvider::boot` are commented out. Uncomment one (mail needs
+  working SMTP first — see [`docs/mail.md`](docs/mail.md)) to get alerts.
 - **Logs:** daily-rotated under `storage/logs`, retained 30 days.
 
 ---
@@ -222,4 +232,9 @@ Add the Laravel scheduler cron (runs `horizon:snapshot`, `queue:prune-failed`,
 - [ ] Supervisor running Horizon (§7); `/horizon` reachable by an admin
 - [ ] Scheduler cron installed (§7)
 - [ ] Sentry DSN set; trigger a test error and confirm it lands
+- [ ] SMTP configured (`docs/mail.md` §4); test email sent and received (§6), and
+      `/forgot-password` delivers a working reset link
+- [ ] First admin created — `php artisan user:create "Name" name@foord.co.za --admin`
+      (there is no public sign-up; see `docs/users.md` §2), then add the rest of
+      the team from the in-app Users screen
 - [ ] Export a fact sheet end-to-end and confirm the PDF downloads

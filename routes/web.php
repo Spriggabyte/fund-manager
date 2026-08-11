@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FundController;
 use App\Http\Controllers\ProfileController;
@@ -23,7 +24,6 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('funds', FundController::class);
 
@@ -48,6 +48,9 @@ Route::middleware('auth')->group(function () {
     // Excel import
     Route::post('funds/{fund}/import', [FundController::class, 'import'])
         ->name('funds.import');
+    Route::post('funds/{fund}/import-data/{month}', [FundController::class, 'importMonth'])
+        ->where('month', '\d{4}-\d{2}')
+        ->name('funds.import-month');
 
     // Revision management
     Route::get('funds/{fund}/revisions', [FundController::class, 'revisions'])
@@ -56,6 +59,17 @@ Route::middleware('auth')->group(function () {
         ->name('funds.revisions.show');
     Route::post('funds/{fund}/revisions/{revision}/restore', [FundController::class, 'restoreRevision'])
         ->name('funds.revisions.restore');
+
+    // Account management — admins only. See docs/users.md.
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::get('users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+        Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::patch('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::post('users/{user}/disable', [UserController::class, 'disable'])->name('users.disable');
+        Route::post('users/{user}/enable', [UserController::class, 'enable'])->name('users.enable');
+    });
 });
 
 require __DIR__.'/auth.php';

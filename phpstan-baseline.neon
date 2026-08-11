@@ -12,8 +12,3 @@ parameters:
 			count: 1
 			path: app/Models/Fund.php
 
-		-
-			message: '#^Offset ''AFRME''\|''ASIA_EM''\|''EUR''\|''LATAM_EM''\|''PAC''\|''US'' on array\{AFRME\: ''Africa/Middle East'', ASIA_EM\: ''Asia \(emerging\)'', EUR\: ''Europe'', PAC\: ''Asia Pacific'', US\: ''United States'', LATAM_EM\: ''Latin America''\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/ExcelImportService.php

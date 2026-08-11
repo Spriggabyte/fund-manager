@@ -9,575 +9,833 @@
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* === Base Reset & Fonts === */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* =====================================================
+           FOORD INTERNATIONAL FUND FACT SHEET
+           Page geometry, typography and table styling ported from
+           the signed-off balanced templates (pdf.blade.php /
+           show.blade.php); colours inverted per the 875 reference
+           (red title banner, navy date badge).
+           ===================================================== */
 
-        body {
-            font-family: 'Avenir Next', 'Lato', system-ui, sans-serif;
-            color: #313131;
-            background: #e5e7eb;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* === Color Variables === */
+        /* Foord Brand Colors — greys measured from the published reference PDF.
+           Row greys fade in the order grey-1 (darkest) → grey-4 (lightest). */
         :root {
             --naartjie: #d25347;
             --naartjie-75: #dd7e75;
             --naartjie-50: #e9a9a3;
-            --naartjie-20: #f6dcd9;
+            --naartjie-20: #f6ddda;
             --dark-navy: #29363d;
             --dark-navy-70: #697277;
             --dark-navy-30: #bfc3c5;
-            --dark-navy-15: #dde1e2;
+            --dark-navy-15: #dfe1e2;
             --dark-navy-10: #e9ebec;
-            --off-black: #313131;
-            --dark-grey: #535353;
             --medium-grey: #9a9a9a;
             --light-grey: #cccccc;
+            --dark-grey: #535353;
             --very-light-grey: #f4f4f4;
+            --off-black: #313131;
+            --white: #ffffff;
+            --row-grey-0: #d4d4d4;
+            --row-grey-1: #dddddd;
+            --row-grey-2: #e6e6e6;
+            --row-grey-3: #ebebeb;
+            --row-grey-4: #f0f0f0;
             --light-blue: #7a9cb4;
             --mushroom: #e2cea4;
         }
 
-        /* === Page Container (A4 proportions) === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Avenir Next', 'Lato', -apple-system, sans-serif;
+            font-size: 7.5pt;
+            line-height: 1.2;
+            color: #000;
+            background: #e5e7eb;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* === Page container (A4) === */
         .page-container {
-            max-width: 794px;
+            width: 210mm;
             margin: 0 auto;
         }
 
+        /* Grey sidebar band 4mm→60mm, full page height (reference: white
+           4mm strip on the left edge) — identical to the signed-off pages. */
         .page {
-            background: white;
-            width: 100%;
+            width: 210mm;
+            height: 297mm;
+            max-height: 297mm;
+            overflow: hidden;
             position: relative;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            min-height: 1123px;
+            background: linear-gradient(to right, var(--white) 4mm, var(--dark-navy-15) 4mm, var(--dark-navy-15) 60mm, var(--white) 60mm);
         }
 
-        .page + .page {
-            margin-top: 16px;
-        }
+        .page + .page { margin-top: 16px; }
 
-        /* === Print / PDF mode === */
         @media print {
             .no-print { display: none !important; }
             .page-break { page-break-before: always; }
             body { background: white; }
-            .page { box-shadow: none; margin: 0; }
+            .page { box-shadow: none; margin: 0 !important; page-break-inside: avoid; }
         }
 
-        body.pdf-mode {
-            background: white;
-        }
-        body.pdf-mode .page-container { max-width: 100%; }
+        body.pdf-mode { background: white; }
+        body.pdf-mode .page-container { margin: 0; }
         body.pdf-mode .page { box-shadow: none; }
         body.pdf-mode .page + .page { margin-top: 0; }
 
-        /* === Header Area === */
+        /* =====================================================
+           HEADER — badge 45.9 x 10.9mm at (9.05mm, 10mm); logo
+           13mm tall, top 9mm, right 5.5mm (signed-off geometry).
+           875 reference: the date badge is dark navy.
+           ===================================================== */
         .header-row {
-            display: flex;
-            height: 78px;
             position: relative;
-        }
-
-        .header-grey {
-            width: 218px;
-            min-width: 218px;
-            background-color: var(--dark-navy-15);
-            display: flex;
-            align-items: center;
-            padding-left: 16px;
+            height: 26.5mm;
         }
 
         .date-badge {
-            background-color: var(--naartjie);
-            color: white;
-            font-family: 'Avenir Next', system-ui, sans-serif;
-            font-weight: 500;
-            font-size: 10pt;
-            letter-spacing: 0.03em;
-            padding: 8px 18px;
-            white-space: nowrap;
-        }
-
-        .header-white {
-            flex: 1;
+            position: absolute;
+            left: 9.05mm;
+            top: 10mm;
+            width: 45.9mm;
+            height: 10.9mm;
+            box-sizing: border-box;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            padding-right: 16px;
-        }
-
-        .foord-logo {
-            height: 46px;
-            width: auto;
-        }
-
-        /* === Fund Name Banner === */
-        .fund-banner {
+            justify-content: center;
             background-color: var(--dark-navy);
-            color: white;
-            padding: 8px 16px 6px 16px;
+            color: #ffffff;
+            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-weight: 500;
+            font-size: 10.4pt;
+            letter-spacing: 0.01em;
+            word-spacing: 0.3mm;
+            text-align: center;
+        }
+
+        .header-logo {
+            position: absolute;
+            top: 9mm;
+            right: 5.5mm;
+            height: 13mm;
+        }
+
+        .foord-logo { height: 100%; width: auto; }
+
+        /* =====================================================
+           TITLE BANNER — 34mm tall, naartjie (875 reference);
+           text inset 7.75mm, same as the signed-off navy banner.
+           ===================================================== */
+        .fund-banner {
+            background-color: var(--naartjie);
+            color: var(--white);
+            height: 34mm;
+            box-sizing: border-box;
+            padding: 3.6mm 6mm 0 7.75mm;
+            margin: 0;
+            width: 100%;
         }
 
         .fund-banner h1 {
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
             font-size: 23pt;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin-bottom: 4px;
-            line-height: 1.1;
+            margin: 0 0 1.1mm 0;
+            line-height: 1.05;
+        }
+
+        .fund-banner h1 .class-suffix {
+            font-weight: 500;
+            font-size: 15pt;
         }
 
         .fund-banner .description {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
-            font-size: 7pt;
-            line-height: 9.5pt;
-            letter-spacing: 0.02em;
-            color: rgba(255,255,255,0.9);
-            max-width: 100%;
+            font-size: 9pt;
+            line-height: 11.3pt;
+            letter-spacing: 0.01em;
+            margin: 0;
+            color: var(--white);
         }
 
-        /* === Naartjie Stripe === */
-        .naartjie-stripe {
-            height: 3px;
-            background-color: var(--naartjie);
-        }
-
-        /* === Main Body Layout === */
+        /* === Main body layout === */
         .main-body {
             display: flex;
-            min-height: 200px;
+            flex-direction: row;
+            margin: 0;
+            width: 100%;
+            min-height: calc(297mm - 26.5mm - 34mm);
         }
 
-        /* === Sidebar === */
+        /* Sidebar — 60mm wide (grey band 4mm→60mm); text starts at x=8mm */
         .sidebar {
-            width: 174px;
-            min-width: 174px;
-            background-color: var(--dark-navy-15);
-            padding: 10px 10px 10px 14px;
+            width: 60mm;
+            min-width: 60mm;
+            max-width: 60mm;
+            background-color: transparent;
+            padding: 5.4mm 4mm 4mm 8mm;
+            overflow: hidden;
         }
 
-        .sidebar-section {
-            margin-bottom: 1px;
-        }
+        .sidebar-section { margin-bottom: 1.35mm; }
+        .sidebar-section:last-child { margin-bottom: 0; }
 
         .sidebar-section h3 {
-            font-family: 'Avenir Next', system-ui, sans-serif;
-            font-weight: 700;
-            font-size: 6pt;
-            line-height: 7.5pt;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 8pt;
+            line-height: 10.5pt;
+            letter-spacing: 0.02em;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
-            color: var(--dark-navy);
-            margin-top: 4px;
-            margin-bottom: 1px;
-        }
-
-        .sidebar-section:first-child h3 {
-            margin-top: 0;
+            color: #000;
+            margin: 0;
         }
 
         .sidebar-section p,
         .sidebar-section .sidebar-value {
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7pt;
-            line-height: 7.5pt;
-            letter-spacing: 0.02em;
-            color: var(--off-black);
+            font-size: 8pt;
+            line-height: 10.5pt;
+            letter-spacing: 0.01em;
+            color: #000;
+            margin: 0;
         }
 
-        /* Equity indicator dots */
+        /* Equity indicator dots — inline SVG circles (border-radius spans
+           rasterise as rounded rects in Chromium's print engine). */
+        .equity-heading {
+            display: flex;
+            align-items: center;
+            gap: 1.2mm;
+            flex-wrap: nowrap;
+        }
+
+        .equity-indicator {
+            display: inline-flex;
+            gap: 0.33mm;
+            align-items: center;
+        }
+
         .equity-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
+            width: 1.32mm;
+            height: 1.32mm;
             display: inline-block;
-            margin-right: 1.5px;
+            flex: 0 0 1.32mm;
+            overflow: visible;
         }
-        .equity-dot.filled { background-color: var(--naartjie); }
-        .equity-dot.empty { background-color: var(--medium-grey); }
 
-        /* Lipper Award box */
+        .equity-dot.filled circle { fill: var(--naartjie); }
+        .equity-dot.empty circle { fill: var(--medium-grey); }
+
+        /* Lipper award — reference: logo left-aligned, no box */
         .lipper-award {
-            margin-top: 8px;
-            border: 1px solid var(--dark-navy-30);
-            padding: 8px 6px;
-            text-align: center;
+            margin-top: 4mm;
         }
 
-        .lipper-award .award-icon {
-            font-size: 18px;
-            margin-bottom: 2px;
-        }
-
-        .lipper-award .award-title {
-            font-family: 'Avenir Next', system-ui, sans-serif;
-            font-weight: 700;
-            font-size: 7pt;
-            line-height: 9pt;
-            color: var(--dark-navy);
-            text-transform: uppercase;
-        }
-
-        .lipper-award .award-winner {
-            font-family: 'Avenir Next', system-ui, sans-serif;
-            font-weight: 600;
-            font-size: 6.5pt;
-            line-height: 8pt;
-            color: var(--dark-navy);
-            margin-top: 2px;
+        .lipper-award .award-logo {
+            width: 40mm;
+            height: auto;
+            display: block;
         }
 
         .lipper-award .award-detail {
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 6pt;
-            line-height: 7.5pt;
-            color: var(--off-black);
-            margin-top: 3px;
+            font-size: 8pt;
+            line-height: 10.5pt;
+            letter-spacing: 0.01em;
+            color: #000;
+            margin-top: 3mm;
         }
 
-        /* === Content Area === */
+        /* === Content area — x=64mm → 204mm (140mm wide) === */
         .content-area {
             flex: 1;
-            padding: 6px 14px 8px 12px;
+            padding: 5.4mm 6mm 4mm 4mm;
+            min-width: 0;
+            overflow: hidden;
         }
 
-        /* === Section Headings === */
+        /* === Section headings — 9.5pt Avenir Next Medium, dark navy
+           (875 reference: heading caps ~17px at 150 dpi) === */
         .section-heading {
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 8pt;
-            letter-spacing: 0.03em;
+            font-size: 9.5pt;
+            line-height: 11.4pt;
+            letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--off-black);
-            margin-bottom: 2px;
+            color: var(--dark-navy);
+            margin: 0 0 0.8mm 0;
+        }
+
+        /* 875 reference: bracketed qualifiers keep their mixed case
+           ("(Effective exposure)") and render at the same size as the
+           heading itself. */
+        .section-heading .title-suffix {
+            font-size: inherit;
+            font-weight: 500;
+            color: var(--dark-navy);
+            text-transform: none;
+            letter-spacing: 0.01em;
         }
 
         .section-subtitle {
-            font-family: 'Avenir Next', system-ui, sans-serif;
-            font-weight: 400;
-            font-size: 6pt;
-            line-height: 7pt;
-            color: var(--dark-grey);
-            margin-bottom: 2px;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 9.5pt;
+            line-height: 11.4pt;
+            letter-spacing: 0.01em;
+            color: var(--dark-navy);
+            margin: -0.5mm 0 0.9mm 0;
         }
 
-        /* === Two-Column Layout === */
+        /* === Two-column layout === */
         .two-col {
             display: flex;
-            gap: 10px;
-            margin-bottom: 6px;
+            gap: 6mm;
+            margin-bottom: 4.2mm;
         }
 
-        .two-col .col-left {
-            flex: 1;
-            min-width: 0;
-        }
+        .two-col .col-left { flex: 1; min-width: 0; }
+        .two-col .col-right { flex: 1; min-width: 0; }
 
-        .two-col .col-right {
-            flex: 1;
-            min-width: 0;
-        }
-
-        /* === Asset Allocation Bars === */
+        /* === Asset allocation bars === */
         .alloc-row {
             display: flex;
             align-items: center;
-            gap: 4px;
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            gap: 1mm;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 11px;
-            color: var(--off-black);
+            line-height: 4.5mm;
+            color: #000;
         }
 
+        /* Reference: labels flush left, bars start after the longest label */
         .alloc-label {
-            width: 105px;
-            text-align: right;
-            padding-right: 4px;
+            width: 25mm;
+            text-align: left;
+            padding-right: 1mm;
             flex-shrink: 0;
             font-weight: 400;
         }
 
         .alloc-bar-container {
             flex: 1;
-            height: 9px;
-            background-color: #eeeeee;
+            height: 2.4mm;
             position: relative;
         }
 
         .alloc-bar {
-            height: 9px;
-            background-color: var(--dark-navy);
+            height: 2.4mm;
+            background-color: var(--naartjie);
         }
 
         .alloc-value {
-            width: 18px;
+            width: 5mm;
             text-align: right;
             flex-shrink: 0;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         .alloc-change {
-            width: 32px;
+            width: 9mm;
             text-align: right;
             flex-shrink: 0;
-            font-size: 7pt;
+            font-size: 7.5pt;
         }
 
-        .change-up { color: var(--off-black); }
-        .change-down { color: var(--off-black); }
-        .change-up::before { content: '▲ '; font-size: 5pt; }
-        .change-down::before { content: '▼ '; font-size: 5pt; }
+        /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
+           stays black. Zero changes carry no arrow. */
+        .change-up { color: #000; }
+        .change-down { color: #000; }
+        .change-up::before { content: '▲ '; font-size: 5.1pt; color: #000; }
+        .change-down::before { content: '▼ '; font-size: 5.1pt; color: var(--light-blue); }
 
-        /* === Equity Sector Bars === */
+        /* === Equity sector bars === */
         .sector-row {
             display: flex;
             align-items: center;
-            gap: 4px;
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            gap: 1mm;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 11px;
-            color: var(--off-black);
+            line-height: 4.5mm;
+            color: #000;
         }
 
         .sector-label {
-            width: 130px;
-            text-align: right;
-            padding-right: 4px;
+            width: 34mm;
+            text-align: left;
+            padding-right: 1mm;
             flex-shrink: 0;
             font-weight: 400;
         }
 
         .sector-bar-container {
             flex: 1;
-            height: 9px;
+            height: 2.4mm;
             position: relative;
         }
 
         .sector-bar {
-            height: 9px;
-            background-color: var(--dark-navy);
-        }
-
-        .sector-value {
-            width: 18px;
-            text-align: right;
-            flex-shrink: 0;
-            font-weight: 500;
-        }
-
-        /* === Tables === */
-        .table-wrapper {
-            position: relative;
-            padding-left: 3px;
-        }
-
-        .table-wrapper::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
+            height: 2.4mm;
             background-color: var(--naartjie);
         }
 
+        .sector-value {
+            width: 5mm;
+            text-align: right;
+            flex-shrink: 0;
+            font-weight: 400;
+        }
+
+        /* =====================================================
+           TABLES — signed-off styling: 1.1pt white separators,
+           navy headers, right-aligned values, red total rows.
+           ===================================================== */
+        .table-wrapper {
+            position: relative;
+            margin-bottom: 2.6mm;
+        }
+
         .foord-table {
-            border-collapse: collapse;
             width: 100%;
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 1.1pt 1.1pt;
+            margin-left: -1.1pt;
+            margin-right: -1.1pt;
+            font-size: 7.5pt;
         }
 
         .foord-table th {
             background-color: var(--dark-navy);
-            color: white;
+            color: var(--white);
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
+            font-size: 7.5pt;
+            line-height: 8.5pt;
+            letter-spacing: 0;
             text-transform: uppercase;
-            font-size: 7pt;
-            line-height: 7.5pt;
-            padding: 4px 6px;
-            text-align: left;
-            letter-spacing: 0.02em;
-            border-right: 1px solid rgba(255,255,255,0.4);
+            text-align: right;
+            padding: 0.6mm 1.4mm 0.6mm 1.5mm;
         }
 
-        .foord-table th:last-child {
-            border-right: none;
-        }
-
-        .foord-table th:not(:first-child) {
-            text-align: center;
-        }
+        .foord-table th:first-child { text-align: left; }
 
         .foord-table td {
+            background-color: var(--row-grey-2);
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
             font-size: 7.5pt;
-            line-height: 10pt;
-            padding: 2.5px 6px;
-            border-bottom: 1px solid #e5e5e5;
+            line-height: 8.5pt;
+            padding: 0.62mm 1.4mm 0.62mm 1.5mm;
+            text-align: right;
+            overflow: hidden;
+        }
+
+        .foord-table td:first-child { text-align: left; }
+
+        /* Superscript markers sit tight against the label at a modest
+           raise (875 reference). vertical-align stays baseline and the
+           raise is done with a relative offset so the Tailwind preflight
+           (top: -0.5em) cannot over-raise them. */
+        .foord-table td sup, .foord-table th sup {
+            font-size: 5pt;
+            line-height: 0;
+            vertical-align: baseline;
+            position: relative;
+            top: -0.25em;
+            margin-left: 0.25mm;
+        }
+
+        .foord-table tr.total-row td {
+            background-color: var(--naartjie);
+            font-weight: 500;
+            color: var(--white);
+        }
+
+        .foord-table tbody tr.highlight-row td {
+            background-color: var(--naartjie-20);
+            color: #000;
+        }
+
+        .foord-table tbody tr.highlight-row td:first-child {
+            color: #000;
             font-weight: 400;
         }
 
-        .foord-table td:not(:first-child) {
-            text-align: center;
-        }
-
-        .foord-table tbody tr:nth-child(odd) {
-            background-color: var(--very-light-grey);
-        }
-
-        .foord-table tbody tr:nth-child(even) {
-            background-color: white;
-        }
-
-        .foord-table .total-row {
-            background-color: var(--naartjie) !important;
-            color: white;
-            font-weight: 500;
-        }
-
-        .foord-table .total-row td {
-            border-bottom: none;
-        }
-
-        .foord-table .highlight-row {
-            background-color: var(--naartjie-20) !important;
-        }
-
-        .foord-table .highlight-row td:first-child {
-            color: var(--naartjie);
-            font-weight: 500;
-        }
-
-        .foord-table .empty-row td {
-            height: 4px;
+        /* Spacer rows in the performance table — grey like the signed-off page */
+        .foord-table tr.empty-row td {
+            background-color: var(--row-grey-2) !important;
             padding: 0;
-            border-bottom: none;
-            background-color: white !important;
+            height: 3.58mm;
+            line-height: 3.58mm;
+            font-size: 0;
         }
 
-        /* Performance table specific */
+        /* Geographic exposure — region 40%, three equal numeric columns */
+        .geo-table .foord-table th:first-child,
+        .geo-table .foord-table td:first-child { width: 45.5%; }
+        .geo-table .foord-table td { background-color: var(--row-grey-2); }
+
+        /* Top 10 — SECURITY 40.1%, ASSET CLASS 28.3% (left), MARKET and
+           % OF FUND centred; row backgrounds fade in pairs. */
+        .top10-table .foord-table td,
+        .top10-table .foord-table th {
+            padding-top: 0.45mm;
+            padding-bottom: 0.45mm;
+        }
+        .top10-table .foord-table td:first-child,
+        .top10-table .foord-table th:first-child {
+            width: 40.1%;
+            padding-left: 2.1mm;
+        }
+        .top10-table .foord-table td:nth-child(2),
+        .top10-table .foord-table th:nth-child(2) {
+            text-align: left;
+            width: 28.3%;
+            padding-left: 2.9mm;
+        }
+        .top10-table .foord-table td:nth-child(3),
+        .top10-table .foord-table th:nth-child(3),
+        .top10-table .foord-table td:nth-child(4),
+        .top10-table .foord-table th:nth-child(4) {
+            text-align: center;
+            padding-left: 0.6mm;
+        }
+        /* Row-grey ramp measured off the 875 reference: rows 1-3 #d4d4d4,
+           row 4 #dddddd, 5-6 #e6e6e6, 7-8 #ebebeb, 9-10 #f0f0f0. */
+        .top10-table .foord-table tbody tr:nth-child(1) td,
+        .top10-table .foord-table tbody tr:nth-child(2) td,
+        .top10-table .foord-table tbody tr:nth-child(3) td { background-color: var(--row-grey-0); }
+        .top10-table .foord-table tbody tr:nth-child(4) td { background-color: var(--row-grey-1); }
+        .top10-table .foord-table tbody tr:nth-child(5) td,
+        .top10-table .foord-table tbody tr:nth-child(6) td { background-color: var(--row-grey-2); }
+        .top10-table .foord-table tbody tr:nth-child(7) td,
+        .top10-table .foord-table tbody tr:nth-child(8) td { background-color: var(--row-grey-3); }
+        .top10-table .foord-table tbody tr:nth-child(9) td,
+        .top10-table .foord-table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
+
+        .top10-table { margin-bottom: 4.2mm; }
+
+        /* Performance table — column grid measured off the 875 reference
+           (separators at 533/644/760/833/908/982/1056/1130 px @150 dpi):
+           name 18.75%, cash 13.42%, since inception 14.03%, then
+           8.83/9.07/8.95/8.95/8.95 and the remainder for THIS MONTH. */
         .perf-table th {
-            font-size: 6.5pt;
-            line-height: 7pt;
-            padding: 4px 4px;
+            font-size: 7pt;
+            line-height: 8.7pt;
+            text-align: right;
+            padding: 0.35mm 0.5mm;
             vertical-align: bottom;
         }
-
+        .perf-table th:first-child {
+            text-align: left;
+            width: 18.75%;
+            padding-left: 1.5mm;
+        }
+        .perf-table th:nth-child(2) { width: 13.42%; }
+        .perf-table th:nth-child(3) { width: 14.03%; }
+        .perf-table th:nth-child(4) { width: 8.83%; }
+        .perf-table th:nth-child(5) { width: 9.07%; }
+        .perf-table th:nth-child(6) { width: 8.95%; }
+        .perf-table th:nth-child(7) { width: 8.95%; }
+        .perf-table th:nth-child(8) { width: 8.95%; }
         .perf-table td {
+            color: #000;
+            font-size: 7.5pt;
+            line-height: 8pt;
+            padding: 0.45mm 0.5mm;
+        }
+        .perf-table td:first-child { padding-left: 1.5mm; }
+        /* Row greys fade down the table (measured off the 875 reference):
+           Peer group #d4d4d4, comparators #dddddd, euro/sterling rows
+           #e6e6e6, highest/lowest #f0f0f0. */
+        .perf-table tbody tr td { background-color: var(--row-grey-1); }
+        .perf-table tbody tr:nth-child(1) td { background-color: var(--naartjie-20); }
+        .perf-table tbody tr:nth-child(2) td { background-color: var(--row-grey-0); }
+        .perf-table tbody tr:nth-child(7) td,
+        .perf-table tbody tr:nth-child(8) td { background-color: var(--row-grey-2); }
+        .perf-table tbody tr:nth-child(9).empty-row td { background-color: var(--row-grey-3) !important; }
+        .perf-table tbody tr:nth-child(10) td,
+        .perf-table tbody tr:nth-child(11) td { background-color: var(--row-grey-4); }
+        .perf-table tbody tr td.cell-empty { background-color: var(--white); }
+
+        /* Annualised cost ratio — reference: three equal ~46.4mm columns,
+           headers and values centred */
+        .cost-table .foord-table th:first-child,
+        .cost-table .foord-table td:first-child {
+            width: 33.2%;
+            padding-left: 1.6mm;
+        }
+        .cost-table .foord-table th:not(:first-child),
+        .cost-table .foord-table td:not(:first-child) { text-align: center; }
+        .cost-table .foord-table th { font-size: 6pt; }
+        .cost-table .foord-table td {
             font-size: 7pt;
-            line-height: 9pt;
-            padding: 3px 4px;
+            padding-top: 0.92mm;
+            padding-bottom: 0.92mm;
+        }
+        .cost-table .foord-table tr.total-row td {
+            font-size: 7pt;
+            font-weight: 500;
+            padding-top: 0.95mm;
+            padding-bottom: 0.95mm;
         }
 
         /* === Chart === */
-        canvas {
-            max-height: 142px;
+        .chart-wrapper {
+            height: 47mm;
+            position: relative;
+        }
+
+        .chart-wrapper canvas {
             width: 100% !important;
+            height: 100% !important;
+        }
+
+        .chart-ytitle {
+            position: absolute;
+            left: -9mm;
+            top: 18mm;
+            width: 22mm;
+            text-align: center;
+            transform: rotate(-90deg);
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 6pt;
+            color: #000;
+            z-index: 2;
+        }
+
+        .chart-ytitle sup {
+            font-size: 3.9pt;
+            line-height: 0;
+            vertical-align: super;
+        }
+
+        /* 875 reference: hairline swatches (~1px at 150 dpi) and lighter
+           slate legend text. */
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.4mm 4.2mm;
+            margin-top: 1mm;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 6pt;
+            color: #4d585e;
+        }
+
+        .chart-legend span {
+            display: flex;
+            align-items: center;
+            gap: 1mm;
+        }
+
+        .legend-line {
+            width: 4.8mm;
+            height: 0.2mm;
+            display: inline-block;
         }
 
         /* === Footnotes === */
         .footnote {
-            font-family: 'Lato', sans-serif;
-            font-size: 5.5pt;
-            line-height: 6.5pt;
-            color: var(--dark-grey);
+            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-size: 6pt;
+            line-height: 7.2pt;
+            color: var(--dark-navy);
             letter-spacing: 0.01em;
         }
 
-        /* === Page 2 === */
+        /* =====================================================
+           PAGE 2 — info sidebar (signed-off geometry: navy box
+           45.7 x 11mm at (9.15mm, 10mm), 6.5pt Lato Light text)
+           ===================================================== */
+        .info-sidebar {
+            width: 60mm;
+            min-width: 60mm;
+            max-width: 60mm;
+            background-color: transparent;
+            padding: 0;
+            overflow: hidden;
+        }
+
         .important-info-header {
             background-color: var(--dark-navy);
-            color: white;
-            padding: 8px 8px;
-            margin-bottom: 10px;
+            color: var(--white);
+            height: 11mm;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 2mm;
+            margin: 10mm 5.2mm 0 9.15mm;
+            text-align: center;
         }
 
         .important-info-header h2 {
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7pt;
-            line-height: 8.5pt;
+            font-size: 8pt;
+            line-height: 10.9pt;
+            letter-spacing: 0.02em;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
+            margin: 0;
         }
 
+        .info-sidebar-content { padding: 6.3mm 4mm 4mm 9mm; }
+
+        /* Reference: 8.5pt Lato Light on a 9.6pt leading */
+        .info-sidebar-content p,
         .important-info-text {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 300;
-            font-size: 5.5pt;
-            line-height: 6.5pt;
-            color: var(--off-black);
-            margin-bottom: 4px;
+            font-size: 8.5pt;
+            line-height: 9.6pt;
+            letter-spacing: 0.01em;
+            color: var(--dark-navy);
+            margin: 0 0 0.7mm 0;
+            text-align: left;
         }
+
+        /* Hyperlinks render gold with an underline (measured #c09000) */
+        .ref-link {
+            color: #c09000;
+            text-decoration: underline;
+        }
+
+        .info-sidebar-content p:last-child { margin-bottom: 0; }
+
+        /* === Page 2 content === */
+        .page2-content {
+            flex: 1;
+            /* ANNUALISED COST RATIO % table header lands at y=31.7mm; the
+               main column spans x 65.2mm → 202.9mm (875 reference) */
+            padding: 26.8mm 7.1mm 4mm 5.2mm;
+            min-width: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page2-section { margin-bottom: 5.6mm; }
 
         .page2-heading {
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 8pt;
-            letter-spacing: 0.03em;
+            font-size: 9.5pt;
+            line-height: 11.4pt;
+            letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--off-black);
-            margin-bottom: 5px;
+            color: var(--dark-navy);
+            margin: 0 0 1.5mm 0;
         }
 
         .page2-body {
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7pt;
-            line-height: 9pt;
-            color: var(--dark-grey);
+            font-size: 8.2pt;
+            line-height: 10.1pt;
             letter-spacing: 0.01em;
+            color: #000;
         }
 
         .page2-note {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 400;
-            font-size: 5.5pt;
-            line-height: 7pt;
-            color: var(--dark-grey);
+            font-size: 7.8pt;
+            line-height: 9.6pt;
+            letter-spacing: 0.01em;
+            color: var(--dark-navy);
+            margin: 0.3mm 0;
+            /* Hanging indent: wrapped lines align after the superscript */
+            padding-left: 2.2mm;
+            text-indent: -2.2mm;
         }
 
-        /* === Footer === */
+        /* Superscripts run inline with a modest raise (875 reference).
+           vertical-align stays baseline with a relative offset so the
+           Tailwind preflight (top: -0.5em) cannot push them onto a
+           detached visual line. */
+        .page2-note sup {
+            font-size: 5.5pt;
+            line-height: 0;
+            vertical-align: baseline;
+            position: relative;
+            top: -0.3em;
+        }
+
+        /* === Footer — short naartjie rule, Merriweather body,
+           Avenir Next Medium contact lines, all naartjie === */
         .footer-divider {
-            border-top: 1px solid var(--naartjie);
             margin-top: auto;
-            padding-top: 10px;
+            padding-top: 5.5mm;
+            border-top: none;
+            position: relative;
+        }
+
+        .footer-divider::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0.3mm;
+            width: 9.5mm;
+            height: 0;
+            border-top: 0.35mm solid var(--naartjie);
         }
 
         .footer-info {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
-            font-size: 7.5pt;
-            line-height: 10pt;
-            letter-spacing: 0.02em;
+            font-size: 8pt;
+            line-height: 10.1pt;
+            letter-spacing: 0.01em;
             color: var(--naartjie);
-            margin-bottom: 6px;
+            margin: 0 0 3.5mm 0;
         }
 
         .footer-contact {
-            font-family: 'Avenir Next', system-ui, sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 10pt;
-            letter-spacing: 0.03em;
+            font-size: 8pt;
+            line-height: 10.9pt;
+            letter-spacing: 0.01em;
             color: var(--naartjie);
+            position: relative;
+            margin-top: 3.6mm;
         }
 
-        .footer-logo {
-            float: right;
-            height: 30px;
-            margin-top: -20px;
+        .footer-contact p { margin: 0; }
+
+        .footer-leaf {
+            position: absolute;
+            right: 4mm;
+            top: 0;
+            width: 11mm;
+            height: auto;
         }
 
-        /* === Editable Fields === */
+        /* =====================================================
+           SCREEN CHROME (not printed)
+           ===================================================== */
         .editable {
             cursor: text;
             transition: all 0.15s;
@@ -611,7 +869,6 @@
             letter-spacing: inherit;
         }
 
-        /* === Notification === */
         .notification {
             position: fixed;
             top: 1rem;
@@ -622,7 +879,6 @@
         }
         .notification.show { transform: translateX(0); }
 
-        /* === Control Bar === */
         .control-bar {
             background: var(--dark-navy);
             color: white;
@@ -653,28 +909,6 @@
         .btn-grey:hover { background: var(--dark-navy); }
         .btn-muted { background: var(--medium-grey); color: white; }
         .btn-muted:hover { background: var(--dark-grey); }
-
-        /* Chart legend */
-        .chart-legend {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 4px;
-            font-size: 6pt;
-            color: var(--dark-grey);
-        }
-
-        .chart-legend span {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .legend-line {
-            width: 18px;
-            height: 2px;
-            display: inline-block;
-        }
     </style>
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
@@ -729,28 +963,35 @@
 
         <!-- ==================== PAGE 1 ==================== -->
         <div class="page">
-            <!-- Header Row: Grey left + White right -->
+            <!-- Header: navy date badge + logo (signed-off geometry) -->
             <div class="header-row">
-                <div class="header-grey">
-                    <div class="date-badge">
-                        <span x-data="editableField('fund.date', '{{ $fund->data['fund']['date'] ?? $fund->updated_at->format('d F Y') }}')"
-                              @click="editMode && startEdit()"
-                              :class="editMode ? 'editable' : ''"
-                              x-text="value"></span>
-                    </div>
+                <div class="date-badge">
+                    <span x-data="editableField('fund.date', '{{ $fund->data['fund']['date'] ?? $fund->updated_at->format('d F Y') }}')"
+                          @click="editMode && startEdit()"
+                          :class="editMode ? 'editable' : ''"
+                          x-text="value"></span>
                 </div>
-                <div class="header-white">
+                <div class="header-logo">
                     <img src="{{ $fund->data['fund']['logoUrl'] ?? '' }}" alt="Foord Logo" class="foord-logo">
                 </div>
             </div>
 
-            <!-- Fund Name Banner -->
+            <!-- Fund Name Banner (naartjie per the 875 reference) -->
             <div class="fund-banner">
+                @php
+                    $fundName = $fund->data['fund']['name'] ?? $fund->name;
+                    if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z][0-9]*)$/iu', $fundName, $nameMatches)) {
+                        $mainName = trim($nameMatches[1]);
+                        $classText = mb_strtoupper(trim($nameMatches[2]));
+                    } else {
+                        $mainName = $fundName;
+                        $classText = '';
+                    }
+                @endphp
                 <h1>
-                    <span x-data="editableField('fund.name', '{{ $fund->data['fund']['name'] ?? $fund->name }}')"
+                    <span x-data="editableField('fund.name', '{{ addslashes($fund->data['fund']['name'] ?? $fund->name) }}', 'fundName')"
                           @click="editMode && startEdit()"
-                          :class="editMode ? 'editable' : ''"
-                          x-text="value"></span>
+                          :class="editMode ? 'editable' : ''">{{ mb_strtoupper($mainName) }}@if($classText) <span class="class-suffix">&mdash; {{ $classText }}</span>@endif</span>
                 </h1>
                 <p class="description">
                     <span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')"
@@ -760,8 +1001,34 @@
                 </p>
             </div>
 
-            <!-- Naartjie Stripe -->
-            <div class="naartjie-stripe"></div>
+            @php
+                // One-decimal display for percentage cells (reference shows
+                // 15.0 / 3.0 …); strings and signed values pass through.
+                $fmt = function ($v, int $dp = 1) {
+                    if ($v === null || $v === '') return '';
+                    if (is_string($v) && str_starts_with(ltrim($v), '+')) return $v;
+                    if (is_numeric($v)) return number_format((float) $v, $dp);
+                    return (string) $v;
+                };
+                // Bracketed qualifiers in section headings render smaller
+                // ("(Effective exposure)"), matching the signed-off templates.
+                $renderHeading = function (string $title): string {
+                    return preg_replace(
+                        '/\s*\(([^)]+)\)/',
+                        ' <span class="title-suffix">($1)</span>',
+                        e($title)
+                    );
+                };
+                // Reference: URLs and email addresses render naartjie
+                // (mirrored client-side by the `linkify` display formatter).
+                $linkify = function (string $text): string {
+                    return preg_replace(
+                        '/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/',
+                        '<span class="ref-link">$1</span>',
+                        e($text)
+                    );
+                };
+            @endphp
 
             <!-- Main Body: Sidebar + Content -->
             <div class="main-body">
@@ -812,16 +1079,11 @@
                                 @endphp
 
                                 @if ($key === 'lipperAward' && is_array($value))
+                                    {{-- Reference: the Refinitiv Lipper Fund Awards logo
+                                         (extracted from the published 875 fact sheet),
+                                         left-aligned with the award detail lines below. --}}
                                     <div class="lipper-award">
-                                        <div style="margin-bottom: 3px;">
-                                            <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <!-- Trophy/shield shape matching Refinitiv Lipper Award logo -->
-                                                <path d="M11 0L2 4V12C2 18 6 23 11 26C16 23 20 18 20 12V4L11 0Z" fill="#29363d"/>
-                                                <path d="M11 3L5 6V12C5 16.5 7.5 20.5 11 23C14.5 20.5 17 16.5 17 12V6L11 3Z" fill="#29363d" stroke="#dde1e2" stroke-width="0.5"/>
-                                            </svg>
-                                        </div>
-                                        <div class="award-title">REFINITIV LIPPER<br>FUND AWARDS</div>
-                                        <div class="award-winner">{{ $value['year'] ?? '' }} WINNER<br>{{ $value['region'] ?? '' }}</div>
+                                        <img src="{{ asset('images/lipper-award.png') }}" alt="Refinitiv Lipper Fund Awards {{ $value['year'] ?? '' }} Winner {{ $value['region'] ?? '' }}" class="award-logo">
                                         <div class="award-detail">
                                             Refinitiv Lipper Awards {{ $value['year'] ?? '' }}<br>
                                             {{ $value['category'] ?? '' }}<br>
@@ -830,16 +1092,20 @@
                                     </div>
                                 @elseif ($key === 'equityIndicator' && is_array($value))
                                     <div class="sidebar-section">
-                                        <h3>{{ $label }}</h3>
-                                        <div style="display: flex; align-items: center; margin: 2px 0;">
-                                            @php
-                                                $filledDots = $value['filled'] ?? 7;
-                                                $totalDots = $value['total'] ?? 10;
-                                            @endphp
-                                            @for ($i = 0; $i < $totalDots; $i++)
-                                                <span class="equity-dot {{ $i < $filledDots ? 'filled' : 'empty' }}"></span>
-                                            @endfor
-                                        </div>
+                                        @php
+                                            $filledDots = $value['filled'] ?? 7;
+                                            $totalDots = $value['total'] ?? 10;
+                                        @endphp
+                                        {{-- Heading + dots share one line; SVG circles stay
+                                             round in Chromium's print engine. --}}
+                                        <h3 class="equity-heading">
+                                            {{ $label }}
+                                            <span class="equity-indicator">
+                                                @for ($i = 0; $i < $totalDots; $i++)
+                                                    <svg class="equity-dot {{ $i < $filledDots ? 'filled' : 'empty' }}" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5"/></svg>
+                                                @endfor
+                                            </span>
+                                        </h3>
                                         <p>
                                             <span x-data="editableField('sidebar.{{ $key }}.description', '{{ addslashes($value['description'] ?? '') }}')"
                                                   @click="editMode && startEdit()"
@@ -848,8 +1114,9 @@
                                         </p>
                                     </div>
                                 @elseif ($key === 'marketingCommunication')
-                                    <div class="sidebar-section" style="margin-bottom: 8px;">
-                                        <h3 style="font-size: 6.5pt; font-weight: 700;">{{ $label }}</h3>
+                                    {{-- Reference: larger bold black label with a clear gap below --}}
+                                    <div class="sidebar-section" style="margin-bottom: 2.6mm;">
+                                        <h3 style="font-size: 7pt; line-height: 8.2pt; font-weight: 700;">{{ $label }}</h3>
                                     </div>
                                 @elseif (!is_array($value))
                                     <div class="sidebar-section">
@@ -886,10 +1153,9 @@
                             @if(isset($fund->data['mainContent']['assetAllocation']))
                                 <div style="margin-bottom: 8px;">
                                     <h3 class="section-heading">
-                                        <span x-data="editableField('mainContent.assetAllocation.title', '{{ $fund->data['mainContent']['assetAllocation']['title'] }}')"
+                                        <span x-data="editableField('mainContent.assetAllocation.title', '{{ addslashes($fund->data['mainContent']['assetAllocation']['title']) }}', 'headingSuffix')"
                                               @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-text="value"></span>
+                                              :class="editMode ? 'editable' : ''">{!! $renderHeading($fund->data['mainContent']['assetAllocation']['title']) !!}</span>
                                     </h3>
                                     <p class="section-subtitle">
                                         <span x-data="editableField('mainContent.assetAllocation.subtitle', '{{ $fund->data['mainContent']['assetAllocation']['subtitle'] }}')"
@@ -897,6 +1163,14 @@
                                               :class="editMode ? 'editable' : ''"
                                               x-text="value"></span>
                                     </p>
+                                    @php
+                                        /* Reference bar scale: the largest value spans ~95%
+                                           of the bar area; all bars are relative to it. */
+                                        $allocMax = max(1.0, ...array_map(
+                                            fn ($r) => (float) ($r['value'] ?? $r['total'] ?? 0),
+                                            $fund->data['mainContent']['assetAllocation']['rows']
+                                        ));
+                                    @endphp
                                     <div>
                                         @foreach ($fund->data['mainContent']['assetAllocation']['rows'] as $rowIndex => $row)
                                             <div class="alloc-row">
@@ -907,7 +1181,7 @@
                                                           x-text="value"></span>
                                                 </span>
                                                 <div class="alloc-bar-container">
-                                                    <div class="alloc-bar" style="width: {{ ($row['value'] ?? $row['total'] ?? '') }}%;"></div>
+                                                    <div class="alloc-bar" style="width: {{ round((float) ($row['value'] ?? $row['total'] ?? 0) / $allocMax * 95, 1) }}%;"></div>
                                                 </div>
                                                 <span class="alloc-value">
                                                     <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.value', '{{ ($row['value'] ?? $row['total'] ?? '') }}')"
@@ -915,41 +1189,47 @@
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
                                                 </span>
-                                                <span class="alloc-change {{ ($row['changeDirection'] ?? '') === 'up' ? 'change-up' : (($row['changeDirection'] ?? '') === 'down' ? 'change-down' : '') }}">
-                                                    <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ $row['change'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </span>
+                                                @php
+                                                    /* The stored change already carries the arrow glyph
+                                                       ('▼ 2.4') — display only the number; the arrow is
+                                                       drawn by the change-up/down ::before. Zero changes
+                                                       show no arrow (reference). */
+                                                    $changeNumber = trim(str_replace(['▲', '▼'], '', (string) ($row['change'] ?? '')));
+                                                    $isZeroChange = is_numeric($changeNumber) && (float) $changeNumber == 0.0;
+                                                    $changeClass = $isZeroChange ? '' : ((($row['changeDirection'] ?? '') === 'up') ? 'change-up' : ((($row['changeDirection'] ?? '') === 'down') ? 'change-down' : ''));
+                                                @endphp
+                                                <span class="alloc-change {{ $changeClass }}">{{ $changeNumber }}</span>
                                             </div>
                                         @endforeach
                                     </div>
                                 </div>
                             @endif
 
-                            <!-- Equity Sector Allocation -->
-                            @if(isset($fund->data['mainContent']['equitySectorAllocation']))
-                                <div style="margin-bottom: 6px;">
-                                    <h3 class="section-heading">
-                                        <span x-data="editableField('mainContent.equitySectorAllocation.title', '{{ $fund->data['mainContent']['equitySectorAllocation']['title'] }}')"
-                                              @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-text="value"></span>
-                                    </h3>
+                            <!-- Equity Sector Allocation (rows live inside the
+                                 asset_allocation JSON as `equitySectors`) -->
+                            @if(!empty($fund->data['mainContent']['assetAllocation']['equitySectors']))
+                                <div style="margin-bottom: 2mm;">
+                                    <h3 class="section-heading">EQUITY SECTOR ALLOCATION %</h3>
+                                    @php
+                                        $sectorMax = max(1.0, ...array_map(
+                                            fn ($r) => (float) ($r['percentage'] ?? 0),
+                                            $fund->data['mainContent']['assetAllocation']['equitySectors']
+                                        ));
+                                    @endphp
                                     <div>
-                                        @foreach ($fund->data['mainContent']['equitySectorAllocation']['rows'] as $rowIndex => $row)
+                                        @foreach ($fund->data['mainContent']['assetAllocation']['equitySectors'] as $rowIndex => $row)
                                             <div class="sector-row">
                                                 <span class="sector-label">
-                                                    <span x-data="editableField('mainContent.equitySectorAllocation.rows.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
+                                                    <span x-data="editableField('mainContent.assetAllocation.equitySectors.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
                                                           @click="editMode && startEdit()"
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
                                                 </span>
                                                 <div class="sector-bar-container">
-                                                    <div class="sector-bar" style="width: {{ (($row['value'] ?? $row['total'] ?? '') / 20) * 100 }}%;"></div>
+                                                    <div class="sector-bar" style="width: {{ round((float) ($row['percentage'] ?? 0) / $sectorMax * 63, 1) }}%;"></div>
                                                 </div>
                                                 <span class="sector-value">
-                                                    <span x-data="editableField('mainContent.equitySectorAllocation.rows.{{ $rowIndex }}.value', '{{ ($row['value'] ?? $row['total'] ?? '') }}')"
+                                                    <span x-data="editableField('mainContent.assetAllocation.equitySectors.{{ $rowIndex }}.percentage', '{{ $row['percentage'] ?? '' }}')"
                                                           @click="editMode && startEdit()"
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
@@ -963,63 +1243,47 @@
 
                         <!-- Right: Geographic Exposure + Chart -->
                         <div class="col-right">
-                            @if(isset($fund->data['mainContent']['geographicExposure']))
-                                <div style="margin-bottom: 6px;">
-                                    <h3 class="section-heading">
-                                        <span x-data="editableField('mainContent.geographicExposure.title', '{{ $fund->data['mainContent']['geographicExposure']['title'] }}')"
-                                              @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-text="value"></span>
-                                    </h3>
-                                    <p class="section-subtitle">
-                                        <span x-data="editableField('mainContent.geographicExposure.subtitle', '{{ $fund->data['mainContent']['geographicExposure']['subtitle'] ?? '' }}')"
-                                              @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-text="value"></span>
-                                    </p>
+                            @if(!empty($fund->data['mainContent']['assetAllocation']['geographicExposure']))
+                                @php
+                                    /* Geographic exposure lives inside the asset_allocation JSON
+                                       (`geographicExposure` rows + `geographicTotals`). Zero
+                                       values display as a dash, per the published fact sheet. */
+                                    $geoRows = $fund->data['mainContent']['assetAllocation']['geographicExposure'];
+                                    $geoTotals = $fund->data['mainContent']['assetAllocation']['geographicTotals'] ?? [];
+                                    $geoFmt = fn ($v) => (is_numeric($v) && (float) $v == 0.0) ? '-' : $v;
+                                @endphp
+                                <div class="geo-table" style="margin-bottom: 2mm;">
+                                    <h3 class="section-heading">GEOGRAPHIC EXPOSURE %</h3>
+                                    <p class="section-subtitle">(Gross exposure)</p>
                                     <div class="table-wrapper">
                                         <table class="foord-table">
                                             <thead>
                                                 <tr>
-                                                    @foreach ($fund->data['mainContent']['geographicExposure']['headers'] as $header)
-                                                        <th>{{ $header }}</th>
-                                                    @endforeach
+                                                    <th></th>
+                                                    <th>TOTAL</th>
+                                                    <th>EQUITY</th>
+                                                    <th>CASH</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($fund->data['mainContent']['geographicExposure']['rows'] as $rowIndex => $row)
+                                                @foreach ($geoRows as $rowIndex => $row)
                                                     <tr>
                                                         <td>
-                                                            <span x-data="editableField('mainContent.geographicExposure.rows.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
+                                                            <span x-data="editableField('mainContent.assetAllocation.geographicExposure.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
                                                                   @click="editMode && startEdit()"
                                                                   :class="editMode ? 'editable' : ''"
                                                                   x-text="value"></span>
                                                         </td>
-                                                        <td>
-                                                            <span x-data="editableField('mainContent.geographicExposure.rows.{{ $rowIndex }}.total', '{{ $row['total'] }}')"
-                                                                  @click="editMode && startEdit()"
-                                                                  :class="editMode ? 'editable' : ''"
-                                                                  x-text="value"></span>
-                                                        </td>
-                                                        <td>
-                                                            <span x-data="editableField('mainContent.geographicExposure.rows.{{ $rowIndex }}.equity', '{{ $row['equity'] }}')"
-                                                                  @click="editMode && startEdit()"
-                                                                  :class="editMode ? 'editable' : ''"
-                                                                  x-text="value"></span>
-                                                        </td>
-                                                        <td>
-                                                            <span x-data="editableField('mainContent.geographicExposure.rows.{{ $rowIndex }}.cash', '{{ $row['cash'] }}')"
-                                                                  @click="editMode && startEdit()"
-                                                                  :class="editMode ? 'editable' : ''"
-                                                                  x-text="value"></span>
-                                                        </td>
+                                                        <td>{{ $geoFmt($row['total']) }}</td>
+                                                        <td>{{ $geoFmt($row['equity']) }}</td>
+                                                        <td>{{ $geoFmt($row['cash']) }}</td>
                                                     </tr>
                                                 @endforeach
                                                 <tr class="total-row">
-                                                    <td>{{ $fund->data['mainContent']['geographicExposure']['total']['name'] }}</td>
-                                                    <td>{{ $fund->data['mainContent']['geographicExposure']['total']['total'] }}</td>
-                                                    <td>{{ $fund->data['mainContent']['geographicExposure']['total']['equity'] }}</td>
-                                                    <td>{{ $fund->data['mainContent']['geographicExposure']['total']['cash'] }}</td>
+                                                    <td>{{ $geoTotals['name'] ?? 'TOTAL' }}</td>
+                                                    <td>{{ $geoTotals['total'] ?? '' }}</td>
+                                                    <td>{{ $geoTotals['equity'] ?? '' }}</td>
+                                                    <td>{{ $geoTotals['cash'] ?? '' }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1036,17 +1300,17 @@
                                               :class="editMode ? 'editable' : ''"
                                               x-text="value"></span>
                                     </h3>
-                                    <div style="position: relative;">
-                                        <div style="position: absolute; left: -2px; top: 40%; transform: rotate(-90deg) translateX(-50%); font-size: 5.5pt; color: var(--dark-grey); white-space: nowrap; transform-origin: left center;">Cash Value ($'000)</div>
-                                        <div style="padding-left: 10px;">
-                                            <canvas id="performanceChart" style="height: 133px;"></canvas>
-                                        </div>
+                                    <div class="chart-wrapper">
+                                        <div class="chart-ytitle">Cash Value<sup>2</sup> ($&rsquo;000)</div>
+                                        <canvas id="performanceChart"></canvas>
                                     </div>
-                                    <div class="chart-legend" style="flex-wrap: wrap; justify-content: center; gap: 1px 16px; max-width: 190px; margin: 2px auto 0;">
+                                    {{-- Legend colours per the 875 reference: Fund red, US inflation
+                                         dark navy, World equities steel blue, World bonds light grey --}}
+                                    <div class="chart-legend" style="max-width: 52mm; margin-left: auto; margin-right: auto;">
                                         <span><span class="legend-line" style="background: var(--naartjie);"></span> Fund</span>
-                                        <span><span class="legend-line" style="background: var(--medium-grey);"></span> US inflation</span>
-                                        <span><span class="legend-line" style="background: var(--dark-navy);"></span> World equities</span>
-                                        <span><span class="legend-line" style="background: var(--light-blue);"></span> World bonds</span>
+                                        <span><span class="legend-line" style="background: var(--dark-navy);"></span> US inflation</span>
+                                        <span><span class="legend-line" style="background: var(--light-blue);"></span> World equities</span>
+                                        <span><span class="legend-line" style="background: #c9c9c9;"></span> World bonds</span>
                                     </div>
                                 </div>
                             @endif
@@ -1055,7 +1319,7 @@
 
                     <!-- Top 10 Investments Table (full width) -->
                     @if(isset($fund->data['mainContent']['topInvestments']))
-                        <div style="margin-bottom: 6px;">
+                        <div class="top10-table">
                             <h3 class="section-heading">
                                 <span x-data="editableField('mainContent.topInvestments.title', '{{ $fund->data['mainContent']['topInvestments']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -1067,7 +1331,7 @@
                                     <thead>
                                         <tr>
                                             @foreach ($fund->data['mainContent']['topInvestments']['headers'] as $index => $header)
-                                                <th @if($index <= 1) style="text-align: left;" @endif>{{ $header }}</th>
+                                                <th>{{ $header }}</th>
                                             @endforeach
                                         </tr>
                                     </thead>
@@ -1080,7 +1344,7 @@
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
                                                 </td>
-                                                <td style="text-align: left;">
+                                                <td>
                                                     <span x-data="editableField('mainContent.topInvestments.rows.{{ $rowIndex }}.assetClass', '{{ $row['assetClass'] }}')"
                                                           @click="editMode && startEdit()"
                                                           :class="editMode ? 'editable' : ''"
@@ -1092,12 +1356,7 @@
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
                                                 </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.topInvestments.rows.{{ $rowIndex }}.percentage', '{{ $row['percentage'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
+                                                <td>{{ $fmt($row['percentage'] ?? '') }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -1109,11 +1368,10 @@
                     <!-- Performance Table -->
                     @if(isset($fund->data['mainContent']['performanceTable']))
                         <div>
-                            <h3 class="section-heading" style="font-size: 6.5pt; line-height: 7.5pt;">
-                                <span x-data="editableField('mainContent.performanceTable.title', '{!! addslashes($fund->data['mainContent']['performanceTable']['title']) !!}')"
+                            <h3 class="section-heading">
+                                <span x-data="editableField('mainContent.performanceTable.title', '{!! addslashes($fund->data['mainContent']['performanceTable']['title']) !!}', 'headingSuffix')"
                                       @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-html="value"></span>
+                                      :class="editMode ? 'editable' : ''">{!! $renderHeading($fund->data['mainContent']['performanceTable']['title']) !!}</span>
                             </h3>
                             <div class="table-wrapper">
                                 <table class="foord-table perf-table">
@@ -1130,46 +1388,68 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($fund->data['mainContent']['performanceTable']['rows'] as $rowIndex => $row)
-                                            @if(empty($row['name']) && empty($row['cashValue']))
+                                        {{-- International display rules (875 reference, mirrored in
+                                             pdf-international.blade.php): the import writes raw row
+                                             names (Fund, Benchmark, Comparator 2…6, Fund highest/
+                                             lowest); the fact sheet displays them renamed with
+                                             footnote superscripts, ordered Fund/Peer group/US
+                                             inflation/World equities/World bonds, spacer, euro and
+                                             sterling fund rows, spacer, highest/lowest. --}}
+                                        @php
+                                            $perfRowsRaw = $fund->data['mainContent']['performanceTable']['rows'];
+                                            $perfColKeysIntl = $fund->data['mainContent']['performanceTable']['columnKeys'] ?? [];
+                                            $intlNames = [
+                                                'fund' => 'Fund <sup>3</sup>',
+                                                'benchmark' => 'Peer group <sup>4</sup>',
+                                                'comparator 2' => 'US inflation <sup>5</sup>',
+                                                'comparator 3' => 'World equities <sup>6</sup>',
+                                                'comparator 4' => 'World bonds <sup>7</sup>',
+                                                'comparator 5' => 'Fund in euros <sup>3</sup>',
+                                                'comparator 6' => 'Fund in sterling <sup>3</sup>',
+                                                'fund highest' => 'Fund highest <sup>3,8</sup>',
+                                                'fund lowest' => 'Fund lowest <sup>3,8</sup>',
+                                            ];
+                                            $intlOrder = [
+                                                ['fund', 'benchmark', 'comparator 2', 'comparator 3', 'comparator 4'],
+                                                ['comparator 5', 'comparator 6'],
+                                                ['fund highest', 'fund lowest'],
+                                            ];
+                                            $rowsByKey = [];
+                                            foreach ($perfRowsRaw as $i => $r) {
+                                                $rowsByKey[strtolower(trim(strip_tags((string)($r['name'] ?? ''))))] = [$i, $r];
+                                            }
+                                        @endphp
+                                        @foreach ($intlOrder as $groupIndex => $group)
+                                            @if ($groupIndex > 0)
                                                 <tr class="empty-row"><td colspan="{{ count($fund->data['mainContent']['performanceTable']['headers']) }}"></td></tr>
-                                            @else
-                                                <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
-                                                    <td>
-                                                        <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.name', '{!! addslashes($row['name']) !!}')"
-                                                              @click="editMode && startEdit()"
-                                                              :class="editMode ? 'editable' : ''"
-                                                              x-html="value"></span>
-                                                    </td>
-                                                    @foreach (($fund->data['mainContent']['performanceTable']['columnKeys'] ?? []) as $colKey)
-                                                        @php $cellValue = $row[$colKey] ?? ''; @endphp
-                                                        <td>
-                                                            <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.{{ $colKey }}', '{{ $cellValue }}')"
+                                            @endif
+                                            @foreach ($group as $rowKey)
+                                                @continue(!isset($rowsByKey[$rowKey]))
+                                                @php [$rowIndex, $row] = $rowsByKey[$rowKey]; @endphp
+                                                <tr class="{{ $rowKey === 'fund' ? 'highlight-row' : '' }}">
+                                                    <td>{!! $intlNames[$rowKey] !!}</td>
+                                                    @foreach ($perfColKeysIntl as $colKey)
+                                                        @php
+                                                            $cellValue = $row[$colKey] ?? '';
+                                                            $cellDisplay = $colKey === 'cashValue' ? $cellValue : $fmt($cellValue);
+                                                        @endphp
+                                                        {{-- Empty cells render white in the reference --}}
+                                                        <td class="{{ trim((string) $cellDisplay) === '' ? 'cell-empty' : '' }}">
+                                                            <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.{{ $colKey }}', '{{ $cellDisplay }}')"
                                                                   @click="editMode && startEdit()"
                                                                   :class="editMode ? 'editable' : ''"
                                                                   x-text="value"></span>
                                                         </td>
                                                     @endforeach
                                                 </tr>
-                                            @endif
+                                            @endforeach
                                         @endforeach
                                     </tbody>
                                 </table>
                             </div>
 
-                            <!-- Footnotes -->
-                            @if(isset($fund->data['mainContent']['performanceTable']['footnotes']))
-                                <div style="margin-top: 3px;">
-                                    @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $footnote)
-                                        <p class="footnote">
-                                            <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($footnote) !!}')"
-                                                  @click="editMode && startEdit()"
-                                                  :class="editMode ? 'editable' : ''"
-                                                  x-html="value"></span>
-                                        </p>
-                                    @endforeach
-                                </div>
-                            @endif
+                            {{-- Footnotes render on page 2 under NOTES (875 reference);
+                                 see the page2Content.notes section below. --}}
                         </div>
                     @endif
                 </div>
@@ -1177,16 +1457,12 @@
         </div>
 
         <!-- ==================== PAGE 2 ==================== -->
-        <div class="page page-break" style="display: flex; flex-direction: column;">
-            <!-- Beige header area (matches PDF page 2 top) -->
-            <div style="display: flex;">
-                <div style="width: 174px; min-width: 174px; background-color: var(--dark-navy-15); height: 55px;"></div>
-                <div style="flex: 1; background-color: #f1e7d2; height: 55px;"></div>
-            </div>
-            <div class="main-body" style="flex: 1;">
+        <div class="page page-break">
+            <div class="main-body" style="min-height: 297mm;">
                 <!-- Left Sidebar - Important Information -->
                 @if(isset($fund->data['importantInfo']))
-                    <div class="sidebar" style="padding-top: 8px;">
+                    <div class="info-sidebar">
+                        {{-- Navy header box mirrors the p1 date badge geometry --}}
                         <div class="important-info-header">
                             <h2>
                                 <span x-data="editableField('importantInfo.title', '{{ $fund->data['importantInfo']['title'] }}')"
@@ -1195,16 +1471,15 @@
                                       x-text="value"></span>
                             </h2>
                         </div>
-                        <div>
+                        <div class="info-sidebar-content">
                             @foreach ($fund->data['importantInfo']['paragraphs'] as $index => $paragraph)
                                 <p class="important-info-text">
-                                    <span x-data="editableField('importantInfo.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}')"
+                                    <span x-data="editableField('importantInfo.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}', 'linkify')"
                                           @click="editMode && startEdit()"
-                                          :class="editMode ? 'editable' : ''"
-                                          x-text="value"></span>
+                                          :class="editMode ? 'editable' : ''">{!! $linkify($paragraph) !!}</span>
                                 </p>
                             @endforeach
-                            <p class="important-info-text" style="margin-top: 6px; font-weight: 400;">
+                            <p class="important-info-text" style="margin-top: 2.5mm;">
                                 <span x-data="editableField('importantInfo.publishedDate', '{{ $fund->data['importantInfo']['publishedDate'] }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
@@ -1215,10 +1490,10 @@
                 @endif
 
                 <!-- Right Content -->
-                <div class="content-area" style="padding-top: 16px; display: flex; flex-direction: column;">
+                <div class="page2-content">
                     <!-- Annualised Cost Ratio -->
                     @if(isset($fund->data['fees']['annualisedCostRatio']))
-                        <div style="margin-bottom: 14px;">
+                        <div class="page2-section cost-table">
                             <h3 class="page2-heading">
                                 <span x-data="editableField('fees.annualisedCostRatio.title', '{{ $fund->data['fees']['annualisedCostRatio']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -1276,7 +1551,7 @@
 
                     <!-- Share Pricing and Transactions -->
                     @if(isset($fund->data['page2Content']['sharePricing']))
-                        <div style="margin-bottom: 14px;">
+                        <div class="page2-section">
                             <h3 class="page2-heading">
                                 <span x-data="editableField('page2Content.sharePricing.title', '{{ $fund->data['page2Content']['sharePricing']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -1284,17 +1559,16 @@
                                       x-text="value"></span>
                             </h3>
                             <p class="page2-body">
-                                <span x-data="editableField('page2Content.sharePricing.text', '{{ addslashes($fund->data['page2Content']['sharePricing']['text']) }}')"
+                                <span x-data="editableField('page2Content.sharePricing.text', '{{ addslashes($fund->data['page2Content']['sharePricing']['text']) }}', 'linkify')"
                                       @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
+                                      :class="editMode ? 'editable' : ''">{!! $linkify($fund->data['page2Content']['sharePricing']['text']) !!}</span>
                             </p>
                         </div>
                     @endif
 
                     <!-- More About the Fund -->
                     @if(isset($fund->data['page2Content']['moreAboutFund']))
-                        <div style="margin-bottom: 14px;">
+                        <div class="page2-section">
                             <h3 class="page2-heading">
                                 <span x-data="editableField('page2Content.moreAboutFund.title', '{{ $fund->data['page2Content']['moreAboutFund']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -1302,11 +1576,10 @@
                                       x-text="value"></span>
                             </h3>
                             @foreach ($fund->data['page2Content']['moreAboutFund']['paragraphs'] as $index => $paragraph)
-                                <p class="page2-body" style="margin-bottom: 6px;">
-                                    <span x-data="editableField('page2Content.moreAboutFund.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}')"
+                                <p class="page2-body" style="margin-bottom: 2.2mm;">
+                                    <span x-data="editableField('page2Content.moreAboutFund.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}', 'linkify')"
                                           @click="editMode && startEdit()"
-                                          :class="editMode ? 'editable' : ''"
-                                          x-text="value"></span>
+                                          :class="editMode ? 'editable' : ''">{!! $linkify($paragraph) !!}</span>
                                 </p>
                             @endforeach
                         </div>
@@ -1314,7 +1587,7 @@
 
                     <!-- Refinitiv Lipper Fund Award -->
                     @if(isset($fund->data['page2Content']['lipperAward']))
-                        <div style="margin-bottom: 14px;">
+                        <div class="page2-section">
                             <h3 class="page2-heading">
                                 <span x-data="editableField('page2Content.lipperAward.title', '{{ $fund->data['page2Content']['lipperAward']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -1322,27 +1595,22 @@
                                       x-text="value"></span>
                             </h3>
                             <p class="page2-body">
-                                <span x-data="editableField('page2Content.lipperAward.text', '{{ addslashes($fund->data['page2Content']['lipperAward']['text']) }}')"
+                                <span x-data="editableField('page2Content.lipperAward.text', '{{ addslashes($fund->data['page2Content']['lipperAward']['text']) }}', 'linkify')"
                                       @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
+                                      :class="editMode ? 'editable' : ''">{!! $linkify($fund->data['page2Content']['lipperAward']['text']) !!}</span>
                             </p>
                         </div>
                     @endif
 
-                    <!-- Notes -->
-                    @if(isset($fund->data['page2Content']['notes']))
-                        <div style="margin-bottom: 14px;">
-                            <h3 class="page2-heading">
-                                <span x-data="editableField('page2Content.notes.title', '{{ $fund->data['page2Content']['notes']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
+                    <!-- Notes (the performance-table footnotes, displayed on
+                         page 2 per the 875 reference) -->
+                    @if(!empty($fund->data['mainContent']['performanceTable']['footnotes']))
+                        <div class="page2-section">
+                            <h3 class="page2-heading">NOTES</h3>
                             <div>
-                                @foreach ($fund->data['page2Content']['notes']['items'] as $index => $note)
+                                @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $note)
                                     <p class="page2-note">
-                                        <span x-data="editableField('page2Content.notes.items.{{ $index }}', '{!! addslashes($note) !!}')"
+                                        <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($note) !!}')"
                                               @click="editMode && startEdit()"
                                               :class="editMode ? 'editable' : ''"
                                               x-html="value"></span>
@@ -1367,7 +1635,7 @@
                                       :class="editMode ? 'editable' : ''"
                                       x-text="value"></span>
                             </p>
-                            <div class="footer-contact" style="margin-top: 6px; position: relative;">
+                            <div class="footer-contact">
                                 <p>T. <span x-data="editableField('footer.contact.phone', '{{ $fund->data['footer']['contact']['phone'] }}')"
                                            @click="editMode && startEdit()"
                                            :class="editMode ? 'editable' : ''"
@@ -1380,11 +1648,9 @@
                                          @click="editMode && startEdit()"
                                          :class="editMode ? 'editable' : ''"
                                          x-text="value"></span></p>
-                                <!-- Foord feather icon -->
-                                <svg style="position: absolute; right: 0; bottom: -5px; width: 28px; height: 35px; opacity: 0.7;" viewBox="0 0 28 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M14 0C8 3 3 10 2 18C1 26 3 35 3 35C3 35 6 30 10 28C14 26 18 27 18 27C18 27 14 22 10 20C6 18 2 18 2 18C2 18 4 12 8 8C12 4 14 0 14 0Z" fill="#c4956a"/>
-                                    <path d="M14 0C20 3 25 10 26 18C27 26 25 35 25 35C25 35 22 30 18 28C14 26 10 27 10 27C10 27 14 22 18 20C22 18 26 18 26 18C26 18 24 12 20 8C16 4 14 0 14 0Z" fill="#b07850"/>
-                                </svg>
+                                {{-- Red Foord acorn leaf — same asset as the signed-off
+                                     balanced/flexible templates --}}
+                                <img src="{{ asset('images/leaf.png') }}" alt="" class="footer-leaf">
                             </div>
                         </div>
                     @endif
@@ -1408,11 +1674,31 @@
                 }
             }
         }
-        function editableField(fieldPath, initialValue) {
+        // Display formatters — keep the styled rendering (e.g. the smaller
+        // "— CLASS R" suffix) after Alpine re-renders an edited value.
+        const editableFormatters = {
+            fundName(value) {
+                const m = String(value).match(/^(.+?)\s*[—–-]\s*(CLASS\s+[A-Z][0-9]*)$/i);
+                if (!m) return String(value).toUpperCase();
+                return m[1].toUpperCase() + ' <span class="class-suffix">&mdash; ' + m[2].toUpperCase() + '</span>';
+            },
+            headingSuffix(value) {
+                return String(value).replace(/\s*\(([^)]+)\)/, ' <span class="title-suffix">($1)</span>');
+            },
+            // Reference: URLs and email addresses render naartjie
+            linkify(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/g,
+                        '<span class="ref-link">$1</span>');
+            }
+        };
+        function editableField(fieldPath, initialValue, formatter) {
             return {
                 fieldPath: fieldPath,
                 value: initialValue,
                 originalValue: initialValue,
+                formatter: formatter || null,
                 editing: false,
                 saving: false,
                 get editMode() { return globalFundEditor?.editMode || false; },
@@ -1472,7 +1758,11 @@
                     this.editing = false;
                     this.updateDisplay();
                 },
-                updateDisplay() { if (!this.editing) { this.$el.innerHTML = this.value; } },
+                updateDisplay() {
+                    if (this.editing) return;
+                    const fmt = this.formatter && editableFormatters[this.formatter];
+                    this.$el.innerHTML = fmt ? fmt(this.value) : this.value;
+                },
                 init() { this.updateDisplay(); }
             }
         }
@@ -1489,11 +1779,20 @@
         const colors = {
             naartjie: '#d25347',
             darkNavy: '#29363d',
-            mediumGrey: '#9a9a9a',
+            lightGrey: '#c9c9c9',
             lightBlue: '#7a9cb4'
         };
 
-        const lineColors = [colors.naartjie, colors.mediumGrey, colors.darkNavy, colors.lightBlue];
+        // Reference (875): Fund red, US inflation dark navy,
+        // World equities steel blue, World bonds light grey.
+        const lineColors = [colors.naartjie, colors.darkNavy, colors.lightBlue, colors.lightGrey];
+
+        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const formatChartDate = (label) => {
+            const m = String(label).match(/^(\d{4})-(\d{2})$/);
+            if (!m) return label;
+            return monthNames[parseInt(m[2], 10) - 1] + ' ' + m[1].slice(-2);
+        };
 
         // End value annotation plugin
         const endValuePlugin = {
@@ -1537,7 +1836,7 @@
                     {
                         label: 'US inflation',
                         data: chartData.map(d => d.usInflation),
-                        borderColor: colors.mediumGrey,
+                        borderColor: colors.darkNavy,
                         borderWidth: 1.5,
                         pointRadius: 0,
                         tension: 0.3,
@@ -1546,7 +1845,7 @@
                     {
                         label: 'World equities',
                         data: chartData.map(d => d.worldEquities),
-                        borderColor: colors.darkNavy,
+                        borderColor: colors.lightBlue,
                         borderWidth: 1.5,
                         pointRadius: 0,
                         tension: 0.3,
@@ -1555,7 +1854,7 @@
                     {
                         label: 'World bonds',
                         data: chartData.map(d => d.worldBonds),
-                        borderColor: colors.lightBlue,
+                        borderColor: colors.lightGrey,
                         borderWidth: 1.5,
                         pointRadius: 0,
                         tension: 0.3,
@@ -1574,20 +1873,30 @@
                     x: {
                         display: true,
                         grid: { display: false },
+                        border: { color: '#000' },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
                             maxRotation: 0,
-                            autoSkip: true,
-                            maxTicksLimit: 8
+                            autoSkip: false,
+                            // Reference ticks: Mar 97, Mar 01, … — every 48
+                            // months anchored on the first data point.
+                            callback: function (value, index) {
+                                return index % 48 === 0 ? formatChartDate(this.getLabelForValue(value)) : null;
+                            }
                         }
                     },
                     y: {
                         display: true,
-                        grid: { color: '#f0f0f0', lineWidth: 0.5 },
+                        // Reference: LOG scale from the 100 baseline, no
+                        // gridlines, only the 100 origin labelled.
+                        type: 'logarithmic',
+                        grid: { display: false },
+                        border: { color: '#000' },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353'
+                            color: '#535353',
+                            callback: (value) => value === 100 ? '100' : null
                         },
                         min: 100,
                         beginAtZero: false

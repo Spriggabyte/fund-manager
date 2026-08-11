@@ -50,6 +50,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Disabled accounts keep their credentials (and their fund authorship)
+        // but must not get a session.
+        if (Auth::user()->isDisabled()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'This account has been disabled.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

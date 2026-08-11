@@ -26,7 +26,23 @@ host('production')
     ->set('hostname', getenv('DEPLOY_HOST') ?: 'example.com')
     ->set('remote_user', getenv('DEPLOY_USER') ?: 'deploy')
     ->set('deploy_path', getenv('DEPLOY_PATH') ?: '/var/www/fund-manager')
-    ->set('branch', getenv('DEPLOY_BRANCH') ?: 'main');
+    ->set('branch', getenv('DEPLOY_BRANCH') ?: 'main')
+    ->set('healthcheck_url', getenv('DEPLOY_HEALTHCHECK_URL') ?: 'http://localhost/up');
+
+// Staging review environment. Same recipe, separate host/path/branch so a
+// branch can be put in front of the client before it reaches main. Setup and
+// server provisioning: docs/staging.md.
+host('staging')
+    ->set('hostname', getenv('STAGING_HOST') ?: 'staging.example.com')
+    ->set('remote_user', getenv('STAGING_USER') ?: 'deploy')
+    ->set('deploy_path', getenv('STAGING_PATH') ?: '/var/www/fund-manager-staging')
+    ->set('branch', getenv('STAGING_BRANCH') ?: 'main')
+    // /up is exempt from the nginx basic auth (see deploy/nginx/
+    // fund-manager-staging.conf) so this check does not need credentials.
+    ->set('healthcheck_url', getenv('STAGING_HEALTHCHECK_URL') ?: 'http://localhost/up')
+    // Each release carries its own node_modules (puppeteer + canvas ~500MB),
+    // so staging keeps fewer than production's 5.
+    ->set('keep_releases', 2);
 
 // Build front-end assets on the server (public/build is gitignored). Requires
 // Node on the host.
@@ -43,7 +59,7 @@ task('deploy:puppeteer', function () {
 // Verify the freshly-linked release is healthy via the /up endpoint. If this
 // fails the deploy fails and we roll back to the previous release.
 task('deploy:health-check', function () {
-    $url = getenv('DEPLOY_HEALTHCHECK_URL') ?: 'http://localhost/up';
+    $url = get('healthcheck_url');
     run("curl -fsS --max-time 15 {$url} > /dev/null");
 })->desc('Hit the /up health endpoint');
 

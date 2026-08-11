@@ -27,9 +27,12 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
      */
     protected function gate(): void
     {
+        // is_admin is the primary signal; HORIZON_ADMINS still works as an
+        // override for ops staff who have no application account.
         Gate::define('viewHorizon', function ($user = null) {
             return $user !== null
-                && in_array($user->email, config('horizon.admins', []), true);
+                && ($user->isAdmin()
+                    || in_array($user->email, config('horizon.admins', []), true));
         });
     }
 }

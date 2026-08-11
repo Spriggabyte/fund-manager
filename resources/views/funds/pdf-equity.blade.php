@@ -10,25 +10,29 @@
     <style>
         /* =============================================================
            FOORD EQUITY FUND – CLASS A — PDF TEMPLATE
-           Pixel-perfect A4 layout for Puppeteer PDF generation
+           Geometry measured off the signed-off design PDF at 200 dpi
+           (1 px @200dpi = 0.127 mm). Body font is Avenir Next (macOS
+           system font, matches the design); Lato Light for the title.
            ============================================================= */
 
         :root {
+            --steel-blue: #7a9cb4;
             --naartjie: #d25347;
-            --naartjie-75: #dd7e75;
-            --naartjie-50: #e9a9a3;
-            --naartjie-20: #f6dcd9;
+            --naartjie-20: #f6ddda;
             --dark-navy: #29363d;
             --dark-navy-70: #697277;
-            --dark-navy-30: #bfc3c5;
-            --dark-navy-15: #dde1e2;
-            --dark-navy-10: #e9ebec;
+            --sidebar-grey: #dfe1e2;
             --medium-grey: #9a9a9a;
-            --light-grey: #cccccc;
             --dark-grey: #535353;
-            --very-light-grey: #f4f4f4;
+            --body-grey: #414141;
             --off-black: #313131;
             --white: #ffffff;
+            /* Table cell greys — the design uses a different grey per table */
+            --cell-top10: #f0f0f0;
+            --cell-standard: #e6e6e6;
+            --cell-perf: #ebebeb;
+            --cell-benchmark: #dddddd;
+            --cell-benchmark-2: #d4d4d4;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -42,8 +46,8 @@
         }
 
         body {
-            font-family: 'Lato', -apple-system, sans-serif;
-            font-size: 6.5pt;
+            font-family: 'Avenir Next', 'Lato', -apple-system, sans-serif;
+            font-size: 7pt;
             line-height: 1.2;
             color: var(--off-black);
             background: var(--white);
@@ -60,79 +64,85 @@
             position: relative;
             page-break-after: always;
             background: var(--white);
+            display: flex;
+            flex-direction: column;
         }
         .page:last-child { page-break-after: auto; }
 
-        /* ── Header ── */
+        /* ── Header (page 1) ──
+           White page top; grey block only over the sidebar column
+           (4mm in from the page edge), big date badge inside it. */
         .header-row {
             display: flex;
-            min-height: 20mm;
+            height: 26.4mm;
+            min-height: 26.4mm;
         }
         .header-sidebar-bg {
-            width: 46mm;
-            min-width: 46mm;
-            background-color: var(--dark-navy-15);
-            padding: 5mm 3.5mm;
-            display: flex;
-            align-items: flex-start;
+            margin-left: 4mm;
+            width: 56mm;
+            min-width: 56mm;
+            background-color: var(--sidebar-grey);
+            padding: 10mm 0 0 4.1mm;
         }
         .header-main {
             flex: 1;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: flex-start;
-            padding: 5mm 6mm 3mm 4mm;
+            padding: 7mm 1.5mm 0 4mm;
         }
 
         .date-badge {
             background-color: var(--naartjie);
             color: var(--white);
-            padding: 1.8mm 3.5mm;
+            width: 45.9mm;
+            height: 10.9mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 500;
-            font-size: 9pt;
-            letter-spacing: 0.03em;
+            font-size: 12pt;
+            letter-spacing: 0.01em;
         }
 
         .logo img {
-            height: 10mm;
+            height: 13.7mm;
             width: auto;
         }
 
-        /* ── Naartjie Stripe ── */
-        .naartjie-stripe {
-            height: 0.8mm;
-            background-color: var(--naartjie);
-        }
-
-        /* ── Title Banner ── */
+        /* ── Title Banner (full bleed) ── */
         .title-banner {
             background-color: var(--dark-navy);
             color: var(--white);
-            padding: 4mm 8mm 3.5mm 8mm;
+            height: 33.8mm;
+            min-height: 33.8mm;
+            padding: 2.6mm 8mm 0 8mm;
         }
 
         .fund-name {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 18pt;
-            letter-spacing: 0.05em;
+            font-size: 23.5pt;
+            letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 1.5mm 0;
-            line-height: 1.1;
+            margin: 0;
+            line-height: 1.05;
         }
 
         .fund-name .class-suffix {
-            font-weight: 400;
-            font-size: 14pt;
+            font-weight: 500;
+            font-size: 16pt;
         }
 
         .fund-description {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
-            font-size: 8pt;
-            line-height: 10pt;
-            letter-spacing: 0.02em;
-            margin: 0;
-            opacity: 0.95;
+            font-size: 9pt;
+            line-height: 4.3mm;
+            /* Matches the signed-off banner (pdf.blade.php) — without this the
+               description wraps one word wide of the reference. */
+            letter-spacing: 0.01em;
+            margin: 0.6mm 0 0 0;
         }
 
         /* ── Content Wrapper ── */
@@ -140,84 +150,93 @@
             display: flex;
             flex-direction: row;
             flex: 1;
+            padding-left: 4mm;
         }
 
         /* ── Sidebar ── */
         .sidebar {
-            width: 46mm;
-            min-width: 46mm;
-            max-width: 46mm;
-            background-color: var(--dark-navy-15);
-            padding: 3mm 3.5mm;
+            width: 56mm;
+            min-width: 56mm;
+            max-width: 56mm;
+            background-color: var(--sidebar-grey);
+            padding: 5.5mm 2.2mm 3mm 4.1mm;
             overflow: hidden;
         }
 
-        .sidebar-section { margin-bottom: 1.8mm; }
+        .sidebar-section { margin-bottom: 2.3mm; }
         .sidebar-section:last-child { margin-bottom: 0; }
 
+        /* Reference: labels are SMALLER than the body and pure black; the body
+           copy is the larger, near-black text (matches pdf.blade.php). */
         .sidebar-heading {
-            font-weight: 700;
-            font-size: 5.5pt;
-            line-height: 6.5pt;
+            font-weight: 500;
+            font-size: 6pt;
+            line-height: 2.4mm;
             letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--dark-navy);
-            margin: 0 0 0.2mm 0;
+            color: #000000;
+            margin: 0;
         }
 
         .sidebar-text {
             font-weight: 400;
-            font-size: 6pt;
-            line-height: 7pt;
-            letter-spacing: 0.01em;
-            color: var(--off-black);
+            font-size: 7pt;
+            line-height: 2.85mm;
+            color: #000000;
             margin: 0;
         }
 
-        /* Equity Indicator Dots */
-        .equity-indicator { display: flex; gap: 0.6mm; margin: 0.8mm 0; }
-        .equity-dot { width: 1.8mm; height: 1.8mm; border-radius: 50%; box-sizing: border-box; display: inline-block; flex: 0 0 1.8mm; }
-        .equity-dot.filled { background-color: var(--naartjie); border: 0.15mm solid var(--naartjie); }
-        .equity-dot.empty { background-color: transparent; border: 0.15mm solid var(--medium-grey); }
-
-        /* Low Carbon Badge */
-        .low-carbon-badge { margin-top: 3mm; }
-        .low-carbon-badge img { height: 10mm; width: auto; }
+        /* Equity Indicator Dots — inline SVG circles, NOT border-radius spans:
+           Chromium's print-to-PDF engine rasterises border-radius + background-color
+           as a rounded rect (squashed dots in the exported PDF), while SVG circles
+           stay perfectly round. Per the design the dots sit on the SAME line as
+           the EQUITY INDICATOR heading. */
+        .sidebar-heading-with-dots {
+            display: flex;
+            align-items: center;
+            gap: 1.6mm;
+        }
+        .equity-indicator { display: flex; gap: 0.5mm; }
+        .equity-dot { width: 1.4mm; height: 1.4mm; display: inline-block; flex: 0 0 1.4mm; overflow: visible; }
+        .equity-dot.filled circle { fill: var(--naartjie); }
+        .equity-dot.empty circle { fill: none; stroke: var(--medium-grey); stroke-width: 0.9; }
 
         /* ── Main Content ── */
         .main-content {
             flex: 1;
-            padding: 3mm 5mm 3mm 4mm;
+            padding: 3.7mm 6.6mm 0 4.5mm;
             min-width: 0;
             overflow: hidden;
         }
 
         /* ── Section Headings ── */
         .section-heading {
-            font-weight: 600;
-            font-size: 7pt;
-            line-height: 8pt;
-            letter-spacing: 0.02em;
+            font-weight: 500;
+            font-size: 7.5pt;
+            line-height: 9pt;
+            letter-spacing: 0.015em;
             text-transform: uppercase;
-            color: var(--off-black);
-            margin: 0 0 1mm 0;
+            color: var(--dark-navy);
+            margin: 0 0 1.4mm 0;
         }
 
+        /* Reference: same size/colour as the heading itself */
         .section-subheading {
-            font-weight: 400;
-            font-size: 5.5pt;
-            line-height: 6pt;
-            color: var(--dark-grey);
-            margin: -0.5mm 0 1mm 0;
+            font-weight: 500;
+            font-size: 7.5pt;
+            line-height: 9pt;
+            color: var(--dark-navy);
+            margin: -0.8mm 0 1.8mm 0;
         }
 
         /* ── Two-Column Grid ── */
         .two-col {
             display: flex;
             gap: 4mm;
-            margin-bottom: 2.5mm;
+            margin-bottom: 7.8mm;
         }
         .two-col > * { flex: 1; min-width: 0; }
+        .two-col.row-2 { margin-bottom: 2.5mm; }
 
         /* ── Tables ── */
         .table-container {
@@ -225,124 +244,115 @@
             margin-bottom: 2mm;
         }
 
-        .table-container::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 0.8mm;
-            background-color: var(--naartjie);
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-left: 0.8mm;
-            font-size: 6.5pt;
+            font-size: 7pt;
         }
 
         table th {
             background-color: var(--dark-navy);
             color: var(--white);
             font-weight: 500;
-            font-size: 6pt;
-            line-height: 6.5pt;
+            font-size: 6.5pt;
+            line-height: 7.5pt;
             text-transform: uppercase;
             text-align: center;
-            padding: 1.2mm 1.5mm;
-            border-right: 0.5pt solid rgba(255,255,255,0.4);
+            padding: 0.9mm 1.5mm;
+            border-right: 0.4mm solid var(--white);
+            border-bottom: 0.4mm solid var(--white);
         }
         table th:first-child { text-align: left; }
         table th:last-child { border-right: none; }
 
         table td {
-            font-size: 6.5pt;
-            line-height: 8pt;
-            padding: 1mm 1.5mm;
-            border-bottom: 0.3pt solid #e5e5e5;
-            text-align: center;
+            font-size: 7pt;
+            line-height: 2.85mm;
+            padding: 0.5mm 1.5mm;
+            border-bottom: 0.4mm solid var(--white);
+            border-right: 0.4mm solid var(--white);
+            text-align: right;
         }
         table td:first-child { text-align: left; }
+        table td:last-child { border-right: none; }
 
-        table tbody tr:nth-child(odd) { background-color: var(--very-light-grey); }
-        table tbody tr:nth-child(even) { background-color: var(--white); }
+        /* Uniform light-grey rows separated by white gutters (not zebra). */
+        table tbody td { background-color: var(--cell-top10); }
 
         .total-row td {
             background-color: var(--naartjie) !important;
             color: var(--white);
-            font-weight: 600;
+            font-weight: 500;
             border-bottom: none;
         }
 
         .highlight-row td { background-color: var(--naartjie-20) !important; }
-        .highlight-row td:first-child { color: var(--naartjie); font-weight: 600; }
 
-        /* No accent bar variant */
-        .table-no-accent { position: relative; }
-        .table-no-accent table { margin-left: 0; }
-
-        /* ── Sector Allocation Bars ── */
+        /* ── Sector Allocation Bars ──
+           Bars use an ABSOLUTE scale (0.643mm per percentage point) so the
+           chart matches the design regardless of the month's max value. */
         .sector-row {
             display: flex;
             align-items: center;
-            margin-bottom: 0.3mm;
+            height: 4.03mm;
         }
         .sector-label {
-            width: 30mm;
+            width: 34.7mm;
             flex-shrink: 0;
-            font-size: 6.5pt;
-            line-height: 8pt;
+            font-size: 7pt;
+            line-height: 2.85mm;
             color: var(--off-black);
             padding-right: 1.5mm;
             white-space: nowrap;
         }
         .sector-bar-track {
             flex: 1;
-            height: 3mm;
+            height: 3.05mm;
             position: relative;
         }
         .sector-bar-fill {
             height: 100%;
             background-color: var(--naartjie);
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 0.8mm;
-            min-width: 4mm;
+            min-width: 1mm;
+            max-width: 100%;
         }
-        .sector-bar-value {
-            color: var(--white);
-            font-size: 6pt;
-            font-weight: 700;
-            line-height: 3mm;
-        }
-        .sector-change {
-            width: 10mm;
+        .sector-value {
+            width: 5mm;
             flex-shrink: 0;
             text-align: right;
-            font-size: 6pt;
-            line-height: 8pt;
-            padding-left: 1mm;
+            font-size: 7pt;
+            line-height: 2.85mm;
+            color: var(--off-black);
         }
-        .sector-change .arrow { font-size: 5pt; margin-right: 0.5mm; }
-        .sector-change.up { color: var(--naartjie); }
-        .sector-change.down { color: var(--dark-navy); }
+        .sector-change {
+            width: 8.2mm;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 1.6mm;
+            font-size: 7pt;
+            line-height: 2.85mm;
+            color: var(--off-black);
+        }
+        .sector-change .arrow { font-size: 5.5pt; }
+        /* Reference: up-triangles are pure black (down stays steel blue) */
+        .sector-change.up .arrow { color: #000000; }
+        .sector-change.down .arrow { color: var(--steel-blue); }
 
-        /* ── Asset Allocation Table (no chart) ── */
+        /* ── Asset Allocation Table ── */
         .asset-table { margin-bottom: 0; }
-        .asset-table table { font-size: 6.5pt; }
+        .asset-table table tbody td { background-color: var(--cell-standard); }
         .asset-table table th {
-            font-size: 5.5pt;
-            padding: 1mm 1.5mm;
+            font-size: 6.5pt;
+            padding: 0.9mm 1.5mm;
         }
         .asset-table table td {
-            padding: 0.8mm 1.5mm;
+            padding: 0.75mm 1.5mm;
         }
         .asset-table .indent td:first-child {
-            padding-left: 3mm;
+            padding-left: 3.5mm;
             color: var(--dark-navy-70);
-            font-size: 6pt;
         }
 
         /* ── Chart containers ── */
@@ -353,142 +363,203 @@
         .monthly-legend {
             display: flex;
             justify-content: center;
-            gap: 5mm;
-            margin-top: 1mm;
-            font-size: 5.5pt;
-            line-height: 7pt;
+            gap: 6mm;
+            margin-top: 1.4mm;
+            font-size: 6.3pt;
+            line-height: 7.5pt;
             color: var(--off-black);
         }
-        .monthly-legend-item { display: flex; align-items: center; gap: 1mm; }
+        .monthly-legend-item { display: flex; align-items: center; gap: 1.2mm; }
         .monthly-legend-swatch { width: 2mm; height: 2mm; display: inline-block; }
 
         /* ── Chart Description ── */
         .chart-description {
-            font-size: 5.5pt;
-            line-height: 7pt;
-            color: var(--dark-grey);
-            margin: 1.5mm 0 2mm 0;
+            font-size: 6.3pt;
+            line-height: 2.34mm;
+            color: var(--body-grey);
+            margin: 2.4mm 0 3mm 0;
         }
 
         /* ── Performance Table ── */
+        .perf-table table td { background-color: var(--cell-perf); }
         .perf-table table th {
-            font-size: 5.5pt;
-            line-height: 6pt;
-            padding: 1mm 1mm;
-        }
-        .perf-table table td {
-            font-size: 6.5pt;
+            font-size: 6pt;
             line-height: 7pt;
             padding: 1mm 1mm;
+            text-align: right;
         }
+        .perf-table table th:first-child { text-align: left; width: 20%; }
+        .perf-table table td {
+            font-size: 7.5pt;
+            line-height: 2.75mm;
+            padding: 0.4mm 1mm;
+        }
+        .perf-table .highlight-row td { background-color: var(--naartjie-20) !important; }
+        .perf-table .row-benchmark td { background-color: var(--cell-benchmark); }
+        .perf-table sup { font-size: 4.5pt; }
 
-        /* ── Separator Row ── */
+        /* Blank spacer row between Benchmark and Fund highest — a full-height
+           grey row, slightly darker than the data rows, per the design. */
         .separator-row td {
-            background-color: var(--white) !important;
-            border-bottom: none !important;
-            padding: 0.5mm 0 !important;
+            background-color: var(--cell-standard);
+            height: 3.6mm;
+            padding: 0;
+            font-size: 1pt;
+            line-height: 1pt;
         }
 
         /* ── Footnotes ── */
         .footnotes {
-            margin-top: 1.5mm;
+            margin-top: 1.6mm;
         }
         .footnotes p {
-            font-size: 5pt;
-            line-height: 6pt;
+            font-size: 6pt;
+            line-height: 2.35mm;
             color: var(--dark-grey);
-            letter-spacing: 0.01em;
         }
+        /* Footnote markers: raised near-full-size digits (the design does NOT
+           use the small precomposed Unicode superscript glyphs). */
+        .footnotes sup {
+            font-size: 5.5pt;
+            line-height: 0;
+            vertical-align: baseline;
+            position: relative;
+            top: -0.8mm;
+        }
+
+        /* ── Low Carbon Badge (cropped from the signed-off design) ── */
+        .low-carbon-badge { margin-top: 3.5mm; }
+        .low-carbon-badge img { width: 35mm; height: auto; display: block; margin-left: 3.5mm; }
 
         /* ============================
            PAGE 2 STYLES
            ============================ */
+        /* Signed-off geometry (pdf.blade.php): navy box ~45.7 x 11mm at
+           (9.15mm, 10mm), paragraphs 6.5pt Lato Light in dark navy — the
+           published equity reference matches the balanced one here. */
         .page-2 .sidebar {
-            padding: 3.5mm;
+            padding: 10mm 5.2mm 4mm 5.15mm;
         }
 
         .imp-info-header {
             background-color: var(--dark-navy);
             color: var(--white);
-            padding: 2mm 3mm;
-            margin-bottom: 2.5mm;
-            font-weight: 600;
-            font-size: 7pt;
-            line-height: 9pt;
+            height: 11mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 2mm;
+            margin-bottom: 6.3mm;
+            font-weight: 500;
+            font-size: 8pt;
+            line-height: 10.9pt;
             text-transform: uppercase;
             letter-spacing: 0.02em;
         }
 
         .imp-info-text {
+            font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 300;
-            font-size: 5pt;
-            line-height: 6pt;
-            color: var(--off-black);
-            margin-bottom: 1.5mm;
+            font-size: 6.5pt;
+            line-height: 7.33pt;
+            letter-spacing: 0.01em;
+            color: var(--dark-navy);
+            margin-bottom: 1.4mm;
         }
 
-        .page-2 .main-content { padding: 4mm 6mm 4mm 4mm; }
+        .page-2 .main-content {
+            padding: 27.4mm 6.6mm 9mm 4.5mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fee-section { margin-bottom: 5.4mm; }
+
+        /* Page-2 headings sit further off their tables than page 1 */
+        .page-2 .section-heading { margin-bottom: 2.6mm; }
 
         .fee-table table td {
             text-align: left;
-            font-size: 6.5pt;
-            line-height: 8pt;
-            padding: 1mm 2mm;
+            font-size: 7pt;
+            line-height: 2.85mm;
+            padding: 0.65mm 2mm;
+            background-color: var(--cell-standard);
         }
         .fee-table table td:first-child {
-            width: 55%;
+            width: 52%;
         }
+
+        /* TIC table: main rows white, the "—" sub-rows shaded. */
+        .tic-table table td { padding: 0.85mm 2mm; }
+        .tic-table tbody td { background-color: var(--white); }
+        .tic-table tbody .row-sub td { background-color: var(--cell-standard); }
+
+        /* Performance fee examples: Foord row pink, benchmark row darker
+           grey, remaining rows standard grey (mirrors the page-1 table). */
+        .examples-table table th { text-align: right; padding-right: 2mm; }
+        .examples-table table th:first-child { text-align: left; }
+        .examples-table table td { padding: 0.8mm 2mm; background-color: var(--cell-standard); }
+        .examples-table .row-foord td { background-color: var(--naartjie-20); }
+        .examples-table .row-bench td { background-color: var(--cell-benchmark-2); }
+
+        /* Page-2 numeric tables centre their value columns */
+        .table-center table td:not(:first-child),
+        .table-center table th:not(:first-child) { text-align: center; }
 
         .fee-description {
-            font-size: 6pt;
-            line-height: 7.5pt;
-            color: var(--dark-grey);
-            margin: 1.5mm 0 3mm 0;
+            font-size: 7.7pt;
+            line-height: 3.25mm;
+            color: #4d585e;
+            margin: 2.3mm 0 0 0;
         }
 
+        /* Reference: consecutive paragraphs run on with a plain line break —
+           no paragraph spacing between them. */
         .perf-fees-text {
-            font-size: 6pt;
-            line-height: 7.5pt;
-            color: var(--dark-grey);
-            margin-bottom: 1.5mm;
+            font-size: 7.7pt;
+            line-height: 3.25mm;
+            color: #4d585e;
+            margin-bottom: 0;
         }
 
         .perf-fee-footnote {
-            font-size: 5.5pt;
-            line-height: 7pt;
-            color: var(--dark-grey);
-            margin-top: 1mm;
+            font-size: 6.3pt;
+            line-height: 7.5pt;
+            color: var(--body-grey);
+            margin-top: 1.2mm;
         }
 
-        /* ── Footer ── */
+        /* ── Footer (pinned to the bottom of page 2) ── */
         .footer {
-            margin-top: 4mm;
-            padding-top: 2.5mm;
-            border-top: 0.5mm solid var(--naartjie);
+            margin-top: auto;
+        }
+        .footer-separator {
+            width: 14mm;
+            border-top: 0.4mm solid var(--naartjie);
+            margin-bottom: 4.5mm;
         }
         .footer-info {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
-            font-size: 7pt;
-            line-height: 9pt;
-            letter-spacing: 0.02em;
+            font-size: 8pt;
+            line-height: 10.1pt;
             color: var(--naartjie);
-            margin-bottom: 1.5mm;
+            margin-bottom: 3.5mm;
         }
         .footer-free {
             font-family: 'Merriweather', Georgia, serif;
-            font-style: italic;
             font-weight: 400;
-            font-size: 7pt;
-            line-height: 9pt;
+            font-size: 8pt;
+            line-height: 10.1pt;
             color: var(--naartjie);
-            margin-bottom: 2mm;
+            margin-bottom: 5mm;
         }
         .footer-contact {
             font-weight: 500;
-            font-size: 7pt;
-            line-height: 9pt;
-            letter-spacing: 0.03em;
+            font-size: 8.5pt;
+            line-height: 3.8mm;
+            letter-spacing: 0.01em;
             color: var(--naartjie);
         }
         .footer-contact p { margin: 0; }
@@ -497,7 +568,7 @@
             justify-content: space-between;
             align-items: flex-end;
         }
-        .footer-logo img { height: 8mm; width: auto; }
+        .footer-logo img { height: 10mm; width: auto; }
     </style>
 </head>
 <body>
@@ -511,22 +582,18 @@
                 <div class="date-badge">{{ $fund->data['fund']['date'] ?? $fund->updated_at->format('d F Y') }}</div>
             </div>
             <div class="header-main">
-                <div></div>
                 <div class="logo">
                     <img src="{{ $fund->data['fund']['logoUrl'] ?? '' }}" alt="Foord">
                 </div>
             </div>
         </div>
 
-        <!-- Naartjie Stripe -->
-        <div class="naartjie-stripe"></div>
-
         <!-- Title Banner -->
         <div class="title-banner">
             @php
                 $fullName = $fund->data['fund']['name'] ?? $fund->name;
-                // Try to split at " – CLASS" or " - CLASS"
-                $parts = preg_split('/(\s[–\-]\s(?:CLASS\s))/i', $fullName, 2, PREG_SPLIT_DELIM_CAPTURE);
+                // Try to split at " – CLASS", " — CLASS" or " - CLASS"
+                $parts = preg_split('/(\s[–—\-]\s(?:CLASS\s))/iu', $fullName, 2, PREG_SPLIT_DELIM_CAPTURE);
             @endphp
             <h1 class="fund-name">
                 @if(count($parts) >= 3)
@@ -553,7 +620,7 @@
                             'equityIndicator' => 'EQUITY INDICATOR',
                             'category' => 'CATEGORY',
                             'benchmark' => 'BENCHMARK',
-                            'minimumLumpSumMonthly' => 'MINIMUM LUMP SUM / MONTHLY',
+                            'minimums' => 'MINIMUM LUMP SUM / MONTHLY',
                             'portfolioSize' => 'PORTFOLIO SIZE',
                             'unitPrice' => 'UNIT PRICE',
                             'numberOfUnits' => 'NUMBER OF UNITS',
@@ -570,27 +637,36 @@
                     @foreach ($sidebarLabels as $key => $label)
                         @if(isset($fund->data['sidebar'][$key]))
                             <div class="sidebar-section">
-                                <p class="sidebar-heading">{{ $label }}</p>
                                 @if ($key === 'equityIndicator' && is_array($fund->data['sidebar'][$key]))
                                     @php
                                         $eq = $fund->data['sidebar'][$key];
-                                        $filled = $eq['filled'] ?? 7;
+                                        $filled = $eq['filled'] ?? 10;
                                         $total = $eq['total'] ?? 10;
                                     @endphp
-                                    <div class="equity-indicator">
-                                        @for ($i = 0; $i < $total; $i++)
-                                            <span class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}"></span>
-                                        @endfor
+                                    {{-- Dots sit inline with the heading, per the design --}}
+                                    <div class="sidebar-heading-with-dots">
+                                        <p class="sidebar-heading">{{ $label }}</p>
+                                        <div class="equity-indicator">
+                                            @for ($i = 0; $i < $total; $i++)
+                                                <svg class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="{{ $i < $filled ? '5' : '4.55' }}"/></svg>
+                                            @endfor
+                                        </div>
                                     </div>
                                     <p class="sidebar-text">{{ $eq['description'] ?? '' }}</p>
                                 @elseif (is_array($fund->data['sidebar'][$key]))
+                                    <p class="sidebar-heading">{{ $label }}</p>
                                     <p class="sidebar-text">{{ $fund->data['sidebar'][$key]['description'] ?? '' }}</p>
                                 @else
+                                    <p class="sidebar-heading">{{ $label }}</p>
                                     <p class="sidebar-text">{!! $fund->data['sidebar'][$key] !!}</p>
                                 @endif
                             </div>
                         @endif
                     @endforeach
+
+                    <div class="low-carbon-badge">
+                        <img src="{{ asset('images/low-carbon.png') }}" alt="Achieved the Morningstar® Low Carbon designation">
+                    </div>
                 @endif
             </div>
 
@@ -607,17 +683,19 @@
                                 <div class="sector-row">
                                     <div class="sector-label">{{ $sector['name'] }}</div>
                                     <div class="sector-bar-track">
-                                        <div class="sector-bar-fill" style="width: {{ max(($sector['value'] / 35) * 100, 8) }}%;">
-                                            <span class="sector-bar-value">{{ $sector['value'] }}</span>
-                                        </div>
+                                        {{-- 0.643mm per percentage point (absolute scale, per design) --}}
+                                        <div class="sector-bar-fill" style="width: {{ number_format($sector['value'] * 0.643, 2) }}mm;"></div>
                                     </div>
+                                    <div class="sector-value">{{ $sector['value'] }}</div>
                                     <div class="sector-change {{ ($sector['direction'] ?? '') === 'up' ? 'up' : (($sector['direction'] ?? '') === 'down' ? 'down' : '') }}">
                                         @if(($sector['direction'] ?? '') === 'up')
                                             <span class="arrow">▲</span>
                                         @elseif(($sector['direction'] ?? '') === 'down')
                                             <span class="arrow">▼</span>
+                                        @else
+                                            <span class="arrow"></span>
                                         @endif
-                                        {{ $sector['change'] ?? '' }}
+                                        <span>{{ $sector['change'] ?? '' }}</span>
                                     </div>
                                 </div>
                             @endforeach
@@ -653,7 +731,7 @@
                 </div>
 
                 <!-- Row 2: Top 10 Investments + Portfolio Performance Chart -->
-                <div class="two-col">
+                <div class="two-col row-2">
                     <!-- Top 10 Investments -->
                     @if(isset($fund->data['mainContent']['topInvestments']))
                         <div>
@@ -663,7 +741,7 @@
                                     <thead>
                                         <tr>
                                             @foreach ($fund->data['mainContent']['topInvestments']['headers'] as $header)
-                                                <th>{{ $header }}</th>
+                                                <th @if($loop->last) style="width: 32%;" @endif>{{ $header }}</th>
                                             @endforeach
                                         </tr>
                                     </thead>
@@ -671,7 +749,7 @@
                                         @foreach ($fund->data['mainContent']['topInvestments']['rows'] as $row)
                                             <tr>
                                                 <td>{{ $row['security'] }}</td>
-                                                <td>{{ $row['percentage'] }}</td>
+                                                <td>{{ is_numeric($row['percentage']) ? number_format((float) $row['percentage'], 1) : $row['percentage'] }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -685,7 +763,7 @@
                         <div>
                             <h3 class="section-heading">PORTFOLIO PERFORMANCE VS BENCHMARK</h3>
                             <div class="chart-wrapper">
-                                <canvas id="portfolioChart" style="height: 38mm;"></canvas>
+                                <canvas id="portfolioChart" style="height: 45mm;"></canvas>
                             </div>
                         </div>
                     @endif
@@ -696,7 +774,7 @@
                     <div>
                         <h3 class="section-heading">MONTHLY PORTFOLIO PERFORMANCE VS BENCHMARK</h3>
                         <div class="chart-wrapper">
-                            <canvas id="monthlyChart" style="height: 28mm;"></canvas>
+                            <canvas id="monthlyChart" style="height: 43mm;"></canvas>
                         </div>
                         <div class="monthly-legend">
                             <div class="monthly-legend-item">
@@ -730,22 +808,44 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @php
+                                        // Reference design: superscript footnote markers on the row
+                                        // names, the Fund row highlighted, values to one decimal.
+                                        $perfMarkers = [
+                                            'Fund' => '3',
+                                            'Benchmark' => '4',
+                                            'Fund highest' => '3,5',
+                                            'Fund lowest' => '3,5',
+                                        ];
+                                        $perfCols = ['cashValue', 'sinceInception', '15yrs', '10yrs', '7yrs', '5yrs', '3yrs', '1yr', 'thisMonth'];
+                                        $fmtPerf = fn ($v) => is_numeric($v) ? number_format((float) $v, 1) : ($v ?? '');
+                                    @endphp
                                     @foreach ($fund->data['mainContent']['performanceTable']['rows'] as $rowIndex => $row)
                                         @if($rowIndex === 2)
-                                            {{-- Separator row between Benchmark and Fund highest --}}
-                                            <tr class="separator-row"><td colspan="{{ count($fund->data['mainContent']['performanceTable']['headers']) }}" style="padding: 0.5mm 0; border-bottom: none; background: white !important;"></td></tr>
+                                            {{-- Blank grey row between Benchmark and Fund highest (per reference) --}}
+                                            <tr class="separator-row">
+                                                @foreach ($fund->data['mainContent']['performanceTable']['headers'] as $ignored)
+                                                    <td></td>
+                                                @endforeach
+                                            </tr>
                                         @endif
-                                        <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
-                                            <td>{!! $row['name'] !!}</td>
-                                            <td>{{ $row['cashValue'] }}</td>
-                                            <td>{{ $row['sinceInception'] }}</td>
-                                            @if(isset($row['15yrs']))<td>{{ $row['15yrs'] }}</td>@endif
-                                            <td>{{ $row['10yrs'] }}</td>
-                                            <td>{{ $row['7yrs'] }}</td>
-                                            <td>{{ $row['5yrs'] }}</td>
-                                            <td>{{ $row['3yrs'] }}</td>
-                                            <td>{{ $row['1yr'] }}</td>
-                                            <td>{{ $row['thisMonth'] }}</td>
+                                        @php
+                                            $name = $row['name'] ?? '';
+                                            $plainName = trim(strip_tags($name));
+                                            $marker = $perfMarkers[$plainName] ?? null;
+                                            $rowClass = '';
+                                            if ($row['highlight'] ?? ($plainName === 'Fund')) {
+                                                $rowClass = 'highlight-row';
+                                            } elseif ($plainName === 'Benchmark') {
+                                                $rowClass = 'row-benchmark';
+                                            }
+                                        @endphp
+                                        <tr class="{{ $rowClass }}">
+                                            <td>{!! $name !!}@if($marker)<sup> {{ $marker }}</sup>@endif</td>
+                                            <td>{{ $row['cashValue'] ?? '' }}</td>
+                                            @foreach (array_slice($perfCols, 1) as $col)
+                                                <td>{{ $fmtPerf($row[$col] ?? null) }}</td>
+                                            @endforeach
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -756,8 +856,13 @@
                     <!-- Footnotes -->
                     @if(isset($fund->data['mainContent']['performanceTable']['footnotes']))
                         <div class="footnotes">
+                            @php
+                                // The design uses raised full-size digits, not the small
+                                // precomposed Unicode superscript glyphs the data carries.
+                                $supMap = ['¹' => '<sup>1</sup>', '²' => '<sup>2</sup>', '³' => '<sup>3</sup>', '⁴' => '<sup>4</sup>', '⁵' => '<sup>5</sup>', '⁶' => '<sup>6</sup>'];
+                            @endphp
                             @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $footnote)
-                                <p>{!! $footnote !!}</p>
+                                <p>{!! strtr($footnote, $supMap) !!}</p>
                             @endforeach
                         </div>
                     @endif
@@ -786,7 +891,7 @@
             <div class="main-content">
                 <!-- Fee Rates -->
                 @if(isset($fund->data['fees']['feeRates']))
-                    <div style="margin-bottom: 3mm;">
+                    <div class="fee-section">
                         <h3 class="section-heading">{{ $fund->data['fees']['feeRates']['title'] }}</h3>
                         <div class="fee-table table-container">
                             <table>
@@ -808,9 +913,12 @@
 
                 <!-- Total Investment Charge -->
                 @if(isset($fund->data['fees']['totalInvestmentCharge']))
-                    <div style="margin-bottom: 3mm;">
+                    <div class="fee-section">
                         <h3 class="section-heading">{{ $fund->data['fees']['totalInvestmentCharge']['title'] }}</h3>
-                        <div class="table-container">
+                        @php
+                            $fmtTic = fn ($v) => is_numeric($v) ? number_format((float) $v, 2) : ($v ?? '');
+                        @endphp
+                        <div class="fee-table tic-table table-center table-container">
                             <table>
                                 <thead>
                                     <tr>
@@ -821,16 +929,16 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $row)
-                                        <tr>
+                                        <tr class="{{ str_starts_with($row['name'], '—') ? 'row-sub' : '' }}">
                                             <td>{{ $row['name'] }}</td>
-                                            <td>{{ $row['12m'] }}</td>
-                                            <td>{{ $row['36m'] }}</td>
+                                            <td>{{ $fmtTic($row['12m'] ?? null) }}</td>
+                                            <td>{{ $fmtTic($row['36m'] ?? null) }}</td>
                                         </tr>
                                     @endforeach
                                     <tr class="total-row">
                                         <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] }}</td>
-                                        <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['12m'] }}</td>
-                                        <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['36m'] }}</td>
+                                        <td>{{ $fmtTic($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? null) }}</td>
+                                        <td>{{ $fmtTic($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? null) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -843,7 +951,7 @@
 
                 <!-- Performance Fees -->
                 @if(isset($fund->data['fees']['performanceFees']))
-                    <div style="margin-bottom: 3mm;">
+                    <div class="fee-section">
                         <h3 class="section-heading">{{ $fund->data['fees']['performanceFees']['title'] }}</h3>
                         @foreach ($fund->data['fees']['performanceFees']['paragraphs'] as $paragraph)
                             <p class="perf-fees-text">{{ $paragraph }}</p>
@@ -853,9 +961,9 @@
 
                 <!-- Performance Fee Examples -->
                 @if(isset($fund->data['fees']['performanceFeeExamples']))
-                    <div style="margin-bottom: 3mm;">
+                    <div class="fee-section">
                         <h3 class="section-heading">{{ $fund->data['fees']['performanceFeeExamples']['title'] }}</h3>
-                        <div class="table-container">
+                        <div class="examples-table table-container">
                             <table>
                                 <thead>
                                     <tr>
@@ -865,8 +973,8 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($fund->data['fees']['performanceFeeExamples']['rows'] as $row)
-                                        <tr>
+                                    @foreach ($fund->data['fees']['performanceFeeExamples']['rows'] as $rowIndex => $row)
+                                        <tr class="{{ $rowIndex === 0 ? 'row-foord' : ($rowIndex === 1 ? 'row-bench' : '') }}">
                                             <td>{{ $row['name'] }}</td>
                                             <td>{{ $row['a'] }}</td>
                                             <td>{{ $row['b'] }}</td>
@@ -893,6 +1001,7 @@
                 <!-- Footer -->
                 @if(isset($fund->data['footer']))
                     <div class="footer">
+                        <div class="footer-separator"></div>
                         <p class="footer-info">{{ $fund->data['footer']['info'] }}</p>
                         <p class="footer-free">{{ $fund->data['footer']['freeOfCharge'] }}</p>
                         <div class="footer-bottom">
@@ -902,7 +1011,7 @@
                                 <p>{{ $fund->data['footer']['contact']['website'] }}</p>
                             </div>
                             <div class="footer-logo">
-                                <img src="{{ $fund->data['fund']['logoUrl'] ?? '' }}" alt="Foord">
+                                <img src="{{ asset('images/leaf.png') }}" alt="Foord">
                             </div>
                         </div>
                     </div>
@@ -923,29 +1032,63 @@
             darkGrey: '#535353'
         };
 
-        Chart.defaults.font.family = "'Lato', sans-serif";
+        Chart.defaults.font.family = "'Avenir Next', 'Lato', sans-serif";
         Chart.defaults.font.size = 7;
 
-        // Annotation plugin for end-of-line labels
+        // "2002-09" → "Sep 02"; anything else passes through untouched.
+        const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        function formatMonthLabel(value) {
+            const m = /^(\d{4})-(\d{2})$/.exec(value);
+            return m ? MONTHS[parseInt(m[2], 10) - 1] + ' ' + m[1].slice(2) : value;
+        }
+        // Reference design: x ticks every 48 months, anchored on the first
+        // September (the fund's inception month) — "Sep 02 Sep 06 … Sep 22".
+        // Returns the category indices so afterBuildTicks can drop all other
+        // ticks (needed so the axis tick MARKS only appear at the labels,
+        // matching the reference, instead of at all ~280 months).
+        function anchoredTickIndices(dates) {
+            const anchor = dates.findIndex(d => /^\d{4}-09$/.test(d));
+            const idx = [];
+            if (anchor >= 0) for (let i = anchor; i < dates.length; i += 48) idx.push(i);
+            return idx;
+        }
+
+        // Annotation plugin for end-of-line labels. Labels are nudged apart
+        // when the series converge (the log scale squeezes them together).
         const endLabelPlugin = {
             id: 'endLabels',
             afterDraw(chart) {
-                const { ctx: c, data, scales: { y } } = chart;
-                data.datasets.forEach((ds, i) => {
+                const { ctx: c, data } = chart;
+                const MIN_GAP = 9;
+                const labels = data.datasets.map((ds, i) => {
                     const vals = ds.data;
-                    const last = vals[vals.length - 1];
                     const meta = chart.getDatasetMeta(i);
                     const lastPt = meta.data[meta.data.length - 1];
-                    if (!lastPt) return;
-                    c.save();
-                    c.font = '600 7px Lato, sans-serif';
-                    c.fillStyle = ds.borderColor;
-                    c.textAlign = 'left';
-                    c.textBaseline = 'middle';
-                    const label = 'R ' + Number(last).toLocaleString();
-                    c.fillText(label, lastPt.x + 4, lastPt.y);
-                    c.restore();
+                    if (!lastPt) return null;
+                    return {
+                        text: 'R ' + Math.round(Number(vals[vals.length - 1])).toLocaleString(),
+                        color: ds.borderColor,
+                        x: lastPt.x + 4,
+                        y: lastPt.y
+                    };
+                }).filter(Boolean).sort((a, b) => a.y - b.y);
+                for (let i = 1; i < labels.length; i++) {
+                    const gap = labels[i].y - labels[i - 1].y;
+                    if (gap < MIN_GAP) {
+                        const shift = (MIN_GAP - gap) / 2;
+                        labels[i - 1].y -= shift;
+                        labels[i].y += shift;
+                    }
+                }
+                c.save();
+                c.font = "500 9px 'Avenir Next', Lato, sans-serif";
+                c.textAlign = 'left';
+                c.textBaseline = 'middle';
+                labels.forEach(l => {
+                    c.fillStyle = l.color;
+                    c.fillText(l.text, l.x, l.y);
                 });
+                c.restore();
             }
         };
 
@@ -953,12 +1096,14 @@
         @if(isset($fund->data['mainContent']['charts']['portfolioData']))
         {
             const data = @json($fund->data['mainContent']['charts']['portfolioData']);
+            const dates = data.map(d => d.date);
+            const keepTicks = new Set(anchoredTickIndices(dates));
             const ctx = document.getElementById('portfolioChart');
             if (ctx) {
                 new Chart(ctx.getContext('2d'), {
                     type: 'line',
                     data: {
-                        labels: data.map(d => d.date),
+                        labels: dates,
                         datasets: [
                             {
                                 label: 'Fund',
@@ -967,7 +1112,8 @@
                                 backgroundColor: 'transparent',
                                 borderWidth: 1.5,
                                 tension: 0.1,
-                                pointRadius: 0
+                                pointRadius: 0,
+                                pointStyle: 'line'
                             },
                             {
                                 label: 'Benchmark',
@@ -976,7 +1122,8 @@
                                 backgroundColor: 'transparent',
                                 borderWidth: 1.5,
                                 tension: 0.1,
-                                pointRadius: 0
+                                pointRadius: 0,
+                                pointStyle: 'line'
                             }
                         ]
                     },
@@ -985,33 +1132,49 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: false,
-                        layout: { padding: { right: 32 } },
+                        layout: { padding: { right: 34 } },
                         plugins: {
                             legend: {
                                 position: 'bottom',
                                 labels: {
-                                    usePointStyle: false,
-                                    boxWidth: 15,
-                                    boxHeight: 1,
+                                    // Reference legend samples are long thin rules
+                                    usePointStyle: true,
+                                    pointStyleWidth: 30,
+                                    boxHeight: 8,
                                     padding: 8,
-                                    font: { size: 6 }
+                                    color: C.darkNavy,
+                                    font: { size: 8 }
                                 }
                             },
                             tooltip: { enabled: false }
                         },
                         scales: {
                             x: {
-                                grid: { display: false },
-                                ticks: { font: { size: 6 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }
+                                // No gridlines, but black axis line + tick marks at the labels
+                                border: { display: true, color: '#000', width: 1 },
+                                grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                                afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => keepTicks.has(t.value)); },
+                                ticks: {
+                                    font: { size: 8 },
+                                    color: '#000',
+                                    maxRotation: 0,
+                                    autoSkip: false,
+                                    callback: v => formatMonthLabel(dates[v])
+                                }
                             },
                             y: {
                                 type: 'logarithmic',
-                                title: { display: true, text: 'Cash Value (R\'000)', font: { size: 5.5 }, color: C.darkGrey },
+                                min: 100,
+                                title: { display: true, text: 'Cash Value² (R\'000)', font: { size: 9 }, color: C.darkGrey },
+                                border: { display: true, color: '#000', width: 1 },
                                 ticks: {
-                                    font: { size: 6 },
-                                    callback: v => { if ([100,1000,10000].includes(v)) return v.toLocaleString(); return ''; }
+                                    font: { size: 8 },
+                                    color: '#000',
+                                    // Per the reference design only the "100" label shows.
+                                    callback: v => v === 100 ? '100' : ''
                                 },
-                                grid: { color: '#e5e5e5' }
+                                // Reference has NO horizontal gridlines — plain plot
+                                grid: { display: false }
                             }
                         }
                     }
@@ -1024,17 +1187,20 @@
         @if(isset($fund->data['mainContent']['charts']['monthlyData']))
         {
             const data = @json($fund->data['mainContent']['charts']['monthlyData']);
+            const dates = data.map(d => d.date);
+            const keepTicks = new Set(anchoredTickIndices(dates));
             const ctx = document.getElementById('monthlyChart');
             if (ctx) {
                 new Chart(ctx.getContext('2d'), {
                     type: 'bar',
                     data: {
-                        labels: data.map(d => d.date),
+                        labels: dates,
                         datasets: [{
                             data: data.map(d => d.relative),
                             backgroundColor: data.map(d => d.benchmarkNegative ? C.naartjie : C.darkNavy),
                             borderWidth: 0,
-                            barPercentage: 0.9,
+                            // Reference bars are ~2px at 150dpi with hairline gaps
+                            barPercentage: 1,
                             categoryPercentage: 0.95
                         }]
                     },
@@ -1042,24 +1208,37 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: false,
+                        // Pull the plot's edges in to the reference width
+                        layout: { padding: { left: 6, right: 12 } },
                         plugins: {
                             legend: { display: false },
                             tooltip: { enabled: false }
                         },
                         scales: {
                             x: {
-                                grid: { display: false },
-                                ticks: { font: { size: 5.5 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }
+                                border: { display: true, color: '#000', width: 1 },
+                                grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                                afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => keepTicks.has(t.value)); },
+                                ticks: {
+                                    font: { size: 8 },
+                                    color: '#000',
+                                    maxRotation: 0,
+                                    autoSkip: false,
+                                    callback: v => formatMonthLabel(dates[v])
+                                }
                             },
                             y: {
                                 min: -10,
                                 max: 10,
+                                // Reference: y-axis line + tick marks, no gridlines
+                                border: { display: true, color: '#000', width: 1 },
+                                grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                                 ticks: {
                                     stepSize: 5,
-                                    font: { size: 6 },
+                                    font: { size: 8 },
+                                    color: '#000',
                                     callback: v => v + '%'
-                                },
-                                grid: { color: '#e5e5e5' }
+                                }
                             }
                         }
                     }

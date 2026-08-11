@@ -14,6 +14,11 @@ class Fund extends Model
     protected $fillable = [
         'name',
         'class',
+        // Folder code on the monthly SFTP data feed (YYYY-MM/{fund_code}/)
+        'fund_code',
+        // Share class within that folder (A, B2, B3, R) — selects which of the
+        // folder's exports belong to this fund: {fund_code}{class_code}_*.xlsx
+        'class_code',
         // Fund metadata
         'template',
         'fund_date',
@@ -42,6 +47,14 @@ class Fund extends Model
         'portfolio_orientation',
         'income_characteristics',
         'significant_restrictions',
+        // International (Luxembourg) sidebar fields
+        'depository',
+        'investment_manager',
+        'sub_investment_manager',
+        'type_of_shares',
+        'fees_summary',
+        'lipper_award',
+        'page2_content',
         // Footer
         'footer_info',
         'footer_email',
@@ -58,15 +71,20 @@ class Fund extends Model
         'top_investments',
         'performance_table',
         'chart_data',
+        'sector_allocation',
+        'chart_description',
         'fees',
     ];
 
     protected $casts = [
+        'lipper_award' => 'array',
+        'page2_content' => 'array',
         'important_info_paragraphs' => 'array',
         'asset_allocation' => 'array',
         'top_investments' => 'array',
         'performance_table' => 'array',
         'chart_data' => 'array',
+        'sector_allocation' => 'array',
         'fees' => 'array',
     ];
 
@@ -102,6 +120,17 @@ class Fund extends Model
         'sidebar.portfolioOrientation' => 'portfolio_orientation',
         'sidebar.incomeCharacteristics' => 'income_characteristics',
         'sidebar.significantRestrictions' => 'significant_restrictions',
+        'sidebar.depository' => 'depository',
+        'sidebar.investmentManager' => 'investment_manager',
+        'sidebar.subInvestmentManager' => 'sub_investment_manager',
+        'sidebar.typeOfShares' => 'type_of_shares',
+        'sidebar.fees' => 'fees_summary',
+        // International templates label existing columns differently
+        'sidebar.morningstarCategory' => 'category',
+        'sidebar.initialInvestmentAmount' => 'minimums',
+        'sidebar.totalFundSize' => 'portfolio_size',
+        'sidebar.monthEndSharePrice' => 'unit_price',
+        'sidebar.numberOfShares' => 'number_of_units',
         'footer.info' => 'footer_info',
         'footer.contact.email' => 'footer_email',
         'footer.contact.phone' => 'footer_phone',
@@ -110,6 +139,7 @@ class Fund extends Model
         'footer.freeOfCharge' => 'footer_free_of_charge',
         'importantInfo.title' => 'important_info_title',
         'importantInfo.publishedDate' => 'important_info_published_date',
+        'mainContent.chartDescription' => 'chart_description',
     ];
 
     /**
@@ -120,7 +150,9 @@ class Fund extends Model
         'mainContent.topInvestments' => 'top_investments',
         'mainContent.performanceTable' => 'performance_table',
         'mainContent.charts' => 'chart_data',
+        'mainContent.sectorAllocation' => 'sector_allocation',
         'fees' => 'fees',
+        'page2Content' => 'page2_content',
         'importantInfo.paragraphs' => 'important_info_paragraphs',
     ];
 
@@ -163,14 +195,32 @@ class Fund extends Model
                 'portfolioOrientation' => $this->portfolio_orientation,
                 'incomeCharacteristics' => $this->income_characteristics,
                 'significantRestrictions' => $this->significant_restrictions,
+                // International (Luxembourg) fact-sheet sidebar. The aliases
+                // re-expose existing columns under the keys the international
+                // templates label differently (MORNINGSTAR CATEGORY, …).
+                'marketingCommunication' => ($this->template === 'show-international') ? true : null,
+                'depository' => $this->depository,
+                'investmentManager' => $this->investment_manager,
+                'subInvestmentManager' => $this->sub_investment_manager,
+                'typeOfShares' => $this->type_of_shares,
+                'fees' => $this->fees_summary,
+                'lipperAward' => $this->lipper_award,
+                'morningstarCategory' => ($this->template === 'show-international') ? $this->category : null,
+                'initialInvestmentAmount' => ($this->template === 'show-international') ? $this->minimums : null,
+                'totalFundSize' => ($this->template === 'show-international') ? $this->portfolio_size : null,
+                'monthEndSharePrice' => ($this->template === 'show-international') ? $this->unit_price : null,
+                'numberOfShares' => ($this->template === 'show-international') ? $this->number_of_units : null,
             ], fn ($v) => $v !== null),
             'mainContent' => [
                 'assetAllocation' => $this->asset_allocation,
                 'topInvestments' => $this->top_investments,
                 'performanceTable' => $this->performance_table,
                 'charts' => $this->chart_data,
+                'sectorAllocation' => $this->sector_allocation,
+                'chartDescription' => $this->chart_description,
             ],
             'fees' => $this->fees,
+            'page2Content' => $this->page2_content,
             'footer' => [
                 'info' => $this->footer_info ?? '',
                 'contact' => [
@@ -201,8 +251,10 @@ class Fund extends Model
 
     public function createRevision(?string $changedField = null, $oldValue = null, $newValue = null, ?string $changeSummary = null): FundRevision
     {
+        // Falls back to the fund's owner when no user is authenticated
+        // (artisan imports and other CLI contexts).
         return $this->revisions()->create([
-            'user_id' => auth()->id(),
+            'user_id' => auth()->id() ?? $this->user_id,
             'name' => $this->name,
             'class' => $this->class,
             'data' => $this->data,
@@ -231,7 +283,10 @@ class Fund extends Model
         $this->top_investments = $data['mainContent']['topInvestments'] ?? null;
         $this->performance_table = $data['mainContent']['performanceTable'] ?? null;
         $this->chart_data = $data['mainContent']['charts'] ?? null;
+        $this->sector_allocation = $data['mainContent']['sectorAllocation'] ?? null;
         $this->fees = $data['fees'] ?? null;
+        $this->lipper_award = $data['sidebar']['lipperAward'] ?? null;
+        $this->page2_content = $data['page2Content'] ?? null;
         $this->important_info_paragraphs = $data['importantInfo']['paragraphs'] ?? null;
     }
 

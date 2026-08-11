@@ -141,14 +141,20 @@ class PuppeteerPdfService
         try {
             const hasCharts = await page.evaluate(() => {
                 return document.querySelector('#inflationChart') !== null ||
-                       document.querySelector('#portfolioChart') !== null;
+                       document.querySelector('#strategyChart') !== null ||
+                       document.querySelector('#portfolioChart') !== null ||
+                       document.querySelector('#performanceChart') !== null;
             });
 
             if (hasCharts) {
-                console.log('Chart containers found, waiting for Highcharts...');
+                console.log('Chart containers found, waiting for chart library...');
 
+                // Highcharts templates (balanced/flexible/equity) or Chart.js
+                // (the international template's canvas chart) — wait for
+                // whichever library the page loads.
                 await page.waitForFunction(() => {
-                    return typeof window.Highcharts !== 'undefined';
+                    return typeof window.Highcharts !== 'undefined' ||
+                           typeof window.Chart !== 'undefined';
                 }, { timeout: 15000 });
 
                 console.log('Highcharts loaded, waiting for charts to render...');

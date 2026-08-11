@@ -33,14 +33,29 @@ class FundPdfExportTest extends TestCase
         ]);
     }
 
-    public function test_export_is_restricted_to_fund_owner(): void
+    public function test_any_signed_in_user_can_export_a_colleagues_fund(): void
     {
         Queue::fake();
-        $owner = User::factory()->create();
+        $creator = User::factory()->create();
         $other = User::factory()->create();
-        $fund = Fund::factory()->for($owner)->create();
+        $fund = Fund::factory()->for($creator)->create(['template' => 'show']);
 
-        $this->actingAs($other)->get(route('funds.pdf', $fund))->assertForbidden();
+        $this->actingAs($other)->get(route('funds.pdf', $fund))->assertOk();
+
+        Queue::assertPushed(GenerateFundPdfJob::class);
+        // The export belongs to whoever asked for it, not to the fund's creator.
+        $this->assertDatabaseHas('fund_pdf_exports', [
+            'fund_id' => $fund->id,
+            'user_id' => $other->id,
+        ]);
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        Queue::fake();
+        $fund = Fund::factory()->for(User::factory()->create())->create();
+
+        $this->get(route('funds.pdf', $fund))->assertRedirect(route('login'));
 
         Queue::assertNotPushed(GenerateFundPdfJob::class);
     }
