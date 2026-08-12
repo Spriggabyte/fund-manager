@@ -27,8 +27,8 @@ You will need:
 
 - A Linux host (this guide assumes **Ubuntu 24.04 LTS**) with sudo and 4 GB RAM.
   Headless Chrome is the memory hog; 2 GB will OOM under concurrent renders.
-- ~20 GB disk. Each release carries its own `node_modules` (puppeteer + canvas
-  ≈ 500 MB), which is why staging keeps only 2 releases.
+- ~20 GB disk. Each release carries its own `node_modules` (puppeteer and its
+  bundled Chromium dominate), which is why staging keeps only 2 releases.
 - A DNS `A` record for `staging.<your-domain>` pointing at the host.
 - **Outbound HTTPS from the server** — see §9.2. This is not optional; PDFs
   render incorrectly without it.
