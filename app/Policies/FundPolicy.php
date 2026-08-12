@@ -17,10 +17,13 @@ class FundPolicy
 
     /**
      * Determine whether the user can view the model.
+     *
+     * Funds are shared across the whole team — user_id records who created a
+     * fund, not who may see it.
      */
     public function view(User $user, Fund $fund): bool
     {
-        return $user->id === $fund->user_id;
+        return true;
     }
 
     /**
@@ -36,15 +39,18 @@ class FundPolicy
      */
     public function update(User $user, Fund $fund): bool
     {
-        return $user->id === $fund->user_id;
+        return true;
     }
 
     /**
      * Determine whether the user can delete the model.
+     *
+     * Deleting a fund destroys its data and revision history for everyone, so
+     * it is reserved for admins.
      */
     public function delete(User $user, Fund $fund): bool
     {
-        return $user->id === $fund->user_id;
+        return $user->isAdmin();
     }
 
     /**

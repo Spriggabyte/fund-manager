@@ -162,11 +162,13 @@
                                                 <a href="{{ route('funds.show', $fund) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                                                 <a href="{{ route('funds.fact-sheet', $fund) }}" class="text-green-600 hover:text-green-900">Fact Sheet</a>
                                                 <a href="{{ route('funds.edit', $fund) }}" class="text-gray-600 hover:text-gray-900">Edit</a>
-                                                <form method="POST" action="{{ route('funds.destroy', $fund) }}" class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
-                                                </form>
+                                                @can('delete', $fund)
+                                                    <form method="POST" action="{{ route('funds.destroy', $fund) }}" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
+                                                    </form>
+                                                @endcan
                                             </div>
                                         </td>
                                     </tr>

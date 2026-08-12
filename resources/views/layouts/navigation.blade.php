@@ -24,6 +24,11 @@
                     <x-nav-link :href="route('funds.create')" :active="request()->routeIs('funds.create')">
                         {{ __('Create Fund') }}
                     </x-nav-link>
+                    @if (auth()->user()->isAdmin())
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            {{ __('Users') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -85,6 +90,11 @@
             <x-responsive-nav-link :href="route('funds.create')" :active="request()->routeIs('funds.create')">
                 {{ __('Create Fund') }}
             </x-responsive-nav-link>
+            @if (auth()->user()->isAdmin())
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    {{ __('Users') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

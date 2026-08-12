@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFundRequest;
 use App\Http\Requests\UpdateFundRequest;
+use App\Jobs\GenerateFundPdfJob;
 use App\Models\Fund;
+use App\Models\FundPdfExport;
 use App\Models\FundRevision;
 use App\Services\ExcelImportService;
-use App\Services\PuppeteerPdfService;
+use App\Services\FundImport\FundDataSyncService;
+use App\Services\FundImport\FundImportManager;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class FundController extends Controller
@@ -20,7 +23,9 @@ class FundController extends Controller
 
     public function index(): View
     {
-        $funds = auth()->user()->funds()->latest()->get();
+        // Shared workspace: everyone sees every fund. auth()->user()->funds()
+        // only records authorship — see FundPolicy.
+        $funds = Fund::latest()->get();
 
         return view('funds.index', compact('funds'));
     }
@@ -62,11 +67,13 @@ class FundController extends Controller
         return view('funds.fact-sheet', compact('fund'));
     }
 
-    public function edit(Fund $fund): View
+    public function edit(Fund $fund, FundDataSyncService $syncService): View
     {
         $this->authorize('update', $fund);
 
-        return view('funds.edit', compact('fund'));
+        $availableMonths = $syncService->availableMonths($fund->fund_code, $fund->class_code);
+
+        return view('funds.edit', compact('fund', 'availableMonths'));
     }
 
     public function update(UpdateFundRequest $request, Fund $fund): RedirectResponse
@@ -167,6 +174,46 @@ class FundController extends Controller
     }
 
     /**
+     * Import a downloaded data-feed month (storage/app/private/fund-data)
+     * into the fund, snapshotting a revision first.
+     */
+    public function importMonth(Fund $fund, string $month, FundImportManager $manager): RedirectResponse
+    {
+        $this->authorize('update', $fund);
+
+        if (! $fund->fund_code) {
+            return redirect()->route('funds.edit', $fund)
+                ->with('error', 'Set this fund\'s Fund Code before importing from the data feed.');
+        }
+
+        $directory = FundDataSyncService::LOCAL_ROOT."/{$month}/{$fund->fund_code}";
+        $disk = Storage::disk('local');
+
+        if (! $disk->exists($directory)) {
+            return redirect()->route('funds.edit', $fund)
+                ->with('error', "No downloaded data for {$month} (fund code {$fund->fund_code}). The daily sync may not have picked it up yet.");
+        }
+
+        $result = $manager->importDirectoryWithSnapshot(
+            $fund,
+            $disk->path($directory),
+            "Before data feed import ({$month})"
+        );
+
+        if (! $result['imported']) {
+            return redirect()->route('funds.edit', $fund)
+                ->with('error', "No recognised export files found in the {$month} download.");
+        }
+
+        $summary = 'Imported '.implode(', ', array_unique($result['imported'])).' from the '.$month.' data feed.';
+        if ($result['skipped']) {
+            $summary .= ' Skipped (no importer): '.implode(', ', $result['skipped']).'.';
+        }
+
+        return redirect()->route('funds.edit', $fund)->with('success', $summary);
+    }
+
+    /**
      * Import data from Excel files.
      */
     public function import(Request $request, Fund $fund)
@@ -177,9 +224,11 @@ class FundController extends Controller
             'factsheet' => 'nullable|file|mimes:xlsx,xls',
             'price_graph' => 'nullable|file|mimes:xlsx,xls',
             'inflation_graph' => 'nullable|file|mimes:xlsx,xls',
+            'alsi_graph' => 'nullable|file|mimes:xlsx,xls',
         ]);
 
-        if (! $request->hasFile('factsheet') && ! $request->hasFile('price_graph') && ! $request->hasFile('inflation_graph')) {
+        if (! $request->hasFile('factsheet') && ! $request->hasFile('price_graph')
+            && ! $request->hasFile('inflation_graph') && ! $request->hasFile('alsi_graph')) {
             return redirect()->route('funds.edit', $fund)
                 ->with('error', 'Please upload at least one Excel file.');
         }
@@ -205,35 +254,68 @@ class FundController extends Controller
             $imported[] = 'inflation graph';
         }
 
+        if ($request->hasFile('alsi_graph')) {
+            $service->importAlsiGraph($fund, $request->file('alsi_graph')->getRealPath());
+            $imported[] = 'ALSI graph';
+        }
+
         $fund->save();
 
         return redirect()->route('funds.edit', $fund)
             ->with('success', 'Imported '.implode(' and ', $imported).' data successfully.');
     }
 
-    public function exportPdf(Fund $fund, PuppeteerPdfService $puppeteerService)
+    /**
+     * Queue a fact-sheet PDF render and show a page that polls for completion.
+     * PDF generation is heavy (headless Chrome), so it must not block a web
+     * worker — it runs on the queue and the browser downloads it when ready.
+     */
+    public function exportPdf(Fund $fund): View
     {
         $this->authorize('view', $fund);
 
-        set_time_limit(180);
-        ini_set('max_execution_time', 180);
+        $export = FundPdfExport::create([
+            'fund_id' => $fund->id,
+            'user_id' => auth()->id(),
+            'template' => $fund->template ?? 'show',
+            'status' => FundPdfExport::STATUS_PENDING,
+        ]);
 
-        try {
-            $pdfPath = $puppeteerService->generatePdf($fund);
-            $filename = 'fund-'.$fund->id.'-'.now()->format('Y-m-d').'.pdf';
+        GenerateFundPdfJob::dispatch($export);
 
-            return response()->download($pdfPath, $filename)->deleteFileAfterSend(true);
+        return view('funds.pdf-preparing', compact('fund', 'export'));
+    }
 
-        } catch (\Exception $e) {
-            Log::error('PDF generation failed: '.$e->getMessage());
-            Log::error('PDF error trace: '.$e->getTraceAsString());
+    /**
+     * Report the status of an async PDF export (polled by the preparing page).
+     */
+    public function exportStatus(FundPdfExport $export)
+    {
+        $this->authorize('view', $export);
 
-            return response()->json([
-                'error' => 'PDF generation failed',
-                'message' => 'Unable to generate PDF. Please try again or contact support.',
-                'details' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
-        }
+        return response()->json([
+            'status' => $export->status,
+            'download_url' => $export->isDone()
+                ? route('funds.pdf.download', $export)
+                : null,
+            'error' => $export->isFailed()
+                ? 'Unable to generate the PDF. Please try again or contact support.'
+                : null,
+        ]);
+    }
+
+    /**
+     * Stream a finished PDF export to the owner.
+     */
+    public function downloadPdf(FundPdfExport $export)
+    {
+        $this->authorize('download', $export);
+
+        abort_unless($export->isDone() && $export->path, 404);
+
+        $filename = 'fund-'.$export->fund_id.'-'.$export->created_at->format('Y-m-d').'.pdf';
+
+        return Storage::disk($export->disk)->download($export->path, $filename);
     }
 
     public function revisions(Fund $fund): View
@@ -294,7 +376,14 @@ class FundController extends Controller
     public function internalPdfView(Fund $fund): View
     {
         $template = $fund->template ?? 'show';
-        $pdfTemplate = $template === 'show-equity' ? 'pdf-equity' : 'pdf';
+        $pdfTemplate = match ($template) {
+            'show-equity' => 'pdf-equity',
+            'show-flexible' => 'pdf-flexible',
+            // The international page template is itself the print layout
+            // (A4 pages, @media print rules, .no-print chrome).
+            'show-international' => 'show-international',
+            default => 'pdf',
+        };
         if (! view()->exists('funds.'.$pdfTemplate)) {
             $pdfTemplate = 'pdf';
         }
@@ -313,6 +402,7 @@ class FundController extends Controller
             'top_investments',
             'performance_table',
             'chart_data',
+            'sector_allocation',
             'fees',
         ];
 

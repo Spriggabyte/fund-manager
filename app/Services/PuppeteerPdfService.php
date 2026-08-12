@@ -4,9 +4,26 @@ namespace App\Services;
 
 use App\Models\Fund;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class PuppeteerPdfService
 {
+    protected ?string $chromePath;
+
+    protected ?string $nodePath;
+
+    protected int $timeout;
+
+    protected int $navTimeout;
+
+    public function __construct()
+    {
+        $this->chromePath = config('puppeteer.chrome_path');
+        $this->nodePath = config('puppeteer.node_path');
+        $this->timeout = (int) config('puppeteer.timeout', 180);
+        $this->navTimeout = (int) config('puppeteer.nav_timeout', 60000);
+    }
+
     /**
      * Generate a PDF from the fund show page using Puppeteer.
      */
@@ -21,13 +38,13 @@ class PuppeteerPdfService
             mkdir($tempDir, 0755, true);
         }
 
-        $url = config('app.url').'/internal/funds/'.$fund->id.'/pdf-view';
+        $url = $this->pdfViewUrl($fund);
 
         // Create the Puppeteer script (no auth cookie needed for internal route)
         $script = $this->generatePuppeteerScript($url, $tempPdfPath);
 
         // Execute the script
-        $this->executePuppeteerScript($script, $tempPdfPath);
+        $this->executePuppeteerScript($script, $tempPdfPath, $fund);
 
         // Verify PDF was created
         if (! file_exists($tempPdfPath)) {
@@ -38,18 +55,47 @@ class PuppeteerPdfService
     }
 
     /**
+     * Build the URL Puppeteer navigates to in order to render the fact sheet.
+     *
+     * A short-lived signed URL keeps the unauthenticated render route private:
+     * only this service can produce a valid link, and it expires in minutes.
+     * The host comes from config('app.url'), which the worker must be able to
+     * reach for the signature to validate.
+     */
+    protected function pdfViewUrl(Fund $fund): string
+    {
+        return URL::temporarySignedRoute(
+            'funds.internal.pdf-view',
+            now()->addMinutes(5),
+            ['fund' => $fund->id]
+        );
+    }
+
+    /**
      * Generate the Puppeteer JavaScript code.
+     *
+     * When a Chrome path is configured we drive that binary via puppeteer-core;
+     * otherwise we fall back to the full "puppeteer" package, which locates the
+     * Chromium it provisioned itself.
      */
     private function generatePuppeteerScript(string $url, string $pdfPath): string
     {
+        if ($this->chromePath) {
+            $require = "const puppeteer = require('puppeteer-core');";
+            $executablePath = "executablePath: '".addslashes($this->chromePath)."',";
+        } else {
+            $require = "const puppeteer = require('puppeteer');";
+            $executablePath = '';
+        }
+
         return "
-const puppeteer = require('puppeteer-core');
+{$require}
 
 (async () => {
     const browser = await puppeteer.launch({
         headless: true,
-        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-        timeout: 60000,
+        {$executablePath}
+        timeout: {$this->navTimeout},
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -79,7 +125,7 @@ const puppeteer = require('puppeteer-core');
         // Navigate to the page and wait for all resources
         await page.goto('".addslashes($url)."', {
             waitUntil: ['networkidle0', 'load', 'domcontentloaded'],
-            timeout: 60000
+            timeout: {$this->navTimeout}
         });
 
         console.log('Page loaded, waiting for fonts to load...');
@@ -91,31 +137,34 @@ const puppeteer = require('puppeteer-core');
 
         console.log('Fonts loaded, waiting for charts...');
 
-        // Wait for Chart.js and charts to render
+        // Wait for Highcharts and charts to render
         try {
             const hasCharts = await page.evaluate(() => {
                 return document.querySelector('#inflationChart') !== null ||
-                       document.querySelector('#portfolioChart') !== null;
+                       document.querySelector('#strategyChart') !== null ||
+                       document.querySelector('#portfolioChart') !== null ||
+                       document.querySelector('#performanceChart') !== null;
             });
 
             if (hasCharts) {
-                console.log('Chart containers found, waiting for Highcharts...');
+                console.log('Chart containers found, waiting for chart library...');
 
+                // Highcharts templates (balanced/flexible/equity) or Chart.js
+                // (the international template's canvas chart) — wait for
+                // whichever library the page loads.
                 await page.waitForFunction(() => {
-                    return typeof window.Highcharts !== 'undefined';
+                    return typeof window.Highcharts !== 'undefined' ||
+                           typeof window.Chart !== 'undefined';
                 }, { timeout: 15000 });
 
                 console.log('Highcharts loaded, waiting for charts to render...');
 
-                // Wait for DOMContentLoaded event to fire (charts init)
-                await page.waitForTimeout(2000);
+                // Settle wait for charts to initialise (page.waitForTimeout was
+                // removed in Puppeteer v22+, so use a plain timer instead).
+                await new Promise(resolve => setTimeout(resolve, 2000));
 
                 // Additional wait for charts to fully render
-                await page.evaluate(() => {
-                    return new Promise(resolve => {
-                        setTimeout(resolve, 1500);
-                    });
-                });
+                await new Promise(resolve => setTimeout(resolve, 1500));
 
                 const chartCount = await page.evaluate(() => {
                     return document.querySelectorAll('canvas').length;
@@ -162,8 +211,11 @@ const puppeteer = require('puppeteer-core');
 
     /**
      * Execute the Puppeteer script with timeout handling.
+     *
+     * This is the render boundary: it is intentionally a protected method so it
+     * can be overridden in tests to validate orchestration without a real Chrome.
      */
-    private function executePuppeteerScript(string $script, string $tempPdfPath): void
+    protected function executePuppeteerScript(string $script, string $tempPdfPath, Fund $fund): void
     {
         $command = ['node', '-e', $script];
 
@@ -176,7 +228,7 @@ const puppeteer = require('puppeteer-core');
             ],
             $pipes,
             null,
-            ['NODE_PATH' => base_path('node_modules')]
+            ['NODE_PATH' => $this->nodePath ?: base_path('node_modules')]
         );
 
         if (! is_resource($process)) {
@@ -191,7 +243,7 @@ const puppeteer = require('puppeteer-core');
 
         $output = '';
         $error = '';
-        $timeout = 120; // 120 seconds timeout for better chart rendering
+        $timeout = $this->timeout;
         $start = time();
 
         while (true) {
@@ -230,6 +282,7 @@ const puppeteer = require('puppeteer-core');
         if ($returnValue !== 0 && ! $pdfWasCreated) {
             $errorMessage = $error ?: $output ?: 'Unknown error occurred';
             Log::error('Puppeteer process failed', [
+                'fund_id' => $fund->id,
                 'return_value' => $returnValue,
                 'output' => $output,
                 'error' => $error,
@@ -239,6 +292,7 @@ const puppeteer = require('puppeteer-core');
         } elseif ($returnValue !== 0 && $pdfWasCreated) {
             // PDF was created but process returned non-zero, log warning but continue
             Log::warning('Puppeteer process returned non-zero but PDF was created', [
+                'fund_id' => $fund->id,
                 'return_value' => $returnValue,
                 'output' => $output,
                 'error' => $error,
@@ -246,6 +300,9 @@ const puppeteer = require('puppeteer-core');
             ]);
         }
 
-        Log::info('Puppeteer PDF generation completed', ['output' => $output]);
+        Log::info('Puppeteer PDF generation completed', [
+            'fund_id' => $fund->id,
+            'output' => $output,
+        ]);
     }
 }

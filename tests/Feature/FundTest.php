@@ -75,15 +75,15 @@ class FundTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_user_cannot_view_another_users_fund(): void
+    public function test_user_can_view_a_fund_created_by_a_colleague(): void
     {
-        $owner = User::factory()->create();
+        $creator = User::factory()->create();
         $other = User::factory()->create();
-        $fund = Fund::factory()->create(['user_id' => $owner->id]);
+        $fund = Fund::factory()->create(['user_id' => $creator->id]);
 
         $response = $this->actingAs($other)->get(route('funds.show', $fund));
 
-        $response->assertForbidden();
+        $response->assertOk();
     }
 
     public function test_user_can_edit_their_own_fund(): void
@@ -110,37 +110,38 @@ class FundTest extends TestCase
         $this->assertDatabaseHas('funds', ['id' => $fund->id, 'name' => 'New Name']);
     }
 
-    public function test_user_cannot_update_another_users_fund(): void
+    public function test_user_can_update_a_fund_created_by_a_colleague(): void
     {
-        $owner = User::factory()->create();
+        $creator = User::factory()->create();
         $other = User::factory()->create();
-        $fund = Fund::factory()->create(['user_id' => $owner->id]);
+        $fund = Fund::factory()->create(['user_id' => $creator->id, 'name' => 'Old Name']);
 
         $response = $this->actingAs($other)->put(route('funds.update', $fund), [
-            'name' => 'Hacked Name',
+            'name' => 'New Name',
+            'class' => 'B',
         ]);
 
-        $response->assertForbidden();
+        $response->assertRedirect(route('funds.show', $fund));
+        $this->assertDatabaseHas('funds', ['id' => $fund->id, 'name' => 'New Name']);
     }
 
-    public function test_user_can_delete_their_own_fund(): void
+    public function test_admin_can_delete_a_fund(): void
     {
-        $user = User::factory()->create();
-        $fund = Fund::factory()->create(['user_id' => $user->id]);
+        $admin = User::factory()->admin()->create();
+        $fund = Fund::factory()->create(['user_id' => User::factory()->create()->id]);
 
-        $response = $this->actingAs($user)->delete(route('funds.destroy', $fund));
+        $response = $this->actingAs($admin)->delete(route('funds.destroy', $fund));
 
         $response->assertRedirect(route('funds.index'));
         $this->assertDatabaseMissing('funds', ['id' => $fund->id]);
     }
 
-    public function test_user_cannot_delete_another_users_fund(): void
+    public function test_non_admin_cannot_delete_a_fund_even_their_own(): void
     {
-        $owner = User::factory()->create();
-        $other = User::factory()->create();
-        $fund = Fund::factory()->create(['user_id' => $owner->id]);
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($other)->delete(route('funds.destroy', $fund));
+        $response = $this->actingAs($user)->delete(route('funds.destroy', $fund));
 
         $response->assertForbidden();
         $this->assertDatabaseHas('funds', ['id' => $fund->id]);
@@ -160,21 +161,22 @@ class FundTest extends TestCase
         $this->assertEquals('New Name', $fund->fresh()->data['fund']['name']);
     }
 
-    public function test_update_data_endpoint_is_restricted_to_fund_owner(): void
+    public function test_update_data_endpoint_is_open_to_any_signed_in_user(): void
     {
-        $owner = User::factory()->create();
+        $creator = User::factory()->create();
         $other = User::factory()->create();
-        $fund = Fund::factory()->create(['user_id' => $owner->id]);
+        $fund = Fund::factory()->create(['user_id' => $creator->id]);
 
         $response = $this->actingAs($other)->patchJson(route('funds.update-data', $fund), [
             'field' => 'fund.name',
-            'value' => 'Hacked',
+            'value' => 'Edited by a colleague',
         ]);
 
-        $response->assertForbidden();
+        $response->assertOk()->assertJson(['success' => true]);
+        $this->assertEquals('Edited by a colleague', $fund->fresh()->data['fund']['name']);
     }
 
-    public function test_fund_index_only_shows_users_own_funds(): void
+    public function test_fund_index_shows_every_teams_fund(): void
     {
         $user = User::factory()->create();
         $other = User::factory()->create();
@@ -186,6 +188,6 @@ class FundTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('My Fund');
-        $response->assertDontSee('Other Fund');
+        $response->assertSee('Other Fund');
     }
 }

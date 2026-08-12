@@ -584,7 +584,7 @@
         <div class="title-banner">
             @php
                 $fundName = $fund->data['fund']['name'] ?? $fund->name;
-                if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z])$/iu', $fundName, $matches)) {
+                if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z][0-9]*)$/iu', $fundName, $matches)) {
                     $mainName = trim($matches[1]);
                     $classText = mb_strtoupper(trim($matches[2]));
                 } else {
@@ -726,6 +726,9 @@
                                                   @click="editMode && startEdit()"
                                                   :class="editMode ? 'editable' : ''"
                                                   x-text="value"></span>
+                                            @if(!empty($row['limit']))
+                                                <span class="text-xs" style="font-size: 0.8em;">({{ $row['limit'] }})</span>
+                                            @endif
                                         </td>
                                         @foreach ($aaColumnKeys as $colKey)
                                             <td class="{{ $colKey === 'change' ? (($row['changeDirection'] ?? '') === 'up' ? 'change-up' : (($row['changeDirection'] ?? '') === 'down' ? 'change-down' : '')) : '' }}">
@@ -1160,6 +1163,13 @@
                         min: -10, max: 35,
                         tickPositions: [-10, -5, 0, 5, 10, 15, 20, 25, 30, 35],
                         gridLineColor: '#e5e5e5',
+                        // Thick black line at 0% — matches the published fact sheet
+                        // and the PDF template (pdf.blade.php).
+                        plotLines: [{ value: 0, color: '#000000', width: 2, zIndex: 4 }],
+                        // Stack bottom→top: Inflation (from 0%), 5% Hurdle, Excess — the Composite
+                        // spline runs along the top of the Excess band. Keep identical to the PDF
+                        // fact sheet (pdf.blade.php).
+                        reversedStacks: false,
                         labels: {
                             style: { fontSize: '7px', color: colors.darkGrey },
                             formatter: function () { return this.value + '%'; },
@@ -1176,17 +1186,28 @@
                         spline: { marker: { enabled: false }, lineWidth: 1.5 },
                         series: { animation: false },
                     },
+                    // Positive Excess stacks on top of Inflation + 5% Hurdle; negative Excess lives in its
+                    // own stack so it renders below the 0% line instead of being subtracted from the main
+                    // stack (which would pull the dark band down over the Hurdle band). linkedTo keeps the
+                    // negative series out of the legend. Keep identical to the PDF fact sheet (pdf.blade.php).
                     series: [
                         { name: 'Composite', type: 'spline', data: inflationData.map(d => d.composite), color: colors.naartjie, stacking: undefined, zIndex: 5 },
                         { name: 'Inflation', type: 'area', data: inflationData.map(d => d.inflation), color: colors.lightBlue },
                         { name: '5% Hurdle', type: 'area', data: inflationData.map(d => d.hurdle), color: colors.lightGrey },
-                        { name: 'Excess',    type: 'area', data: inflationData.map(d => d.excess),    color: colors.darkNavy },
+                        { name: 'Excess',    type: 'area', data: inflationData.map(d => Math.max(d.excess, 0)), color: colors.darkNavy, step: 'center' },
+                        { name: 'Excess',    type: 'area', data: inflationData.map(d => Math.min(d.excess, 0)), color: colors.darkNavy, step: 'center', stack: 'negative', linkedTo: ':previous' },
                     ],
                 });
             }
 
             if (portfolioData.length > 0) {
                 const formatCashLabel = (v) => 'R ' + Math.round(v).toLocaleString('en-US');
+                // LINEAR y-axis from 0 with a tight max — matches the published
+                // fact sheet and the PDF template (pdf.blade.php). Keep in sync.
+                const portfolioMaxVal = Math.max(
+                    ...portfolioData.map(d => Math.max(d.fund || 0, d.benchmark || 0))
+                );
+                const portfolioYMax = Math.ceil(portfolioMaxVal * 1.05 / 100) * 100;
 
                 Highcharts.chart('portfolioChart', {
                     chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 60, 4, 4], animation: false },
@@ -1203,9 +1224,12 @@
                     },
                     yAxis: {
                         title: { text: "Cash Value² (R'000)", style: { fontSize: '7px', color: colors.darkGrey } },
-                        type: 'logarithmic',
                         gridLineColor: '#e5e5e5',
                         min: 100,
+                        max: portfolioYMax,
+                        endOnTick: false,
+                        startOnTick: false,
+                        tickPositions: [100],
                         labels: {
                             style: { fontSize: '7px', color: colors.darkGrey },
                             formatter: function () { return this.value === 100 ? '100' : ''; },

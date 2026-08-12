@@ -26,7 +26,7 @@
             </div>
 
             <!-- Portfolio Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {{-- <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center">
                         <div class="bg-green-100 rounded-lg p-3">
@@ -39,9 +39,9 @@
                             <p class="text-2xl font-bold text-gray-900">${{ number_format($totalValue, 2) }}</p>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
-                <div class="bg-white rounded-lg shadow-md p-6">
+                {{-- <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center">
                         <div class="bg-blue-100 rounded-lg p-3">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +68,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Funds Table -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -155,11 +155,13 @@
                                             <div class="flex space-x-2">
                                                 <a href="{{ route('funds.show', $fund) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                                                 <a href="{{ route('funds.edit', $fund) }}" class="text-gray-600 hover:text-gray-900">Edit</a>
-                                                <form method="POST" action="{{ route('funds.destroy', $fund) }}" class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
-                                                </form>
+                                                @can('delete', $fund)
+                                                    <form method="POST" action="{{ route('funds.destroy', $fund) }}" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
+                                                    </form>
+                                                @endcan
                                             </div>
                                         </td>
                                     </tr>

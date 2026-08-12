@@ -13,16 +13,18 @@
            Optimized for 2-page A4 layout
            ===================================================== */
 
-        /* Foord Brand Colors */
+        /* Foord Brand Colors — greys measured from the published reference PDF
+           (Foord Balanced Fund Class A at 2026-01-31). Row greys fade in the
+           order grey-1 (darkest) → grey-4 (lightest). */
         :root {
             --naartjie: #d25347;
             --naartjie-75: #dd7e75;
             --naartjie-50: #e9a9a3;
-            --naartjie-20: #f6dcd9;
+            --naartjie-20: #f6ddda;
             --dark-navy: #29363d;
             --dark-navy-70: #697277;
             --dark-navy-30: #bfc3c5;
-            --dark-navy-15: #dde1e2;
+            --dark-navy-15: #dfe1e2;
             --dark-navy-10: #e9ebec;
             --medium-grey: #9a9a9a;
             --medium-grey-25: #e6e6e6;
@@ -33,6 +35,11 @@
             --very-light-grey: #f4f4f4;
             --off-black: #313131;
             --white: #ffffff;
+            --row-grey-1: #dddddd;
+            --row-grey-2: #e6e6e6;
+            --row-grey-3: #ebebeb;
+            --row-grey-4: #f0f0f0;
+            --pfe-grey: #d4d4d4;
         }
 
         /* Reset */
@@ -56,15 +63,16 @@
 
         body {
             font-family: 'Avenir Next', 'Lato', -apple-system, sans-serif;
-            font-size: 7pt;
+            font-size: 7.5pt;
             line-height: 1.2;
-            color: var(--off-black);
+            color: #000;
             background: var(--white);
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
-        /* Page Container - grey sidebar bg extends full height on left */
+        /* Page Container - grey sidebar band 4mm→60mm, full page height
+           (reference: white 4mm strip on the left edge). */
         .page {
             width: 210mm;
             height: 297mm;
@@ -73,7 +81,7 @@
             padding: 0;
             position: relative;
             page-break-after: always;
-            background: linear-gradient(to right, var(--white) 3mm, var(--dark-navy-15) 3mm, var(--dark-navy-15) 52mm, var(--white) 52mm);
+            background: linear-gradient(to right, var(--white) 4mm, var(--dark-navy-15) 4mm, var(--dark-navy-15) 60mm, var(--white) 60mm);
         }
 
         .page:last-child {
@@ -83,37 +91,45 @@
         /* =====================================================
            HEADER SECTION
            ===================================================== */
+        /* Reference geometry: red date badge 46 x 11mm at (8mm, 10mm);
+           logo 51.7 x 13mm, right edge at 204.5mm, top at 9mm. */
         .header {
-            display: flex;
-            align-items: flex-end;
-            padding: 4mm 6mm 3mm 0;
-            margin-bottom: 0;
-            min-height: 26mm;
+            position: relative;
+            height: 26.5mm;
         }
 
-        /* 52mm sidebar zone with white left-strip offset; centres the date badge */
-        .date-zone {
-            width: 52mm;
-            padding-left: 3mm;
+        /* Reference (Foord Balanced Fund Class A at 2026-01-31): badge
+           45.9 x 10.9mm at (8mm, 10mm); text asc-to-desc 3.34mm (~10.4pt),
+           medium weight, optically centred. */
+        .date-badge {
+            position: absolute;
+            /* Centred in the grey band (4mm–60mm): 4 + (56 − 45.9)/2 */
+            left: 9.05mm;
+            top: 10mm;
+            width: 45.9mm;
+            height: 10.9mm;
             box-sizing: border-box;
             display: flex;
+            align-items: center;
             justify-content: center;
-        }
-
-        .date-badge {
+            /* No optical correction: the reference text sits ~0.2mm below
+               geometric centre, which Lato's tall ascent produces naturally. */
             background-color: var(--naartjie);
             color: #ffffff;
-            padding: 2.2mm 5mm;
             font-family: 'Lato', 'Avenir Next', sans-serif;
-            font-weight: 400;
-            font-size: 11pt;
-            letter-spacing: 0.02em;
+            font-weight: 500;
+            font-size: 10.4pt;
+            letter-spacing: 0.01em;
+            /* Avenir Next's word space is ~0.3mm wider than Lato's. */
+            word-spacing: 0.3mm;
             text-align: center;
         }
 
         .logo {
-            height: 12mm;
-            margin-left: auto;
+            position: absolute;
+            top: 9mm;
+            right: 5.5mm;
+            height: 13mm;
         }
 
         .logo img {
@@ -124,10 +140,14 @@
         /* =====================================================
            TITLE BANNER
            ===================================================== */
+        /* Reference: navy band 34mm tall (26.5mm → 60.5mm), text inset 7.75mm
+           from the page's left edge (aligned with the sidebar text). */
         .title-banner {
             background-color: var(--dark-navy);
             color: var(--white);
-            padding: 6mm 12mm 7mm 5mm;
+            height: 34mm;
+            box-sizing: border-box;
+            padding: 3.6mm 6mm 0 7.75mm;
             margin: 0;
             width: 100%;
         }
@@ -135,23 +155,23 @@
         .fund-name {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 22pt;
+            font-size: 23pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 1.5mm 0;
+            margin: 0 0 1.1mm 0;
             line-height: 1.05;
         }
 
         .fund-name .class-suffix {
             font-weight: 500;
-            font-size: 16pt;
+            font-size: 15pt;
         }
 
         .fund-description {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
-            font-size: 8pt;
-            line-height: 12pt;
+            font-size: 9pt;
+            line-height: 11.3pt;
             letter-spacing: 0.01em;
             margin: 0;
             color: var(--white);
@@ -165,25 +185,25 @@
             flex-direction: row;
             margin: 0;
             width: 100%;
-            min-height: calc(297mm - 28mm - 32mm); /* page - header - title banner */
+            min-height: calc(297mm - 26.5mm - 34mm); /* page - header - title banner */
         }
 
         .page-2 .content-wrapper {
             min-height: 297mm;
         }
 
-        /* Sidebar - 52mm width */
+        /* Sidebar - 60mm wide (grey band 4mm→60mm); text starts at x=8mm */
         .sidebar {
-            width: 52mm;
-            min-width: 52mm;
-            max-width: 52mm;
+            width: 60mm;
+            min-width: 60mm;
+            max-width: 60mm;
             background-color: transparent;
-            padding: 4mm 4mm 4mm 5mm;
+            padding: 5.4mm 4mm 4mm 8mm;
             overflow: hidden;
         }
 
         .sidebar-section {
-            margin-bottom: 2mm;
+            margin-bottom: 1.05mm;
         }
 
         .sidebar-section:last-child {
@@ -192,88 +212,100 @@
 
         .sidebar-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 600;
-            font-size: 5.5pt;
-            line-height: 6.5pt;
+            font-weight: 500;
+            font-size: 6pt;
+            line-height: 6.8pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--dark-navy);
-            margin: 0 0 0.3mm 0;
+            color: #000;
+            margin: 0;
         }
 
         .sidebar-text {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 6.5pt;
-            line-height: 7.5pt;
+            font-size: 7pt;
+            line-height: 8.2pt;
             letter-spacing: 0.01em;
-            color: var(--off-black);
+            color: #000;
             margin: 0;
         }
 
-        /* Equity Indicator Dots */
-        .equity-indicator {
+        /* Equity Indicator Dots — heading + dots share one line. */
+        .equity-heading {
             display: flex;
-            gap: 0.8mm;
-            margin: 1mm 0;
+            align-items: center;
+            gap: 1.2mm;
+            flex-wrap: nowrap;
         }
 
+        .equity-indicator {
+            display: inline-flex;
+            gap: 0.33mm;
+            align-items: center;
+        }
+
+        /* The dots are inline SVG circles, NOT border-radius spans: Chromium's
+           print-to-PDF engine rasterises border-radius + background-color as a
+           rounded rect (squashed dots in the exported PDF), while SVG circles
+           stay perfectly round. */
         .equity-dot {
-            width: 1.4mm;
-            height: 1.4mm;
-            border-radius: 50%;
-            box-sizing: border-box;
+            width: 1.32mm;
+            height: 1.32mm;
             display: inline-block;
-            flex: 0 0 1.4mm;
+            flex: 0 0 1.32mm;
+            /* The circle touches the viewBox edge; without this, sub-pixel
+               rounding of the box clips a flat sliver off the circle edge. */
+            overflow: visible;
         }
 
-        .equity-dot.filled {
-            background-color: var(--naartjie);
-            border: 0.15mm solid var(--naartjie);
+        .equity-dot.filled circle {
+            fill: var(--naartjie);
         }
 
-        .equity-dot.empty {
-            background-color: transparent;
-            border: 0.15mm solid var(--medium-grey);
+        /* Reference: unfilled dots are solid grey, not outlined */
+        .equity-dot.empty circle {
+            fill: var(--medium-grey);
         }
 
-        /* Main Content Area */
+        /* Main Content Area — spans x=65.35mm → 204mm (reference sets the
+           heading left edge at x≈65.3mm, measured 387px @150dpi). */
         .main-content {
             flex: 1;
-            padding: 4mm;
+            padding: 5.4mm 6mm 4mm 5.35mm;
             min-width: 0;
             overflow: hidden;
         }
 
         /* =====================================================
-           SECTION HEADINGS
+           SECTION HEADINGS — 7.5pt Avenir Next Medium, dark navy
            ===================================================== */
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 8pt;
+            font-size: 7.5pt;
             line-height: 9pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--off-black);
-            margin: 0 0 0.5mm 0;
+            color: var(--dark-navy);
+            margin: 0 0 0.8mm 0;
         }
 
         .section-subheading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 6.5pt;
-            line-height: 7.5pt;
+            font-size: 7.5pt;
+            line-height: 9pt;
             letter-spacing: 0.01em;
-            color: var(--off-black);
-            margin: -0.3mm 0 0.8mm 0;
+            color: var(--dark-navy);
+            margin: -0.5mm 0 0.9mm 0;
         }
 
         /* Smaller suffix style for parenthetical text in section headings */
         .section-heading .title-suffix {
-            font-size: 6.5pt;
+            font-size: 6pt;
             font-weight: 500;
-            color: var(--off-black);
+            color: var(--dark-navy);
             text-transform: uppercase;
             letter-spacing: 0.01em;
         }
@@ -283,16 +315,18 @@
            ===================================================== */
         .table-container {
             position: relative;
-            margin-bottom: 2.5mm;
+            margin-bottom: 2.6mm;
         }
 
+        /* White cell separators are 0.38mm in the reference */
         table {
             width: 100%;
+            table-layout: fixed;
             border-collapse: separate;
-            border-spacing: 2.5px 1.5px;
-            margin-left: -2.5px;
-            margin-right: -2.5px;
-            font-size: 7pt;
+            border-spacing: 1.1pt 1.1pt;
+            margin-left: -1.1pt;
+            margin-right: -1.1pt;
+            font-size: 7.5pt;
         }
 
         table th {
@@ -300,12 +334,12 @@
             color: var(--white);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 6pt;
-            line-height: 6.5pt;
+            font-size: 7.5pt;
+            line-height: 8.5pt;
             letter-spacing: 0;
             text-transform: uppercase;
             text-align: right;
-            padding: 0.9mm 1.5mm;
+            padding: 0.6mm 1.4mm 0.6mm 1.5mm;
         }
 
         table th:first-child {
@@ -313,100 +347,237 @@
         }
 
         table td {
-            background-color: var(--very-light-grey);
+            background-color: var(--row-grey-2);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7pt;
-            line-height: 8pt;
-            padding: 1mm 2mm;
+            font-size: 7.5pt;
+            line-height: 8.5pt;
+            padding: 0.62mm 1.4mm 0.62mm 1.5mm;
             text-align: right;
+            overflow: hidden;
         }
 
         table td:first-child {
             text-align: left;
         }
 
-        /* Performance Table — ticket #11: dark navy header w/ white text, darker grey body cells */
+        /* Superscript footnote markers must not inflate row heights */
+        table td sup, table th sup {
+            font-size: 5pt;
+            line-height: 0;
+            vertical-align: super;
+        }
+
+        /* Per-row max limits rendered smaller than the asset-class name */
+        td .row-limit,
+        th .th-limit {
+            font-size: 6pt;
+        }
+        th .th-limit {
+            font-size: 7pt;
+        }
+
+        /* Asset allocation — label 24.4%, four equal numeric columns */
+        .aa-table table th:first-child,
+        .aa-table table td:first-child {
+            width: 24.4%;
+        }
+
+        /* Reference inter-section rhythm: ~6mm between a table and the next heading */
+        .aa-table,
+        .top10-table {
+            margin-bottom: 4.2mm;
+        }
+
+        /* Performance Table — columns: name 20.1%, cash 11.55%, since 12%, 8 x 8.05% */
         .performance-table table th {
             background-color: var(--dark-navy);
             color: var(--white);
             font-weight: 500;
+            font-size: 7pt;
+            line-height: 8.7pt;
             text-align: right;
+            padding: 0.35mm 0.5mm;
         }
         .performance-table table th:first-child {
             text-align: left;
+            width: 20.1%;
+            padding-left: 1.5mm;
         }
+        .performance-table table th:nth-child(2) { width: 11.55%; }
+        .performance-table table th:nth-child(3) { width: 12%; }
         .performance-table table td {
-            background-color: var(--medium-grey-25);
-            color: var(--off-black);
-            font-size: 7pt;
+            color: #000;
+            font-size: 7.5pt;
             line-height: 8pt;
+            padding: 0.45mm 0.5mm;
         }
-        /* Blank spacer row between Benchmark and Fund highest */
+        .performance-table table td:first-child {
+            padding-left: 1.5mm;
+        }
+        /* Row colour fade: Fund pink, Benchmark grey-1, spacer grey-2, highest/lowest grey-3 */
+        .performance-table table tbody tr td { background-color: var(--row-grey-3); }
+        .performance-table table tbody tr:nth-child(1) td { background-color: var(--naartjie-20); }
+        .performance-table table tbody tr:nth-child(2) td { background-color: var(--row-grey-1); }
+        /* Spacer row between Benchmark and Fund highest — grey like the reference */
         .performance-table table tr.perf-spacer-row td {
-            background-color: transparent !important;
+            background-color: var(--row-grey-2) !important;
             padding: 0;
-            height: 1.5mm;
-            line-height: 1.5mm;
+            height: 3.58mm;
+            line-height: 3.58mm;
             font-size: 0;
         }
 
         /* Highlighted Foord fund rows — pink background, text colour same as table */
         table tbody tr.highlight-row td {
             background-color: var(--naartjie-20);
-            color: var(--off-black);
+            color: #000;
         }
 
         table tbody tr.highlight-row td:first-child {
-            color: var(--off-black);
+            color: #000;
             font-weight: 400;
         }
 
-        /* Top 10 Investments — second column (ASSET CLASS) left-aligned */
+        /* Top 10 Investments — SECURITY 40.1%, ASSET CLASS 28.3% (left),
+           MARKET and % OF FUND 15.8% each (centred). Row backgrounds fade
+           from pink (Foord funds) through progressively lighter greys. */
+        .top10-table table td,
+        .top10-table table th {
+            padding-top: 0.45mm;
+            padding-bottom: 0.45mm;
+        }
+        .top10-table table td:first-child,
+        .top10-table table th:first-child {
+            width: 40.1%;
+            padding-left: 2.1mm;
+        }
         .top10-table table td:nth-child(2),
         .top10-table table th:nth-child(2) {
             text-align: left;
+            width: 28.3%;
+            padding-left: 2.9mm;
         }
+        .top10-table table td:nth-child(3),
+        .top10-table table th:nth-child(3),
+        .top10-table table td:nth-child(4),
+        .top10-table table th:nth-child(4) {
+            text-align: center;
+            padding-left: 0.6mm;
+        }
+        .top10-table table tbody tr:nth-child(1) td,
+        .top10-table table tbody tr:nth-child(2) td { background-color: var(--naartjie-20); }
+        .top10-table table tbody tr:nth-child(3) td,
+        .top10-table table tbody tr:nth-child(4) td { background-color: var(--row-grey-1); }
+        .top10-table table tbody tr:nth-child(5) td,
+        .top10-table table tbody tr:nth-child(6) td { background-color: var(--row-grey-2); }
+        .top10-table table tbody tr:nth-child(7) td,
+        .top10-table table tbody tr:nth-child(8) td { background-color: var(--row-grey-3); }
+        .top10-table table tbody tr:nth-child(9) td,
+        .top10-table table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
 
-        /* TIC table: first (TER) + last data row (Transaction costs) white;
-           middle sub-item rows grey. Total row (.total-row) keeps red styling. */
+        /* TIC table — reference (re-measured against the signed-off design):
+           label column break at x≈135.5mm (51%), two equal value columns with
+           CENTRED headers and values (content centred with the 2mm right
+           padding only — measured text centre x≈896px @150dpi = cell centre
+           minus half the right padding). 7.6pt values, 7.5pt headers. First
+           (TER) + last data row (Transaction costs) white; middle sub-item
+           rows grey. Total row (.total-row) keeps red styling. */
+        .tic-table table th:first-child,
+        .tic-table table td:first-child {
+            width: 51%;
+            padding-left: 1.6mm;
+        }
+        .tic-table table th,
+        .tic-table table td {
+            padding-right: 2mm;
+        }
+        .tic-table table th:not(:first-child),
+        .tic-table table td:not(:first-child) {
+            text-align: center;
+            padding-left: 0;
+        }
+        .tic-table table th {
+            font-size: 7.5pt;
+        }
+        .tic-table table td {
+            font-size: 7.6pt;
+            padding-top: 0.92mm;
+            padding-bottom: 0.92mm;
+        }
         .tic-table table tbody tr td {
-            background-color: var(--medium-grey-25);
+            background-color: var(--row-grey-2);
         }
         .tic-table table tbody tr:nth-child(1) td,
         .tic-table table tbody tr:nth-child(6) td {
             background-color: var(--white);
         }
+        .tic-table table tr.total-row td {
+            font-size: 7.6pt;
+            font-weight: 500;
+            padding-top: 0.95mm;
+            padding-bottom: 0.95mm;
+        }
 
-        /* Performance fee examples — row 1 pink, middle rows grey + black text,
-           last row (.total-row) keeps the global red+white styling. */
+        /* Performance fee examples — label 48.2%, four 12.95% columns,
+           8pt text, values right-aligned. Row 1 pink (not bold), row 2
+           darker grey, remaining rows grey. Total row red and taller. */
+        .pfe-table table th:first-child,
+        .pfe-table table td:first-child {
+            width: 48.2%;
+            padding-left: 1.6mm;
+        }
+        .pfe-table table th,
+        .pfe-table table td {
+            padding-right: 2.3mm;
+        }
+        .pfe-table table td {
+            font-size: 8pt;
+            line-height: 9.4pt;
+            padding-top: 0.42mm;
+            padding-bottom: 0.42mm;
+        }
         .pfe-table table tbody tr td {
-            background-color: var(--medium-grey-25);
-            color: var(--off-black);
+            background-color: var(--row-grey-2);
+            color: #000;
             font-weight: 400;
         }
         .pfe-table table tbody tr:nth-child(1) td {
             background-color: var(--naartjie-20);
-            color: var(--off-black);
-            font-weight: 500;
+            color: #000;
+            font-weight: 400;
+        }
+        .pfe-table table tbody tr:nth-child(2) td {
+            background-color: var(--pfe-grey);
+        }
+        .pfe-table table tr.total-row td {
+            font-size: 8pt;
+            font-weight: 400;
+            padding-top: 1.18mm;
+            padding-bottom: 1.18mm;
         }
 
-        /* #17: performance-fees text larger+darker, more spacing top/bottom */
+        /* "* Minimum fees apply" is black in the reference (p1 footnotes are navy) */
+        .pfe-section .footnotes {
+            color: #000;
+        }
+
+        /* Performance-fees narrative — 7.5pt navy, continuous line rhythm */
         .performance-fees-section {
-            margin: 4mm 0 4mm 0;
+            margin: 6.3mm 0 0 0;
         }
 
-        /* Match the vertical gap above other major fee sub-sections (TIC, PFE) so
-           "TOTAL INVESTMENT CHARGE" sits at the same distance from the body text
-           above it as "PERFORMANCE FEE EXAMPLES" does. */
-        .tic-section, .pfe-section {
-            margin-top: 4mm;
+        .tic-section {
+            margin-top: 6mm;
+        }
+        .pfe-section {
+            margin-top: 7.5mm;
         }
         .performance-fees-text {
-            font-size: 6.5pt;
-            line-height: 8.5pt;
-            color: var(--off-black);
-            margin: 0 0 2mm 0;
+            font-size: 7.5pt;
+            line-height: 9.24pt;
+            color: var(--dark-navy);
+            margin: 0;
         }
 
         /* Total row */
@@ -417,8 +588,13 @@
             color: var(--white);
         }
 
-        /* Change indicators — arrow coloured only; number inherits table colour */
-        td.change-cell { color: var(--off-black); }
+        /* Change indicators — arrow coloured only; number inherits table colour.
+           Reference arrows are ~5pt Wingdings triangles, smaller than the digits. */
+        td.change-cell { color: #000; }
+        td.change-cell .change-arrow-up,
+        td.change-cell .change-arrow-down {
+            font-size: 5.1pt;
+        }
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
 
@@ -427,8 +603,8 @@
            ===================================================== */
         .charts-row {
             display: flex;
-            gap: 3mm;
-            margin: 2mm 0;
+            gap: 6mm;
+            margin: 4mm 0 0 0;
         }
 
         .chart-container {
@@ -439,16 +615,16 @@
         .chart-title {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 8pt;
+            font-size: 7.5pt;
             line-height: 9pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--off-black);
-            margin: 0 0 1mm 0;
+            color: var(--dark-navy);
+            margin: 0 0 0.8mm 0;
         }
 
         .chart-wrapper {
-            height: 38mm;
+            height: 47mm;
             position: relative;
         }
 
@@ -457,27 +633,49 @@
             height: 100% !important;
         }
 
+        /* Rotated y-axis caption for the performance chart — rendered in CSS so
+           Highcharts doesn't reserve a full title column (the reference tucks
+           it right beside the axis). */
+        .chart-ytitle {
+            position: absolute;
+            left: -9mm;
+            top: -12mm;
+            width: 22mm;
+            text-align: center;
+            transform: rotate(-90deg);
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 6pt;
+            color: #000;
+            z-index: 2;
+        }
+        .chart-ytitle sup {
+            font-size: 3.9pt;
+            line-height: 0;
+            vertical-align: super;
+        }
+
         .chart-explanation {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 6.5pt;
-            line-height: 8pt;
+            font-size: 7.5pt;
+            line-height: 9.25pt;
             letter-spacing: 0.01em;
-            color: var(--off-black);
-            margin: 1.5mm 0 2mm 0;
+            color: #000;
+            margin: 1.6mm 0 3.1mm 0;
         }
 
         /* =====================================================
-           FOOTNOTES
+           FOOTNOTES — 6pt Lato, dark navy (per reference)
            ===================================================== */
         .footnotes {
-            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 400;
             font-size: 6pt;
-            line-height: 7.5pt;
+            line-height: 7.2pt;
             letter-spacing: 0.01em;
-            color: var(--off-black);
-            margin-top: 1mm;
+            color: var(--dark-navy);
+            margin-top: 1.2mm;
+            padding-left: 1.2mm;
         }
 
         .footnotes p {
@@ -494,44 +692,51 @@
            PAGE 2 - IMPORTANT INFO SIDEBAR
            ===================================================== */
         .info-sidebar {
-            width: 52mm;
-            min-width: 52mm;
-            max-width: 52mm;
+            width: 60mm;
+            min-width: 60mm;
+            max-width: 60mm;
             background-color: transparent;
             padding: 0;
             overflow: hidden;
         }
 
+        /* Navy header box 45.7 x 11mm at (9.15mm, 10mm) — mirrors the p1 date badge */
         .info-sidebar-header {
             background-color: var(--dark-navy);
             color: var(--white);
-            padding: 1.6mm 3mm;
-            margin: 8mm 3mm 6mm 3mm;
+            height: 11mm;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 2mm;
+            margin: 10mm 5.2mm 0 9.15mm;
             text-align: center;
         }
 
         .info-sidebar-header h2 {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 9pt;
-            letter-spacing: 0.04em;
+            font-size: 8pt;
+            line-height: 10.9pt;
+            letter-spacing: 0.02em;
             text-transform: uppercase;
             margin: 0;
         }
 
         .info-sidebar-content {
-            padding: 0 4mm 4mm 5mm;
+            padding: 6.3mm 4mm 4mm 9mm;
         }
 
+        /* Reference: 6.5pt Lato Light, dark navy */
         .info-sidebar-content p {
-            font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 400;
-            font-size: 5.5pt;
-            line-height: 7pt;
+            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-weight: 300;
+            font-size: 6.5pt;
+            line-height: 7.33pt;
             letter-spacing: 0.01em;
-            color: var(--off-black);
-            margin: 0 0 2mm 0;
+            color: var(--dark-navy);
+            margin: 0 0 1.4mm 0;
             text-align: left;
         }
 
@@ -544,118 +749,137 @@
            ===================================================== */
         .fees-content {
             flex: 1;
-            /* Align FEES heading with the first line of sidebar body text
-               (sidebar margin-top 8mm + dark box ~6.4mm + margin-bottom 6mm ≈ 20mm). */
-            padding: 20mm 5mm 4mm 5mm;
+            /* FEE RATES heading baseline lands at y≈29.7mm like the reference;
+               left inset 5.35mm matches p1 main content (ref heading x≈65.3mm). */
+            padding: 27.3mm 6mm 4mm 5.35mm;
             overflow: hidden;
         }
 
         .fee-rates-table {
-            margin-bottom: 2.5mm;
+            margin-bottom: 0;
         }
 
-        .fee-rates-table table {
-            margin-left: 0;
-        }
-
-        /* #15: first 5 rows darker grey, shorter rows, both columns left-aligned */
+        /* Label column width MUST equal the TIC table's first column (51%)
+           so the two tables' column breaks align vertically (per Paul's
+           red-line annotation on the SKM scan); 8pt labels and values
+           (measured: ref labels 1.145x the old 7pt render). */
         .fee-rates-table td {
-            padding: 0.6mm 1.5mm;
-            background-color: var(--medium-grey-25);
+            padding: 0.3mm 1mm 0.3mm 1.6mm;
+            font-size: 8pt;
+            line-height: 9.4pt;
+            background-color: var(--row-grey-2);
+            color: var(--dark-navy);
             text-align: left;
+        }
+
+        .fee-rates-table td:first-child {
+            /* 0.1% narrower than the TIC's 51% first column: this table has
+               one fewer border-spacing gutter, so 50.9% lands the column break
+               on exactly the same x as the TIC table's break below it. */
+            width: 50.9%;
         }
 
         .fee-rates-table td:last-child:not([colspan]) {
             text-align: left;
             font-weight: 500;
+            padding-left: 1.6mm;
         }
 
-        /* "Foord global funds:" — white background (not red), then next two rows red+heavier. */
-        .fee-rates-table tr.sub-item td:first-child {
-            padding-left: 3mm;
-        }
-
+        /* "Foord global funds:" — white background, then two pink rows (black text).
+           Reference sets these three rows in Avenir Next Medium. */
         .fee-rates-table tr.global-funds-header td {
             background-color: var(--white) !important;
-            color: var(--off-black);
+            color: var(--dark-navy);
             font-weight: 500;
             text-align: left;
         }
 
         .fee-rates-table tr.sub-item td {
             background-color: var(--naartjie-20) !important;
-            color: var(--off-black);
+            color: #000;
             font-weight: 500;
+        }
+
+        /* Reference sets the "- Foord ..." sub-item fund names FLUSH with the
+           other row labels (no extra indent — verified against the signed-off
+           balanced design). */
+        .fee-rates-table tr.sub-item td:first-child {
+            padding-left: 1.6mm;
         }
 
         .fee-description {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 6.5pt;
-            line-height: 8pt;
-            color: var(--off-black);
-            margin: 1.5mm 0 2.5mm 0;
+            font-size: 7.5pt;
+            line-height: 9.24pt;
+            color: var(--dark-navy);
+            margin: 2.4mm 0 0 0;
+        }
+
+        /* TER paragraph is black in the reference (fee-rates/perf-fees are navy) */
+        .tic-section .fee-description {
+            color: #000;
+        }
+
+        /* PERFORMANCE FEES: the reference runs its two data paragraphs as a
+           plain line break (no paragraph spacing) — collapse the
+           .fee-description top margin between consecutive paragraphs. */
+        .performance-fees-text + .performance-fees-text {
+            margin-top: 0;
         }
 
         /* =====================================================
            FOOTER
            ===================================================== */
+        /* Footer — short naartjie rule (like the reference "______"), then
+           Merriweather body and Avenir Next Medium contact lines, all naartjie. */
         .footer {
-            margin-top: 9mm;
-            padding-top: 2mm;
-            border-top: 0.5pt solid var(--naartjie);
-            /* #19: shorter top rule — span only the first half of the footer width */
-            position: relative;
-        }
-        .footer::before {
-            /* override border-top with a shorter visual rule */
-            content: "";
-        }
-
-        /* shorten top rule: clip via background trick — actual border-top is removed in favour of a fixed-width pseudo line */
-        .footer {
+            margin-top: 8mm;
+            padding-top: 5.5mm;
             border-top: none;
+            position: relative;
         }
         .footer::after {
             content: "";
             position: absolute;
             top: 0;
-            left: 0;
-            width: 40mm;
+            left: 0.3mm;
+            width: 9.5mm;
             height: 0;
-            border-top: 0.6pt solid var(--naartjie);
+            border-top: 0.35mm solid var(--naartjie);
         }
 
         .footer-text {
             font-family: 'Merriweather', Georgia, serif;
-            font-weight: 300;
-            font-size: 7pt;
-            line-height: 9.5pt;
-            letter-spacing: 0.02em;
+            font-weight: 400;
+            font-size: 8pt;
+            line-height: 10.1pt;
+            letter-spacing: 0.01em;
             color: var(--naartjie);
-            margin: 0 0 2mm 0;
+            margin: 0 0 3.5mm 0;
         }
 
         .footer-contact {
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 600;
-            font-size: 7pt;
-            line-height: 9pt;
-            letter-spacing: 0.02em;
+            font-weight: 500;
+            font-size: 8pt;
+            line-height: 10.9pt;
+            letter-spacing: 0.01em;
             color: var(--naartjie);
             position: relative;
+            margin-top: 3.6mm;
         }
 
         .footer-contact p {
             margin: 0;
         }
 
-        /* Red Foord acorn leaf next to contact info */
+        /* Red Foord acorn leaf next to contact info — 11mm wide per reference */
         .footer-leaf {
             position: absolute;
-            right: 0;
+            right: 4mm;
             top: 0;
-            width: 14mm;
+            width: 11mm;
             height: auto;
         }
 
@@ -702,6 +926,27 @@
                 e($title)
             );
         };
+        // Table headers like "SA (100)" — the bracketed limit renders slightly smaller.
+        $renderTh = function (string $header): string {
+            return preg_replace(
+                '/\s*\(([^)]+)\)\s*$/',
+                ' <span class="th-limit">($1)</span>',
+                e($header)
+            );
+        };
+        // Asset-class rows like "Equities (75)" — per-row max limit in 6pt.
+        // Accepts either an explicit 'limit' key or a limit embedded in the name.
+        $renderAssetName = function (array $row): string {
+            $name = (string) ($row['name'] ?? '');
+            if (isset($row['limit']) && $row['limit'] !== '' && ! preg_match('/\(/', $name)) {
+                return e($name).' <span class="row-limit">('.e((string) $row['limit']).')</span>';
+            }
+            return preg_replace(
+                '/\s*\(([^)]+)\)\s*$/',
+                ' <span class="row-limit">($1)</span>',
+                e($name)
+            );
+        };
         // Normalise Unicode superscript digits to <sup> tags so every footnote
         // number renders at exactly the same size (¹ glyph weight differs from
         // ³⁴⁵ across font families).
@@ -731,7 +976,7 @@
         <div class="title-banner">
             @php
                 $fundName = $fund->data['fund']['name'] ?? $fund->name;
-                if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z])$/iu', $fundName, $matches)) {
+                if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z][0-9]*)$/iu', $fundName, $matches)) {
                     $mainName = trim($matches[1]);
                     $classText = mb_strtoupper(trim($matches[2]));
                 } else {
@@ -810,24 +1055,31 @@
                     @if(isset($sidebar[$key]))
                         @php $value = $sidebar[$key]; @endphp
                         <div class="sidebar-section">
-                            <h3 class="sidebar-heading">{{ $labels[$key] ?? strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY))) }}</h3>
                             @if ($key === 'equityIndicator' && is_array($value))
-                                <div class="equity-indicator">
-                                    @php
-                                        $filled = $value['filled'] ?? 7;
-                                        $total = $value['total'] ?? 10;
-                                    @endphp
-                                    @for ($i = 0; $i < $total; $i++)
-                                        <span class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}"></span>
-                                    @endfor
-                                </div>
+                                @php
+                                    $filled = $value['filled'] ?? 7;
+                                    $total = $value['total'] ?? 10;
+                                @endphp
+                                {{-- Heading + dots share a single line so the dots sit
+                                     immediately to the right of "EQUITY INDICATOR". --}}
+                                <h3 class="sidebar-heading equity-heading">
+                                    {{ $labels[$key] }}
+                                    <span class="equity-indicator">
+                                        @for ($i = 0; $i < $total; $i++)
+                                            <svg class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/></svg>
+                                        @endfor
+                                    </span>
+                                </h3>
                                 @if(isset($value['description']))
                                     <p class="sidebar-text">{!! $value['description'] !!}</p>
                                 @endif
-                            @elseif (is_array($value))
-                                <p class="sidebar-text">{!! $value['description'] ?? '' !!}</p>
                             @else
-                                <p class="sidebar-text">{!! $value !!}</p>
+                                <h3 class="sidebar-heading">{{ $labels[$key] ?? strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY))) }}</h3>
+                                @if (is_array($value))
+                                    <p class="sidebar-text">{!! $value['description'] ?? '' !!}</p>
+                                @else
+                                    <p class="sidebar-text">{!! $value !!}</p>
+                                @endif
                             @endif
                         </div>
                     @endif
@@ -843,12 +1095,12 @@
                         <p class="section-subheading">{{ $fund->data['mainContent']['assetAllocation']['subtitle'] }}</p>
                     @endif
 
-                    <div class="table-container">
+                    <div class="table-container aa-table">
                         <table>
                             <thead>
                                 <tr>
                                     @foreach ($fund->data['mainContent']['assetAllocation']['headers'] as $header)
-                                        <th>{!! $header !!}</th>
+                                        <th>{!! $renderTh(strip_tags((string) $header)) !!}</th>
                                     @endforeach
                                 </tr>
                             </thead>
@@ -863,7 +1115,7 @@
                             <tbody>
                                 @foreach ($fund->data['mainContent']['assetAllocation']['rows'] as $row)
                                     <tr>
-                                        <td>{{ $row['name'] }}</td>
+                                        <td>{!! $renderAssetName($row) !!}</td>
                                         @foreach ($aaColumnKeys as $colKey)
                                             @if ($colKey === 'change')
                                                 @php
@@ -940,6 +1192,7 @@
                         <div class="chart-container">
                             <h4 class="chart-title">PORTFOLIO PERFORMANCE VS BENCHMARK</h4>
                             <div class="chart-wrapper">
+                                <div class="chart-ytitle">Cash Value<sup>2</sup> (R&rsquo;000)</div>
                                 <div id="portfolioChart"></div>
                             </div>
                         </div>
@@ -969,7 +1222,9 @@
                             $perfColKeys[] = $perfKeyMap[$clean] ?? null;
                         }
                     @endphp
-                    <h3 class="section-heading">{!! $normaliseSupers($renderHeading($fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED)')) !!}</h3>
+                    {{-- Reference sets this heading's bracketed text at FULL heading size
+                         (only ASSET ALLOCATION's "(MAX LIMITS IN BRACKETS)" is smaller). --}}
+                    <h3 class="section-heading">{!! $normaliseSupers(e($fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED¹)')) !!}</h3>
 
                     <div class="table-container performance-table">
                         <table>
@@ -992,15 +1247,16 @@
                                         $isTopFundRow = $idx === 0;
                                         $displayName = $row['name'];
                                         $lowerName = strtolower($nameStr);
+                                        // Reference sets a space before the markers: "Fund ³", "Benchmark ³,⁴".
                                         if (preg_match('/^fund\s+(highest|lowest)/i', $nameStr)) {
                                             // Highest/Lowest historical rows take footnotes 3 and 5.
                                             if (strpos($displayName, '3,5') === false && strpos($displayName, '³,⁵') === false) {
-                                                $displayName .= '<sup>3,5</sup>';
+                                                $displayName .= ' <sup>3,5</sup>';
                                             }
                                         } elseif (stripos($nameStr, 'fund') === 0 && strpos($displayName, '³') === false && strpos($displayName, '<sup>3</sup>') === false) {
-                                            $displayName .= '<sup>3</sup>';
+                                            $displayName .= ' <sup>3</sup>';
                                         } elseif (stripos($nameStr, 'benchmark') === 0 && strpos($displayName, '³,⁴') === false && strpos($displayName, '3,4') === false) {
-                                            $displayName .= '<sup>3,4</sup>';
+                                            $displayName .= ' <sup>3,4</sup>';
                                         }
                                     @endphp
                                     <tr class="{{ $isTopFundRow ? 'highlight-row' : '' }}">
@@ -1046,7 +1302,7 @@
                         @endforeach
                     @endif
                     @if(isset($fund->data['importantInfo']['publishedDate']))
-                        <p style="margin-top: 2mm;">{{ $fund->data['importantInfo']['publishedDate'] }}</p>
+                        <p>{{ $fund->data['importantInfo']['publishedDate'] }}</p>
                     @endif
                 </div>
             </div>
@@ -1254,38 +1510,40 @@
                     return positions;
                 })();
 
-                // Band widths (so stacking renders correct bands):
-                //  - Inflation band:  0 → inflation
-                //  - 5% Hurdle band:  inflation → inflation + 5  (constant 5-wide gap above inflation)
-                //  - Excess band:     inflation + 5 → composite  (top equals composite spline)
-                // Composite spline overlays at the composite return level itself.
+                // IMPORTANT: keep this chart identical to the on-screen fund page (show.blade.php). Stacked
+                // areas with reversedStacks: false, so the stack reads bottom→top: Inflation (from 0%),
+                // 5% Hurdle (inflation → inflation+5), Excess on top — per the published fact-sheet reference.
                 const inflationSeries = inflationData.map(d => d.inflation);
-                const hurdleSeries    = inflationData.map(() => 5);
-                const excessSeries    = inflationData.map(d => d.composite - d.inflation - 5);
+                const hurdleSeries    = inflationData.map(d => d.hurdle ?? 5);
+                const excessSeries    = inflationData.map(d => d.excess ?? (d.composite - d.inflation - (d.hurdle ?? 5)));
                 const compositeSeries = inflationData.map(d => d.composite);
 
-                // Auto-fit the y-axis to actual data so there isn't a large empty band above the chart.
-                const inflationAllValues = inflationSeries.concat(compositeSeries);
-                const inflationDataMax = Math.max(...inflationAllValues);
-                const inflationDataMin = Math.min(...inflationAllValues, 0);
-                // Round up to nearest 5 above max, down to nearest 5 below min.
-                const inflationYMax = Math.ceil(inflationDataMax / 5) * 5;
-                const inflationYMin = Math.floor(inflationDataMin / 5) * 5;
-                const inflationTickPositionsY = [];
-                for (let v = inflationYMin; v <= inflationYMax; v += 5) { inflationTickPositionsY.push(v); }
+                // Highcharts SUBTRACTS negative values from a running stack, which would pull the dark
+                // Excess band down over the 5% Hurdle band whenever the fund underperforms CPI+5%. The
+                // published fact sheet (an Excel chart) keeps the Inflation/Hurdle bands intact and drops
+                // negative Excess below the 0% line instead. Reproduce that by splitting Excess into a
+                // positive series (main stack) and a negative series (its own stack, so it renders
+                // downward from 0%).
+                const excessPosSeries = excessSeries.map(v => (v > 0 ? v : 0));
+                const excessNegSeries = excessSeries.map(v => (v < 0 ? v : 0));
+
+                // Fixed Y-axis to match the published reference layout (-10% to 35%).
+                const inflationYMin = -10;
+                const inflationYMax = 35;
+                const inflationTickPositionsY = [-10, -5, 0, 5, 10, 15, 20, 25, 30, 35];
 
                 Highcharts.chart('inflationChart', {
                     chart: { type: 'area', backgroundColor: 'transparent', spacing: [4, 4, 4, 4], animation: false },
                     title: { text: null },
                     xAxis: {
                         categories: inflationDates,
-                        tickWidth: 1,
-                        tickLength: 3,
-                        tickColor: '#000',
-                        lineColor: '#000',
-                        lineWidth: 1,
+                        // Reference: no axis line at -10% — the x-axis sits ON the zero
+                        // line (drawn as a thick yAxis plotLine below); labels stay at
+                        // the bottom of the plot.
+                        tickWidth: 0,
+                        lineWidth: 0,
                         labels: {
-                            style: { fontSize: '6px', color: colors.offBlack },
+                            style: { fontSize: '8px', color: '#000' },
                             formatter: function () { return formatXTickInflation(this.value); },
                             rotation: 0,
                         },
@@ -1303,33 +1561,53 @@
                         tickColor: '#000',
                         endOnTick: false,
                         startOnTick: false,
+                        // Thick black line at 0% — the chart's visual x-axis.
+                        plotLines: [{ value: 0, color: '#000000', width: 2, zIndex: 4 }],
+                        // First stacked series (Inflation) at the BOTTOM of the stack, Excess on top,
+                        // so the Composite spline runs along the top of the Excess band.
+                        reversedStacks: false,
                         labels: {
-                            style: { fontSize: '6px', color: colors.offBlack },
+                            style: { fontSize: '8px', color: '#000' },
                             formatter: function () { return this.value + '%'; },
                         },
                     },
                     legend: {
-                        itemStyle: { fontSize: '6px', fontWeight: 'normal', color: colors.offBlack },
-                        symbolWidth: 14,
-                        symbolHeight: 6,
+                        // Reference legend: ONE row of four items, left-aligned at the
+                        // container edge, long thin rule swatches (24px long x ~1px thick
+                        // @150dpi = 16 x 1 CSS px — rendered as 1px rectangles so the
+                        // series lineWidth cannot thicken them).
+                        align: 'left',
+                        x: -4, // cancel spacingLeft so the first swatch sits at the container edge like the reference
+                        itemStyle: { fontSize: '8px', fontWeight: 'normal', color: colors.darkNavy },
+                        symbolWidth: 16,
+                        symbolHeight: 1,
                         symbolRadius: 0,
+                        symbolPadding: 3,
                         itemDistance: 12,
-                        margin: 4,
+                        margin: 6,
                         padding: 0,
                     },
                     tooltip: { enabled: false },
                     plotOptions: {
-                        area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 0, fillOpacity: 1 },
-                        spline: { marker: { enabled: false }, lineWidth: 1 },
-                        series: { animation: false },
+                        area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 1, fillOpacity: 1 },
+                        spline: { marker: { enabled: false }, lineWidth: 2 },
+                        series: { animation: false, legendSymbol: 'rectangle' },
                     },
-                    // Stack order from bottom up: Inflation, 5% Hurdle, Excess. Composite is a separate spline overlay.
-                    // legendIndex pins legend order: Composite first, then stack from bottom.
+                    // Identical series config to the on-screen fund page (show.blade.php): stacked areas with
+                    // reversedStacks: false on the yAxis (Inflation at the bottom from 0%, then 5% Hurdle,
+                    // positive Excess on top) so the Composite spline runs along the top of the Excess band.
+                    // Negative Excess lives in its own stack → dark spikes below the 0% line, leaving the
+                    // Hurdle band intact (linkedTo keeps it out of the legend: 4 legend items exactly).
+                    // Do NOT change stacking or series order here unless you make the SAME change in show.blade.php.
+                    // step: 'center' on the Excess bands reproduces the reference's
+                    // per-month Excel columns (visible as bar texture in the negative
+                    // spikes around Dec-21).
                     series: [
-                        { name: 'Composite', type: 'spline', data: compositeSeries, color: colors.naartjie, stacking: undefined, zIndex: 5, legendIndex: 0 },
-                        { name: 'Inflation', type: 'area', data: inflationSeries, color: colors.lightBlue, zIndex: 1, legendIndex: 1 },
-                        { name: '5% Hurdle', type: 'area', data: hurdleSeries,    color: colors.lightGrey, zIndex: 2, legendIndex: 2 },
-                        { name: 'Excess',    type: 'area', data: excessSeries,    color: colors.darkNavy,  zIndex: 3, legendIndex: 3 },
+                        { name: 'Composite', type: 'spline', data: compositeSeries, color: colors.naartjie, stacking: undefined, zIndex: 5 },
+                        { name: 'Inflation', type: 'area',   data: inflationSeries, color: colors.lightBlue },
+                        { name: '5% Hurdle', type: 'area',   data: hurdleSeries,    color: colors.lightGrey },
+                        { name: 'Excess',    type: 'area',   data: excessPosSeries, color: colors.darkNavy, step: 'center' },
+                        { name: 'Excess',    type: 'area',   data: excessNegSeries, color: colors.darkNavy, step: 'center', stack: 'negative', linkedTo: ':previous' },
                     ],
                 });
             }
@@ -1342,22 +1620,27 @@
                 // Display the cash values in thousands of R (the chart shows "R 1,487" for ~1,487,000 cents → R-thousand)
                 const formatCashLabel = (v) => 'R ' + Math.round(v).toLocaleString('en-US');
 
-                // Compute a tight log-scale max so the curves fill the plot (no large empty band above).
+                // Reference chart (Foord Balanced Class A design PDF, measured from
+                // its vector paths): the y-axis is LINEAR from 0 with a "nice" max
+                // just above the curve peak (peak * 1.05 rounded up to 100), and only
+                // the "100" baseline value is labelled near the axis.
                 const portfolioMaxVal = Math.max(
                     ...portfolioData.map(d => Math.max(d.fund || 0, d.benchmark || 0))
                 );
-                // Just ~10% above the peak so the data labels sit comfortably near the top.
-                const portfolioYMax = portfolioMaxVal * 1.1;
+                const portfolioYMax = Math.ceil(portfolioMaxVal * 1.05 / 100) * 100;
 
-                // Calendar-aligned ticks every 4 years on the inception month, no rotation.
+                // Calendar-aligned ticks every 4 years anchored on the first FULL
+                // month (the reference labels Sep 02, Sep 06, … — the 100 baseline
+                // point sits one month earlier and carries no tick).
                 const portfolioDates = portfolioData.map(d => d.date);
                 const portfolioTickPositions = (function () {
                     const idxByDate = {};
                     portfolioDates.forEach((d, i) => { idxByDate[d] = i; });
-                    const first = portfolioDates[0];
-                    const firstYear = parseInt(first.slice(0, 4), 10);
-                    const month = first.slice(5, 7);
-                    const positions = [0];
+                    const anchor = portfolioDates.length > 1 ? portfolioDates[1] : portfolioDates[0];
+                    const anchorIdx = portfolioDates.length > 1 ? 1 : 0;
+                    const firstYear = parseInt(anchor.slice(0, 4), 10);
+                    const month = anchor.slice(5, 7);
+                    const positions = [anchorIdx];
                     for (let y = firstYear + 4; y <= 2030; y += 4) {
                         const key = y + '-' + month;
                         if (idxByDate[key] !== undefined) positions.push(idxByDate[key]);
@@ -1366,7 +1649,7 @@
                 })();
 
                 Highcharts.chart('portfolioChart', {
-                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 90, 4, 4], animation: false },
+                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 46, 4, 0], animation: false },
                     title: { text: null },
                     xAxis: {
                         categories: portfolioDates,
@@ -1376,7 +1659,7 @@
                         lineColor: '#000',
                         lineWidth: 1,
                         labels: {
-                            style: { fontSize: '6px', color: colors.offBlack },
+                            style: { fontSize: '8px', color: '#000' },
                             formatter: function () { return formatXTickPortfolio(this.value); },
                             rotation: 0,
                             autoRotation: false,
@@ -1384,48 +1667,52 @@
                         tickPositions: portfolioTickPositions,
                     },
                     yAxis: {
-                        title: { text: "Cash Value² (R'000)", style: { fontSize: '6px', color: colors.offBlack, fontWeight: '400' } },
-                        type: 'logarithmic',
+                        title: { text: null },
+                        // LINEAR axis from 0 — measured from the published reference
+                        // chart (see note above). Only the 100 baseline is labelled.
                         gridLineWidth: 0,
                         lineColor: '#000',
                         lineWidth: 1,
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
+                        // Axis crosses at the 100 baseline like the reference (the
+                        // curve's first point sits ON the x-axis line).
                         min: 100,
                         max: portfolioYMax,
                         endOnTick: false,
                         startOnTick: false,
-                        // One tick per decade — only the "100" label is rendered (see formatter).
-                        tickInterval: 1,
+                        tickPositions: [100],
                         labels: {
-                            style: { fontSize: '6px', color: colors.offBlack },
+                            distance: 2,
+                            y: 8,
+                            style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
-                                // Per client amend: show only the 100 label.
                                 return this.value === 100 ? '100' : '';
                             },
                         },
                     },
                     legend: {
-                        itemStyle: { fontSize: '6px', fontWeight: 'normal', color: colors.offBlack },
-                        symbolWidth: 14,
-                        symbolHeight: 2,
+                        // Long thin rule swatches like the reference (16 x 1 CSS px).
+                        itemStyle: { fontSize: '8px', fontWeight: 'normal', color: colors.darkNavy },
+                        symbolWidth: 16,
+                        symbolHeight: 1,
                         symbolRadius: 0,
-                        itemDistance: 12,
-                        margin: 4,
+                        itemDistance: 40,
+                        margin: 6,
                         padding: 0,
                     },
                     tooltip: { enabled: false },
                     plotOptions: {
-                        spline: { marker: { enabled: false }, lineWidth: 1 },
-                        series: { animation: false },
+                        spline: { marker: { enabled: false }, lineWidth: 1.75 },
+                        series: { animation: false, legendSymbol: 'rectangle' },
                     },
                     series: [
                         {
                             name: 'Fund', data: portfolioData.map(d => d.fund), color: colors.naartjie,
                             dataLabels: [{
-                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: -4,
-                                style: { fontSize: '6px', fontWeight: 'bold', color: colors.naartjie, textOutline: 'none' },
+                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: 0,
+                                style: { fontSize: '9px', fontWeight: '500', color: colors.naartjie, textOutline: 'none' },
                                 formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
                                 crop: false, overflow: 'allow', allowOverlap: true,
                             }],
@@ -1433,8 +1720,8 @@
                         {
                             name: 'Benchmark', data: portfolioData.map(d => d.benchmark), color: colors.darkNavy,
                             dataLabels: [{
-                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: 4,
-                                style: { fontSize: '6px', fontWeight: 'bold', color: colors.darkNavy, textOutline: 'none' },
+                                enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: 0,
+                                style: { fontSize: '9px', fontWeight: '500', color: colors.darkNavy, textOutline: 'none' },
                                 formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
                                 crop: false, overflow: 'allow', allowOverlap: true,
                             }],

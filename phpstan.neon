@@ -1,0 +1,10 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    # New code is held to level 5; pre-existing findings are grandfathered in
+    # the baseline so CI only fails on newly introduced issues.
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - app

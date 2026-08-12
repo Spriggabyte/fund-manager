@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Fund;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     public function index(): View
     {
-        $funds = auth()->user()->funds()->latest()->get();
+        // Every fund is visible to every signed-in user — this is a shared
+        // team workspace, not a per-user portfolio.
+        $funds = Fund::latest()->get();
 
         // Calculate portfolio metrics
         $totalValue = $funds->sum(function ($fund) {

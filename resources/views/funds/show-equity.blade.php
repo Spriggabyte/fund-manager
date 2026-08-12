@@ -487,7 +487,7 @@
                                     @if ($key === 'equityIndicator' && is_array($value))
                                         <div class="flex items-center my-1">
                                             @php
-                                                $filledDots = $value['filled'] ?? 7;
+                                                $filledDots = $value['filled'] ?? 10;
                                                 $totalDots = $value['total'] ?? 10;
                                             @endphp
                                             @for ($i = 0; $i < $totalDots; $i++)
@@ -741,62 +741,15 @@
                                                           :class="editMode ? 'editable' : ''"
                                                           x-html="value"></span>
                                                 </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.cashValue', '{{ $row['cashValue'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.sinceInception', '{{ $row['sinceInception'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                @if(isset($row['15yrs']))
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.15yrs', '{{ $row['15yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                @endif
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.10yrs', '{{ $row['10yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.7yrs', '{{ $row['7yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.5yrs', '{{ $row['5yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.3yrs', '{{ $row['3yrs'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.1yr', '{{ $row['1yr'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.thisMonth', '{{ $row['thisMonth'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
+                                                {{-- Cells are null-safe: imported Fund highest/lowest rows carry no cashValue/thisMonth --}}
+                                                @foreach (['cashValue', 'sinceInception', '15yrs', '10yrs', '7yrs', '5yrs', '3yrs', '1yr', 'thisMonth'] as $col)
+                                                    <td>
+                                                        <span x-data="editableField('mainContent.performanceTable.rows.{{ $rowIndex }}.{{ $col }}', '{{ $row[$col] ?? '' }}')"
+                                                              @click="editMode && startEdit()"
+                                                              :class="editMode ? 'editable' : ''"
+                                                              x-text="value"></span>
+                                                    </td>
+                                                @endforeach
                                             </tr>
                                         @endforeach
                                     </tbody>
