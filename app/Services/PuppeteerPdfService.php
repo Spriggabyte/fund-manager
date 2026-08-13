@@ -12,6 +12,8 @@ class PuppeteerPdfService
 
     protected ?string $nodePath;
 
+    protected ?string $cacheDir;
+
     protected int $timeout;
 
     protected int $navTimeout;
@@ -20,6 +22,7 @@ class PuppeteerPdfService
     {
         $this->chromePath = config('puppeteer.chrome_path');
         $this->nodePath = config('puppeteer.node_path');
+        $this->cacheDir = config('puppeteer.cache_dir');
         $this->timeout = (int) config('puppeteer.timeout', 180);
         $this->navTimeout = (int) config('puppeteer.nav_timeout', 60000);
     }
@@ -41,10 +44,15 @@ class PuppeteerPdfService
         $url = $this->pdfViewUrl($fund);
 
         // Create the Puppeteer script (no auth cookie needed for internal route)
-        $script = $this->generatePuppeteerScript($url, $tempPdfPath);
+        $profileDir = $this->chromeProfileDir();
+        $script = $this->generatePuppeteerScript($url, $tempPdfPath, $profileDir);
 
         // Execute the script
-        $this->executePuppeteerScript($script, $tempPdfPath, $fund);
+        try {
+            $this->executePuppeteerScript($script, $tempPdfPath, $fund);
+        } finally {
+            $this->deleteDirectory($profileDir);
+        }
 
         // Verify PDF was created
         if (! file_exists($tempPdfPath)) {
@@ -78,7 +86,7 @@ class PuppeteerPdfService
      * otherwise we fall back to the full "puppeteer" package, which locates the
      * Chromium it provisioned itself.
      */
-    private function generatePuppeteerScript(string $url, string $pdfPath): string
+    protected function generatePuppeteerScript(string $url, string $pdfPath, string $profileDir): string
     {
         if ($this->chromePath) {
             $require = "const puppeteer = require('puppeteer-core');";
@@ -97,6 +105,7 @@ class PuppeteerPdfService
         {$executablePath}
         timeout: {$this->navTimeout},
         args: [
+            '--user-data-dir=".addslashes($profileDir)."',
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
@@ -210,6 +219,101 @@ class PuppeteerPdfService
     }
 
     /**
+     * Environment for the render subprocess.
+     *
+     * proc_open REPLACES the environment rather than adding to it, so anything
+     * Chrome needs must be listed here. HOME is the load-bearing one: without
+     * it Chrome resolves its profile directory to "/" and dies with
+     * "mkdir: cannot create directory '/.local': Permission denied". The queue
+     * worker runs as www-data, whose home (/var/www) is root-owned, so it has
+     * to be pointed at storage instead.
+     *
+     * @return array<string, string>
+     */
+    protected function renderEnvironment(): array
+    {
+        $home = $this->chromeHome();
+
+        return [
+            'NODE_PATH' => $this->nodePath ?: base_path('node_modules'),
+            // The shell proc_open spawns needs this to find the node binary.
+            'PATH' => getenv('PATH') ?: '/usr/local/bin:/usr/bin:/bin',
+            'HOME' => $home,
+            'XDG_CONFIG_HOME' => $home.'/.config',
+            'XDG_CACHE_HOME' => $home.'/.cache',
+            // Pinned separately from HOME: with no chrome_path configured the
+            // "puppeteer" package resolves the browser it downloaded relative
+            // to HOME, and the override above would send it somewhere empty.
+            'PUPPETEER_CACHE_DIR' => $this->cacheDir ?: $this->defaultBrowserCacheDir(),
+        ];
+    }
+
+    /**
+     * Where `npx puppeteer browsers install chrome` puts the browser: the cache
+     * directory of the user running the worker, not the substituted HOME.
+     */
+    protected function defaultBrowserCacheDir(): string
+    {
+        $realHome = getenv('HOME') ?: null;
+
+        if (! $realHome && function_exists('posix_geteuid')) {
+            $realHome = posix_getpwuid(posix_geteuid())['dir'] ?? null;
+        }
+
+        return rtrim((string) ($realHome ?: sys_get_temp_dir()), '/').'/.cache/puppeteer';
+    }
+
+    /**
+     * Writable base directory stood in for the render user's home directory.
+     */
+    protected function chromeHome(): string
+    {
+        $home = storage_path('app/temp/chrome');
+
+        if (! is_dir($home)) {
+            mkdir($home, 0775, true);
+        }
+
+        return $home;
+    }
+
+    /**
+     * A fresh Chrome profile per render.
+     *
+     * Concurrent renders sharing one profile collide on Chrome's singleton
+     * lock, so each gets its own and it is removed once the render finishes.
+     */
+    protected function chromeProfileDir(): string
+    {
+        $dir = $this->chromeHome().'/profile-'.uniqid('', true);
+
+        mkdir($dir, 0775, true);
+
+        return $dir;
+    }
+
+    /**
+     * Remove a render's throwaway profile directory.
+     */
+    protected function deleteDirectory(string $dir): void
+    {
+        if (! is_dir($dir)) {
+            return;
+        }
+
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($items as $item) {
+            $item->isDir() ? @rmdir($item->getPathname()) : @unlink($item->getPathname());
+        }
+
+        @rmdir($dir);
+    }
+
+    /**
      * Execute the Puppeteer script with timeout handling.
      *
      * This is the render boundary: it is intentionally a protected method so it
@@ -228,7 +332,7 @@ class PuppeteerPdfService
             ],
             $pipes,
             null,
-            ['NODE_PATH' => $this->nodePath ?: base_path('node_modules')]
+            $this->renderEnvironment()
         );
 
         if (! is_resource($process)) {

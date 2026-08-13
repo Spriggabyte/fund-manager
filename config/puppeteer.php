@@ -32,6 +32,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Browser cache directory
+    |--------------------------------------------------------------------------
+    |
+    | Only consulted when "chrome_path" is null and the fallback "puppeteer"
+    | package has to locate the browser it downloaded. The render subprocess
+    | runs with a substituted HOME (Chrome needs a writable profile directory
+    | and the worker user's real home usually is not), which would otherwise
+    | move this lookup with it. Null resolves to the worker user's own
+    | ~/.cache/puppeteer, which is where `npx puppeteer browsers install`
+    | writes.
+    |
+    */
+
+    'cache_dir' => env('PUPPETEER_CACHE_DIR'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Timeouts
     |--------------------------------------------------------------------------
     |

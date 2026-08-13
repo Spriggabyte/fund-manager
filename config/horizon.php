@@ -240,6 +240,18 @@ return [
             ],
         ],
 
+        // Staging runs APP_ENV=staging. Without a key matching the environment
+        // Horizon starts its master, reports "running", and provisions no
+        // workers at all — queued PDF renders simply sit there.
+        //
+        // Two processes, not production's ten: each render holds a headless
+        // Chrome open, and the staging box has 4 GB.
+        'staging' => [
+            'supervisor-1' => [
+                'maxProcesses' => 2,
+            ],
+        ],
+
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 3,

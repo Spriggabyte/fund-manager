@@ -135,6 +135,46 @@ class FundPdfExportTest extends TestCase
         Storage::disk('local')->assertExists($export->path);
     }
 
+    public function test_job_does_not_mark_export_done_when_the_write_fails(): void
+    {
+        // The local disk is configured with 'throw' => false, so a failed write
+        // returns false rather than raising. Marking the export done on top of
+        // that hands the user a download link to a file that is not there — a
+        // 500 with no failed job to explain it.
+        Storage::fake('local');
+        Storage::shouldReceive('disk')->andReturn($failingDisk = \Mockery::mock());
+        $failingDisk->shouldReceive('put')->once()->andReturnFalse();
+
+        $export = FundPdfExport::factory()->create(['status' => FundPdfExport::STATUS_PENDING]);
+
+        $fakeService = new class extends PuppeteerPdfService
+        {
+            public function generatePdf(Fund $fund): string
+            {
+                $path = tempnam(sys_get_temp_dir(), 'pdf');
+                file_put_contents($path, "%PDF-1.4\nmock\n%%EOF");
+
+                return $path;
+            }
+        };
+
+        $thrown = null;
+
+        try {
+            (new GenerateFundPdfJob($export))->handle($fakeService);
+        } catch (\Throwable $e) {
+            $thrown = $e;
+        }
+
+        $this->assertInstanceOf(\RuntimeException::class, $thrown);
+        $this->assertStringContainsString('store', $thrown->getMessage());
+
+        // Left un-done so the queue retries and, on exhaustion, failed() marks
+        // it failed and the UI reports an error instead of a dead link.
+        $export->refresh();
+        $this->assertFalse($export->isDone());
+    }
+
     public function test_failed_job_marks_export_failed_with_context(): void
     {
         $export = FundPdfExport::factory()->create(['status' => FundPdfExport::STATUS_PROCESSING]);

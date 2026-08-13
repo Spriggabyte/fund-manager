@@ -59,8 +59,17 @@ class GenerateFundPdfJob implements ShouldQueue
         $name = "fund-{$this->export->fund_id}-{$this->export->id}.pdf";
         $path = $dir === '' ? $name : "{$dir}/{$name}";
 
-        Storage::disk($disk)->put($path, file_get_contents($tempPath));
+        // The local disk is configured with 'throw' => false, so a failed write
+        // (permissions, no space) comes back as a plain false. Marking the
+        // export done on top of that would hand the user a download link to a
+        // file that is not there.
+        $stored = Storage::disk($disk)->put($path, file_get_contents($tempPath));
+
         @unlink($tempPath);
+
+        if ($stored === false) {
+            throw new \RuntimeException("Unable to store the generated PDF at [{$disk}://{$path}].");
+        }
 
         $this->export->update([
             'status' => FundPdfExport::STATUS_DONE,
