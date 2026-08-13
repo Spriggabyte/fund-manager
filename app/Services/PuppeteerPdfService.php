@@ -36,9 +36,14 @@ class PuppeteerPdfService
         $tempDir = storage_path('app/temp');
         $tempPdfPath = $tempDir.'/'.$filename;
 
-        // Ensure temp directory exists
+        // Ensure temp directory exists. 0775 (not 0755): storage/ is shared
+        // across releases and this dir may be created by the deploy user's CLI
+        // but written to by the www-data queue worker — group write keeps both
+        // working. Matches the chrome profile dirs below.
+        // chmod because mkdir's mode is clipped by the process umask.
         if (! file_exists($tempDir)) {
-            mkdir($tempDir, 0755, true);
+            mkdir($tempDir, 0775, true);
+            chmod($tempDir, 0775);
         }
 
         $url = $this->pdfViewUrl($fund);

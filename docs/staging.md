@@ -163,14 +163,13 @@ sudo -u deploy mkdir -p /home/deploy/.ssh
 sudo -u deploy tee -a /home/deploy/.ssh/authorized_keys < ~/.ssh/id_ed25519.pub
 sudo -u deploy chmod 700 /home/deploy/.ssh
 sudo -u deploy chmod 600 /home/deploy/.ssh/authorized_keys
-
-# Allow the deploy user to reload PHP-FPM (deploy.php's php-fpm:reload task).
-# Without this, OPcache keeps serving the PREVIOUS release after the symlink
-# switch — pages reference old hashed assets that 404 (e.g. missing CSS).
-echo 'deploy ALL=(root) NOPASSWD: /usr/bin/systemctl reload php8.3-fpm' \
-  | sudo tee /etc/sudoers.d/deploy-php-fpm
-sudo chmod 440 /etc/sudoers.d/deploy-php-fpm
 ```
+
+> **After every deploy:** the deploy user has no sudo, so the deploy cannot
+> reload PHP-FPM. OPcache may keep serving the *previous* release after the
+> symlink switch — the symptom is pages referencing old hashed Vite assets
+> that 404 (e.g. missing CSS). An admin should run
+> `sudo systemctl reload php8.3-fpm` after each deploy.
 
 The server also needs read access to the GitHub repo — either add a deploy key
 to `Spriggabyte/fund-manager` for `deploy@staging`, or forward your agent

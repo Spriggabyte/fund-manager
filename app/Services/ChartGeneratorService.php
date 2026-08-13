@@ -17,12 +17,16 @@ class ChartGeneratorService
         $this->chartOutputPath = storage_path('app/charts');
         $this->tempPath = storage_path('app/temp');
 
-        // Ensure directories exist
+        // Ensure directories exist. 0775: shared storage dirs may be created
+        // by the deploy user's CLI but written to by the www-data queue worker.
+        // chmod because mkdir's mode is clipped by the process umask.
         if (! is_dir($this->chartOutputPath)) {
-            mkdir($this->chartOutputPath, 0755, true);
+            mkdir($this->chartOutputPath, 0775, true);
+            chmod($this->chartOutputPath, 0775);
         }
         if (! is_dir($this->tempPath)) {
-            mkdir($this->tempPath, 0755, true);
+            mkdir($this->tempPath, 0775, true);
+            chmod($this->tempPath, 0775);
         }
     }
 

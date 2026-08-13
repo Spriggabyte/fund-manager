@@ -46,16 +46,11 @@ sudo mkdir -p /var/www/fund-manager
 sudo chown deploy:www-data /var/www/fund-manager
 ```
 
-Allow the deploy user to reload PHP-FPM — the deploy's `php-fpm:reload` task
-runs after each symlink switch so OPcache stops serving the previous release
-(otherwise pages reference old hashed Vite assets that 404). Set
-`DEPLOY_PHP_FPM_SERVICE` if the service is not `php8.3-fpm`:
-
-```bash
-echo 'deploy ALL=(root) NOPASSWD: /usr/bin/systemctl reload php8.3-fpm' \
-  | sudo tee /etc/sudoers.d/deploy-php-fpm
-sudo chmod 440 /etc/sudoers.d/deploy-php-fpm
-```
+> **After every deploy:** the deploy user has no sudo, so the deploy cannot
+> reload PHP-FPM itself. OPcache may keep serving the *previous* release after
+> the symlink switch — the symptom is pages referencing old hashed Vite assets
+> that 404 (e.g. missing CSS). An admin should run
+> `sudo systemctl reload php8.3-fpm` after each deploy.
 
 Point the web server document root at `/var/www/fund-manager/current/public`.
 
