@@ -163,6 +163,13 @@ sudo -u deploy mkdir -p /home/deploy/.ssh
 sudo -u deploy tee -a /home/deploy/.ssh/authorized_keys < ~/.ssh/id_ed25519.pub
 sudo -u deploy chmod 700 /home/deploy/.ssh
 sudo -u deploy chmod 600 /home/deploy/.ssh/authorized_keys
+
+# Allow the deploy user to reload PHP-FPM (deploy.php's php-fpm:reload task).
+# Without this, OPcache keeps serving the PREVIOUS release after the symlink
+# switch — pages reference old hashed assets that 404 (e.g. missing CSS).
+echo 'deploy ALL=(root) NOPASSWD: /usr/bin/systemctl reload php8.3-fpm' \
+  | sudo tee /etc/sudoers.d/deploy-php-fpm
+sudo chmod 440 /etc/sudoers.d/deploy-php-fpm
 ```
 
 The server also needs read access to the GitHub repo — either add a deploy key
@@ -365,11 +372,11 @@ The `staging` host already exists in [`deploy.php`](../deploy.php). Point it at
 your server with env vars, from your **local checkout**:
 
 ```bash
-export STAGING_HOST=staging.example.com
+export STAGING_HOST=fund-mananger-staging.foord.co.za
 export STAGING_USER=deploy
 export STAGING_PATH=/var/www/fund-manager-staging
 export STAGING_BRANCH=production-readiness      # the branch under review
-export STAGING_HEALTHCHECK_URL=https://staging.example.com/up
+export STAGING_HEALTHCHECK_URL=https://fund-mananger-staging.foord.co.za/up
 export DEPLOY_REPOSITORY=git@github.com:Spriggabyte/fund-manager.git
 
 vendor/bin/dep deploy staging -v

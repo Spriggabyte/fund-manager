@@ -56,6 +56,17 @@ task('deploy:puppeteer', function () {
     run('cd {{release_path}} && npx --yes puppeteer browsers install chrome');
 })->desc('Provision Chromium for Puppeteer');
 
+// Reload PHP-FPM after the symlink switch. OPcache keys compiled files by
+// their resolved path, so without a reload FPM keeps executing the previous
+// release (stale __DIR__ paths → @vite reads the old manifest and the page
+// references hashed assets that no longer exist under current/public).
+// Requires a passwordless sudoers entry for the deploy user:
+//   deploy ALL=(root) NOPASSWD: /usr/bin/systemctl reload php8.3-fpm
+task('php-fpm:reload', function () {
+    $service = getenv('DEPLOY_PHP_FPM_SERVICE') ?: 'php8.3-fpm';
+    run("sudo -n systemctl reload {$service}");
+})->desc('Reload PHP-FPM so OPcache picks up the new release');
+
 // Verify the freshly-linked release is healthy via the /up endpoint. If this
 // fails the deploy fails and we roll back to the previous release.
 task('deploy:health-check', function () {
@@ -68,11 +79,12 @@ task('artisan:horizon:terminate', function () {
     run('cd {{deploy_path}}/current && {{bin/php}} artisan horizon:terminate');
 })->desc('Terminate Horizon so Supervisor restarts it on new code');
 
-// Ordering: build assets + Chromium after composer, health-check + Horizon
-// restart after the atomic symlink switch.
+// Ordering: build assets + Chromium after composer, FPM reload + health-check
+// + Horizon restart after the atomic symlink switch.
 after('deploy:vendors', 'deploy:assets');
 after('deploy:assets', 'deploy:puppeteer');
 after('deploy:symlink', 'deploy:health-check');
+before('deploy:health-check', 'php-fpm:reload');
 after('deploy:health-check', 'artisan:horizon:terminate');
 
 // Roll back automatically if the post-switch health check fails.
