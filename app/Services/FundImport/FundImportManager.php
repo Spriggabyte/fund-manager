@@ -30,6 +30,7 @@ class FundImportManager
             new InflationGraphImporter,
             new AlsiGraphImporter,
             new CostReg28GraphImporter,
+            new RollingReturnGraphImporter,
         ];
     }
 

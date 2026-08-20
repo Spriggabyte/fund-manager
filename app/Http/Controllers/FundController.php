@@ -46,7 +46,7 @@ class FundController extends Controller
             ->with('success', 'Fund created successfully.');
     }
 
-    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-international'];
+    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-conservative', 'show-bond', 'show-flex-income', 'show-income', 'show-domestic', 'show-international', 'show-feeder'];
 
     public function show(Fund $fund): View
     {
@@ -379,9 +379,15 @@ class FundController extends Controller
         $pdfTemplate = match ($template) {
             'show-equity' => 'pdf-equity',
             'show-flexible' => 'pdf-flexible',
-            // The international page template is itself the print layout
-            // (A4 pages, @media print rules, .no-print chrome).
+            'show-conservative' => 'pdf-conservative',
+            'show-bond' => 'pdf-bond',
+            'show-flex-income' => 'pdf-flex-income',
+            'show-income' => 'pdf-income',
+            'show-domestic' => 'pdf-domestic',
+            // The international and feeder page templates are themselves the
+            // print layout (A4 pages, @media print rules, .no-print chrome).
             'show-international' => 'show-international',
+            'show-feeder' => 'show-feeder',
             default => 'pdf',
         };
         if (! view()->exists('funds.'.$pdfTemplate)) {

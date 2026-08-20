@@ -125,6 +125,10 @@ class Fund extends Model
         'sidebar.subInvestmentManager' => 'sub_investment_manager',
         'sidebar.typeOfShares' => 'type_of_shares',
         'sidebar.fees' => 'fees_summary',
+        // Domestic-only funds label the minimums column NEW INVESTMENTS
+        // ("At the manager's discretion" — the 820 fund is closed to
+        // lump-sum minimums).
+        'sidebar.newInvestments' => 'minimums',
         // International templates label existing columns differently
         'sidebar.morningstarCategory' => 'category',
         'sidebar.initialInvestmentAmount' => 'minimums',
@@ -205,6 +209,7 @@ class Fund extends Model
                 'typeOfShares' => $this->type_of_shares,
                 'fees' => $this->fees_summary,
                 'lipperAward' => $this->lipper_award,
+                'newInvestments' => ($this->template === 'show-domestic') ? $this->minimums : null,
                 'morningstarCategory' => ($this->template === 'show-international') ? $this->category : null,
                 'initialInvestmentAmount' => ($this->template === 'show-international') ? $this->minimums : null,
                 'totalFundSize' => ($this->template === 'show-international') ? $this->portfolio_size : null,

@@ -175,7 +175,7 @@
                                 <div>
                                     <x-input-label for="template" :value="__('Template')" />
                                     <select id="template" name="template" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                        @foreach (['show' => 'Default', 'show-equity' => 'Equity', 'show-flexible' => 'Flexible', 'show-international' => 'International'] as $val => $label)
+                                        @foreach (['show' => 'Default', 'show-equity' => 'Equity', 'show-flexible' => 'Flexible', 'show-conservative' => 'Conservative', 'show-bond' => 'Bond', 'show-flex-income' => 'Flex Income', 'show-income' => 'Income', 'show-domestic' => 'Domestic Balanced', 'show-international' => 'International', 'show-feeder' => 'Feeder'] as $val => $label)
                                             <option value="{{ $val }}" {{ old('template', $fund->template) === $val ? 'selected' : '' }}>{{ $label }}</option>
                                         @endforeach
                                     </select>

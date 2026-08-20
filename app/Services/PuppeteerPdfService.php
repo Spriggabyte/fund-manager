@@ -44,6 +44,21 @@ class PuppeteerPdfService
         if (! file_exists($tempDir)) {
             mkdir($tempDir, 0775, true);
             chmod($tempDir, 0775);
+        } elseif (! is_writable($tempDir)) {
+            // storage/ is shared across releases, so this dir may pre-date the
+            // 0775 fix or belong to another user. chmod only works if we own
+            // it; otherwise fail here with the actual remedy instead of a
+            // cryptic EACCES from the node child process.
+            @chmod($tempDir, 0775);
+            if (! is_writable($tempDir)) {
+                $user = function_exists('posix_geteuid')
+                    ? (posix_getpwuid(posix_geteuid())['name'] ?? 'unknown')
+                    : 'unknown';
+                throw new \Exception(
+                    "{$tempDir} is not writable by user \"{$user}\". ".
+                    "Fix ownership on the server: chown -R {$user} {$tempDir}"
+                );
+            }
         }
 
         $url = $this->pdfViewUrl($fund);
