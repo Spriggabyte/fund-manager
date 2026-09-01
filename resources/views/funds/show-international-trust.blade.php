@@ -12,11 +12,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         /* =====================================================
-           FOORD INTERNATIONAL FUND FACT SHEET
-           Page geometry, typography and table styling ported from
+           FOORD INTERNATIONAL TRUST FACT SHEET (874)
+           Cloned from show-international.blade.php, whose page
+           geometry, typography and table styling were ported from
            the signed-off balanced templates (pdf.blade.php /
-           show.blade.php); colours inverted per the 875 reference
-           (red title banner, navy date badge).
+           show.blade.php); colours inverted per the international
+           references (red title banner, navy date badge).
            ===================================================== */
 
         /* Foord Brand Colors — greys measured from the published reference PDF.
@@ -193,7 +194,9 @@
             overflow: hidden;
         }
 
-        .sidebar-section { margin-bottom: 1.35mm; }
+        /* 874 reference: sidebar runs to y=285.5mm — wider section gaps
+           than the 875 sheet */
+        .sidebar-section { margin-bottom: 1.8mm; }
         .sidebar-section:last-child { margin-bottom: 0; }
 
         .sidebar-section h3 {
@@ -213,7 +216,7 @@
             font-weight: 400;
             font-size: 8pt;
             line-height: 10.5pt;
-            letter-spacing: 0.01em;
+            letter-spacing: 0;
             color: #000;
             margin: 0;
         }
@@ -274,8 +277,8 @@
         }
 
         /* === Section headings — 7.5pt Avenir Next Medium, dark navy,
-           per the signed-off balanced spec (the July 2026 875 reference
-           adopts it too: heading caps ~12px at 150 dpi) === */
+           per the signed-off balanced spec (the 874 reference measures
+           the same ~12px heading caps at 150 dpi as the July 875) === */
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
@@ -325,7 +328,8 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 4.5mm;
+            /* 874 reference: 4.75mm row pitch */
+            line-height: 4.75mm;
             color: #000;
         }
 
@@ -377,7 +381,8 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 4.5mm;
+            /* 874 reference: 4.7mm row pitch */
+            line-height: 4.7mm;
             color: #000;
         }
 
@@ -487,8 +492,8 @@
         .foord-table tr.empty-row td {
             background-color: var(--row-grey-2) !important;
             padding: 0;
-            height: 3.58mm;
-            line-height: 3.58mm;
+            height: 4.1mm;
+            line-height: 4.1mm;
             font-size: 0;
         }
 
@@ -564,7 +569,8 @@
             color: #000;
             font-size: 7.5pt;
             line-height: 8pt;
-            padding: 0.45mm 0.5mm;
+            /* 874 reference: 4.23mm row pitch */
+            padding: 0.68mm 0.5mm;
         }
         .perf-table td:first-child { padding-left: 1.5mm; }
         /* Row greys fade down the table (measured off the 875 reference):
@@ -573,11 +579,14 @@
         .perf-table tbody tr td { background-color: var(--row-grey-1); }
         .perf-table tbody tr:nth-child(1) td { background-color: var(--naartjie-20); }
         .perf-table tbody tr:nth-child(2) td { background-color: var(--row-grey-0); }
+        /* Trust row order: Fund, Peer, US infl, W.eq, W.bonds, spacer,
+           euros, sterling, rands, spacer, highest, lowest */
         .perf-table tbody tr:nth-child(7) td,
-        .perf-table tbody tr:nth-child(8) td { background-color: var(--row-grey-2); }
-        .perf-table tbody tr:nth-child(9).empty-row td { background-color: var(--row-grey-3) !important; }
-        .perf-table tbody tr:nth-child(10) td,
-        .perf-table tbody tr:nth-child(11) td { background-color: var(--row-grey-4); }
+        .perf-table tbody tr:nth-child(8) td,
+        .perf-table tbody tr:nth-child(9) td { background-color: var(--row-grey-2); }
+        .perf-table tbody tr:nth-child(10).empty-row td { background-color: var(--row-grey-3) !important; }
+        .perf-table tbody tr:nth-child(11) td,
+        .perf-table tbody tr:nth-child(12) td { background-color: var(--row-grey-4); }
         .perf-table tbody tr td.cell-empty { background-color: var(--white); }
 
         /* Annualised cost ratio — reference: three equal ~46.4mm columns,
@@ -592,8 +601,8 @@
         .cost-table .foord-table th { font-size: 6pt; }
         .cost-table .foord-table td {
             font-size: 7pt;
-            padding-top: 0.92mm;
-            padding-bottom: 0.92mm;
+            padding-top: 0.65mm;
+            padding-bottom: 0.65mm;
         }
         .cost-table .foord-table tr.total-row td {
             font-size: 7pt;
@@ -604,7 +613,8 @@
 
         /* === Chart === */
         .chart-wrapper {
-            height: 47mm;
+            /* 874 reference: heading top -> legend end spans 54.9mm */
+            height: 45mm;
             position: relative;
         }
 
@@ -639,7 +649,7 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 0.4mm 4.2mm;
-            margin-top: 1mm;
+            margin-top: 0.2mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 6pt;
             color: #4d585e;
@@ -710,7 +720,8 @@
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 300;
             font-size: 8.5pt;
-            line-height: 9.6pt;
+            /* 874 reference: 3.03mm line pitch (8.6pt) */
+            line-height: 8.6pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
             margin: 0 0 0.7mm 0;
@@ -730,14 +741,15 @@
             flex: 1;
             /* ANNUALISED COST RATIO % table header lands at y=31.7mm; the
                main column spans x 65.2mm → 202.9mm (875 reference) */
-            padding: 26.8mm 7.1mm 4mm 5.2mm;
+            padding: 26.8mm 7.1mm 6.1mm 5.2mm;
             min-width: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        .page2-section { margin-bottom: 5.6mm; }
+        /* 874 reference: ~10mm clear between page-2 sections */
+        .page2-section { margin-bottom: 9.2mm; }
 
         .page2-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
@@ -753,9 +765,11 @@
         .page2-body {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 8.2pt;
-            line-height: 10.1pt;
-            letter-spacing: 0.01em;
+            /* 874 reference: ~107 chars/line at the same cap height — the
+               published face is more condensed, so trim size + tracking */
+            font-size: 7.9pt;
+            line-height: 9.8pt;
+            letter-spacing: 0;
             color: #000;
         }
 
@@ -763,10 +777,11 @@
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 400;
             font-size: 7.8pt;
-            line-height: 9.6pt;
+            /* 874 reference: 3.05mm note pitch */
+            line-height: 8.6pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin: 0.3mm 0;
+            margin: 0.1mm 0;
             /* Hanging indent: wrapped lines align after the superscript */
             padding-left: 2.2mm;
             text-indent: -2.2mm;
@@ -788,7 +803,7 @@
            Avenir Next Medium contact lines, all naartjie === */
         .footer-divider {
             margin-top: auto;
-            padding-top: 5.5mm;
+            padding-top: 3.5mm;
             border-top: none;
             position: relative;
         }
@@ -977,7 +992,7 @@
                 </div>
             </div>
 
-            <!-- Fund Name Banner (naartjie per the 875 reference) -->
+            <!-- Fund Name Banner (naartjie per the 874 reference) -->
             <div class="fund-banner">
                 @php
                     $fundName = $fund->data['fund']['name'] ?? $fund->name;
@@ -1040,35 +1055,37 @@
                             $sidebar = $fund->data['sidebar'];
                             $labelMap = [
                                 'marketingCommunication' => 'MARKETING COMMUNICATION',
-                                'subInvestmentManager' => 'SUB-INVESTMENT MANAGER',
-                                'monthEndSharePrice' => 'MONTH END SHARE PRICE',
-                                'morningstarCategory' => 'MORNINGSTAR CATEGORY',
-                                'initialInvestmentAmount' => 'INITIAL INVESTMENT AMOUNT',
-                                'totalFundSize' => 'TOTAL FUND SIZE',
-                                'numberOfShares' => 'NUMBER OF SHARES',
+                                'masterFund' => 'MASTER FUND',
+                                'domicile' => 'DOMICILE',
                                 'investmentManager' => 'INVESTMENT MANAGER',
-                                'managementCompany' => 'MANAGEMENT COMPANY',
                                 'fundManagers' => 'FUND MANAGERS',
                                 'inceptionDate' => 'INCEPTION DATE',
                                 'baseCurrency' => 'BASE CURRENCY',
                                 'equityIndicator' => 'EQUITY INDICATOR',
-                                'typeOfShares' => 'TYPE OF SHARES',
+                                'morningstarCategory' => 'MORNINGSTAR CATEGORY',
+                                'typeOfShares' => 'TYPE OF UNITS',
+                                'minimums' => 'MINIMUM INVESTMENT',
+                                'totalFundSize' => 'TOTAL FUND SIZE',
+                                'unitPrice' => 'MONTH END UNIT PRICE',
+                                'numberOfUnits' => 'NUMBER OF UNITS',
                                 'timeHorizon' => 'TIME HORIZON',
-                                'domicile' => 'DOMICILE',
-                                'depository' => 'DEPOSITORY',
-                                'isinNumber' => 'ISIN NUMBER',
                                 'fees' => 'FEES',
-                                'lipperAward' => 'REFINITIV LIPPER FUND AWARDS',
+                                'masterFundReturns' => 'MASTER FUND RETURNS',
+                                'isinNumber' => 'ISIN NUMBER',
+                                'sedol' => 'SEDOL NUMBER',
                             ];
 
-                            // Define display order to match PDF
+                            // Display order per the published 874 Trust sheet
+                            // (unit-trust labels: TYPE OF UNITS, MONTH END
+                            // UNIT PRICE, …; master-fund prose; SEDOL last).
                             $displayOrder = [
-                                'marketingCommunication', 'domicile', 'managementCompany', 'depository',
-                                'investmentManager', 'subInvestmentManager', 'fundManagers',
+                                'marketingCommunication', 'masterFund', 'domicile',
+                                'investmentManager', 'fundManagers',
                                 'inceptionDate', 'baseCurrency', 'equityIndicator',
-                                'morningstarCategory', 'typeOfShares', 'initialInvestmentAmount',
-                                'totalFundSize', 'monthEndSharePrice', 'numberOfShares',
-                                'timeHorizon', 'fees', 'isinNumber', 'lipperAward'
+                                'morningstarCategory', 'typeOfShares', 'minimums',
+                                'totalFundSize', 'unitPrice', 'numberOfUnits',
+                                'timeHorizon', 'fees', 'masterFundReturns',
+                                'isinNumber', 'sedol'
                             ];
                         @endphp
 
@@ -1079,22 +1096,10 @@
                                     $label = $labelMap[$key] ?? strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY)));
                                 @endphp
 
-                                @if ($key === 'lipperAward' && is_array($value))
-                                    {{-- Reference: the Refinitiv Lipper Fund Awards logo
-                                         (extracted from the published 875 fact sheet),
-                                         left-aligned with the award detail lines below. --}}
-                                    <div class="lipper-award">
-                                        <img src="{{ asset('images/lipper-award.png') }}" alt="Refinitiv Lipper Fund Awards {{ $value['year'] ?? '' }} Winner {{ $value['region'] ?? '' }}" class="award-logo">
-                                        <div class="award-detail">
-                                            Refinitiv Lipper Awards {{ $value['year'] ?? '' }}<br>
-                                            {{ $value['category'] ?? '' }}<br>
-                                            {{ $value['type'] ?? '' }}
-                                        </div>
-                                    </div>
-                                @elseif ($key === 'equityIndicator' && is_array($value))
+                                @if ($key === 'equityIndicator' && is_array($value))
                                     <div class="sidebar-section">
                                         @php
-                                            $filledDots = $value['filled'] ?? 7;
+                                            $filledDots = $value['filled'] ?? 6;
                                             $totalDots = $value['total'] ?? 10;
                                         @endphp
                                         {{-- Heading + dots share one line; SVG circles stay
@@ -1107,7 +1112,7 @@
                                                 @endfor
                                             </span>
                                         </h3>
-                                        <p>
+                                        <p style="font-size: 7.2pt; line-height: 9.2pt; letter-spacing: 0;">
                                             <span x-data="editableField('sidebar.{{ $key }}.description', '{{ addslashes($value['description'] ?? '') }}')"
                                                   @click="editMode && startEdit()"
                                                   :class="editMode ? 'editable' : ''"
@@ -1117,7 +1122,7 @@
                                 @elseif ($key === 'marketingCommunication')
                                     {{-- Reference: larger bold black label with a clear gap below --}}
                                     <div class="sidebar-section" style="margin-bottom: 2.6mm;">
-                                        <h3 style="font-size: 7pt; line-height: 8.2pt; font-weight: 700;">{{ $label }}</h3>
+                                        <h3 style="font-size: 8.4pt; line-height: 10pt; font-weight: 600; letter-spacing: 0;">{{ $label }}</h3>
                                     </div>
                                 @elseif (!is_array($value))
                                     <div class="sidebar-section">
@@ -1206,19 +1211,24 @@
                                 </div>
                             @endif
 
-                            <!-- Equity Sector Allocation (the importer-maintained
-                                 sector_allocation column, as on show-feeder) -->
+                            <!-- Equity Sector Allocation — bound to the
+                                 sector_allocation column (ESAOT_*), which the
+                                 factsheet import refreshes monthly. The
+                                 published 874 sheet shows bare bars + values
+                                 (no change arrows). -->
                             @if(!empty($fund->data['mainContent']['sectorAllocation']['sectors']))
-                                <div style="margin-bottom: 2mm;">
+                                {{-- Reference: 11.3mm clear above the heading --}}
+                                <div style="margin-top: 11.2mm; margin-bottom: 2mm;">
                                     <h3 class="section-heading">EQUITY SECTOR ALLOCATION %</h3>
                                     @php
+                                        $sectorRows = $fund->data['mainContent']['sectorAllocation']['sectors'];
                                         $sectorMax = max(1.0, ...array_map(
                                             fn ($r) => (float) ($r['value'] ?? 0),
-                                            $fund->data['mainContent']['sectorAllocation']['sectors']
+                                            $sectorRows
                                         ));
                                     @endphp
                                     <div>
-                                        @foreach ($fund->data['mainContent']['sectorAllocation']['sectors'] as $rowIndex => $row)
+                                        @foreach ($sectorRows as $rowIndex => $row)
                                             <div class="sector-row">
                                                 <span class="sector-label">
                                                     <span x-data="editableField('mainContent.sectorAllocation.sectors.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
@@ -1294,7 +1304,8 @@
 
                             <!-- Portfolio Performance Chart -->
                             @if(isset($fund->data['mainContent']['charts']))
-                                <div>
+                                {{-- Reference: 6.8mm clear above the heading --}}
+                                <div style="margin-top: 7.5mm;">
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.charts.title', '{{ $fund->data['mainContent']['charts']['title'] ?? 'PORTFOLIO PERFORMANCE' }}')"
                                               @click="editMode && startEdit()"
@@ -1305,7 +1316,7 @@
                                         <div class="chart-ytitle">Cash Value<sup>2</sup> ($&rsquo;000)</div>
                                         <canvas id="performanceChart"></canvas>
                                     </div>
-                                    {{-- Legend colours per the 875 reference: Fund red, US inflation
+                                    {{-- Legend colours per the 874 reference: Fund red, US inflation
                                          dark navy, World equities steel blue, World bonds light grey --}}
                                     <div class="chart-legend" style="max-width: 52mm; margin-left: auto; margin-right: auto;">
                                         <span><span class="legend-line" style="background: var(--naartjie);"></span> Fund</span>
@@ -1389,13 +1400,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {{-- International display rules (875 reference, mirrored in
-                                             pdf-international.blade.php): the import writes raw row
-                                             names (Fund, Benchmark, Comparator 2…6, Fund highest/
-                                             lowest); the fact sheet displays them renamed with
-                                             footnote superscripts, ordered Fund/Peer group/US
-                                             inflation/World equities/World bonds, spacer, euro and
-                                             sterling fund rows, spacer, highest/lowest. --}}
+                                        {{-- Trust display rules (874 reference): the import writes
+                                             raw row names (Fund, Benchmark, Comparator 2…7, Fund
+                                             highest/lowest); the fact sheet displays them renamed
+                                             with footnote superscripts, ordered Fund/Peer group/US
+                                             inflation/World equities/World bonds, spacer, euro,
+                                             sterling and rand fund rows, spacer, highest/lowest. --}}
                                         @php
                                             $perfRowsRaw = $fund->data['mainContent']['performanceTable']['rows'];
                                             $perfColKeysIntl = $fund->data['mainContent']['performanceTable']['columnKeys'] ?? [];
@@ -1407,12 +1417,14 @@
                                                 'comparator 4' => 'World bonds <sup>7</sup>',
                                                 'comparator 5' => 'Fund in euros <sup>3</sup>',
                                                 'comparator 6' => 'Fund in sterling <sup>3</sup>',
-                                                'fund highest' => 'Fund highest <sup>3,8</sup>',
-                                                'fund lowest' => 'Fund lowest <sup>3,8</sup>',
+                                                'comparator 7' => 'Fund in rands <sup>3</sup>',
+                                                // The published 874 sheet superscripts highest/lowest 5,8
+                                                'fund highest' => 'Fund highest <sup>5,8</sup>',
+                                                'fund lowest' => 'Fund lowest <sup>5,8</sup>',
                                             ];
                                             $intlOrder = [
                                                 ['fund', 'benchmark', 'comparator 2', 'comparator 3', 'comparator 4'],
-                                                ['comparator 5', 'comparator 6'],
+                                                ['comparator 5', 'comparator 6', 'comparator 7'],
                                                 ['fund highest', 'fund lowest'],
                                             ];
                                             $rowsByKey = [];
@@ -1433,6 +1445,12 @@
                                                         @php
                                                             $cellValue = $row[$colKey] ?? '';
                                                             $cellDisplay = $colKey === 'cashValue' ? $cellValue : $fmt($cellValue);
+                                                            // The rand row's feed cash value arrives bare
+                                                            // ("2,324,919"); the published sheet prints "R 2,324,919"
+                                                            if ($rowKey === 'comparator 7' && $colKey === 'cashValue'
+                                                                && $cellDisplay !== '' && ! preg_match('/^\s*[R$€£]/u', (string) $cellDisplay)) {
+                                                                $cellDisplay = 'R '.$cellDisplay;
+                                                            }
                                                         @endphp
                                                         {{-- Empty cells render white in the reference --}}
                                                         <td class="{{ trim((string) $cellDisplay) === '' ? 'cell-empty' : '' }}">
@@ -1449,7 +1467,7 @@
                                 </table>
                             </div>
 
-                            {{-- Footnotes render on page 2 under NOTES (875 reference);
+                            {{-- Footnotes render on page 2 under NOTES (874 reference);
                                  see the page2Content.notes section below. --}}
                         </div>
                     @endif
@@ -1586,27 +1604,12 @@
                         </div>
                     @endif
 
-                    <!-- Refinitiv Lipper Fund Award -->
-                    @if(isset($fund->data['page2Content']['lipperAward']))
-                        <div class="page2-section">
-                            <h3 class="page2-heading">
-                                <span x-data="editableField('page2Content.lipperAward.title', '{{ $fund->data['page2Content']['lipperAward']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <p class="page2-body">
-                                <span x-data="editableField('page2Content.lipperAward.text', '{{ addslashes($fund->data['page2Content']['lipperAward']['text']) }}', 'linkify')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''">{!! $linkify($fund->data['page2Content']['lipperAward']['text']) !!}</span>
-                            </p>
-                        </div>
-                    @endif
-
                     <!-- Notes (the performance-table footnotes, displayed on
-                         page 2 per the 875 reference) -->
+                         page 2 per the 874 reference) -->
                     @if(!empty($fund->data['mainContent']['performanceTable']['footnotes']))
-                        <div class="page2-section">
+                        {{-- Reference pins NOTES well below the narrative
+                             sections (heading top at y≈195.7mm) --}}
+                        <div class="page2-section" style="margin-top: 29.7mm;">
                             <h3 class="page2-heading">NOTES</h3>
                             <div>
                                 @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $note)
@@ -1784,7 +1787,7 @@
             lightBlue: '#7a9cb4'
         };
 
-        // Reference (875): Fund red, US inflation dark navy,
+        // Reference (874): Fund red, US inflation dark navy,
         // World equities steel blue, World bonds light grey.
         const lineColors = [colors.naartjie, colors.darkNavy, colors.lightBlue, colors.lightGrey];
 

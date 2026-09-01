@@ -29,7 +29,7 @@ class StoreFundRequest extends FormRequest
             // Share class token in the data-feed filenames: A, B, B2, B3, R, R1
             'class_code' => ['nullable', 'string', 'max:6', 'regex:/^[A-Za-z][0-9]*$/'],
             // Fund metadata
-            'template' => ['nullable', 'string', 'in:show,show-equity,show-flexible,show-conservative,show-bond,show-flex-income,show-income,show-domestic,show-international,show-feeder'],
+            'template' => ['nullable', 'string', 'in:show,show-equity,show-flexible,show-conservative,show-bond,show-flex-income,show-income,show-inflation-income,show-domestic,show-absolute,show-shariah,show-shariah-income,show-international,show-international-trust,show-global-equity,show-feeder,show-prescient-feeder,show-prescient-global-equity,show-hassen-shariah,show-australian-feeder,show-asia-ex-japan'],
             'fund_date' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'logo_url' => ['nullable', 'string', 'max:255'],

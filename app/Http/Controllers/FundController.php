@@ -46,7 +46,7 @@ class FundController extends Controller
             ->with('success', 'Fund created successfully.');
     }
 
-    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-conservative', 'show-bond', 'show-flex-income', 'show-income', 'show-domestic', 'show-international', 'show-feeder'];
+    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-conservative', 'show-bond', 'show-flex-income', 'show-income', 'show-inflation-income', 'show-domestic', 'show-absolute', 'show-shariah', 'show-shariah-income', 'show-international', 'show-international-trust', 'show-global-equity', 'show-feeder', 'show-prescient-feeder', 'show-prescient-global-equity', 'show-hassen-shariah', 'show-australian-feeder', 'show-asia-ex-japan'];
 
     public function show(Fund $fund): View
     {
@@ -383,11 +383,22 @@ class FundController extends Controller
             'show-bond' => 'pdf-bond',
             'show-flex-income' => 'pdf-flex-income',
             'show-income' => 'pdf-income',
+            'show-inflation-income' => 'pdf-inflation-income',
             'show-domestic' => 'pdf-domestic',
+            'show-absolute' => 'pdf-absolute',
+            'show-shariah' => 'pdf-shariah',
+            'show-shariah-income' => 'pdf-shariah-income',
             // The international and feeder page templates are themselves the
             // print layout (A4 pages, @media print rules, .no-print chrome).
             'show-international' => 'show-international',
+            'show-international-trust' => 'show-international-trust',
+            'show-global-equity' => 'show-global-equity',
             'show-feeder' => 'show-feeder',
+            'show-prescient-feeder' => 'show-prescient-feeder',
+            'show-prescient-global-equity' => 'show-prescient-global-equity',
+            'show-hassen-shariah' => 'show-hassen-shariah',
+            'show-australian-feeder' => 'show-australian-feeder',
+            'show-asia-ex-japan' => 'show-asia-ex-japan',
             default => 'pdf',
         };
         if (! view()->exists('funds.'.$pdfTemplate)) {

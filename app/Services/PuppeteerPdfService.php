@@ -50,6 +50,8 @@ class PuppeteerPdfService
             // it; otherwise fail here with the actual remedy instead of a
             // cryptic EACCES from the node child process.
             @chmod($tempDir, 0775);
+            // The stat cache would otherwise serve the pre-chmod answer.
+            clearstatcache(true, $tempDir);
             if (! is_writable($tempDir)) {
                 $user = function_exists('posix_geteuid')
                     ? (posix_getpwuid(posix_geteuid())['name'] ?? 'unknown')

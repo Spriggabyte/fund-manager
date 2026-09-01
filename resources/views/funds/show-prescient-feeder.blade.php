@@ -12,11 +12,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         /* =====================================================
-           FOORD INTERNATIONAL FUND FACT SHEET
-           Page geometry, typography and table styling ported from
-           the signed-off balanced templates (pdf.blade.php /
-           show.blade.php); colours inverted per the 875 reference
-           (red title banner, navy date badge).
+           PRESCIENT FOORD INTERNATIONAL FEEDER FUND (822)
+           Cloned from the Foord-branded feeder sheet (809) — the
+           page 1 grid is identical (asset allocation with change
+           arrows, geographic exposure, sector bars, four-series
+           log-scale performance chart, top 10, performance table).
+           Prescient deltas, per the signed-off July 2026 reference
+           in Funds/822 …/Design/:
+             - banner carries no class suffix; the class prints in
+               the sidebar CLASS row (derived from `class_code`)
+             - sidebar opens with the two-line MINIMUM DISCLOSURE
+               DOCUMENT heading and adds BENCHMARK, RISK INDICATOR
+               and RISK INDICATOR DEFINITION
+             - chart is titled ILLUSTRATIVE PERFORMANCE² with ticks
+               every 9 months from the Feb 2022 inception
+             - page 2 adds CONTRIBUTORS/DETRACTORS and POLICY
+               OBJECTIVE above FEE RATES, and carries no footer
+             - page 3 is new: CONTACT DETAILS + GLOSSARY SUMMARY
            ===================================================== */
 
         /* Foord Brand Colors — greys measured from the published reference PDF.
@@ -116,7 +128,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: var(--dark-navy);
+            /* 822 reference: naartjie badge (the 875/809 sheets use navy) */
+            background-color: var(--naartjie);
             color: #ffffff;
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 500;
@@ -144,24 +157,21 @@
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
-            padding: 3.6mm 6mm 0 7.75mm;
+            padding: 3.6mm 3mm 0 7.75mm;
             margin: 0;
             width: 100%;
         }
 
+        /* 822 reference: the title is one line spanning x 7.5mm → 205.3mm —
+           the 809 sheet's 23pt wraps "FUND" onto a second line. */
         .fund-banner h1 {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 23pt;
+            font-size: 22.5pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 1.1mm 0;
+            margin: 0 0 2.9mm 0;
             line-height: 1.05;
-        }
-
-        .fund-banner h1 .class-suffix {
-            font-weight: 500;
-            font-size: 15pt;
         }
 
         .fund-banner .description {
@@ -189,18 +199,27 @@
             min-width: 60mm;
             max-width: 60mm;
             background-color: transparent;
-            padding: 5.4mm 4mm 4mm 8mm;
+            padding: 5.7mm 4mm 4mm 8mm;
             overflow: hidden;
         }
 
-        .sidebar-section { margin-bottom: 1.35mm; }
+        .sidebar-section { margin-bottom: 1.15mm; }
         .sidebar-section:last-child { margin-bottom: 0; }
 
+        /* 822 reference: the MINIMUM DISCLOSURE DOCUMENT heading opens the
+           sidebar on two lines with a clear gap before the CLASS row. */
+        .mdd-heading { margin-bottom: 2.6mm; }
+
+        /* Feeder sidebar carries far more copy than the international page
+           (distributions, orientation, restrictions, US$ note …) — the
+           published 809 sheet sets it ~7pt on a tight leading to fit. */
+        /* 822 reference: the sidebar labels are markedly smaller than the
+           809 sheet's while the body copy matches — measured 0.83x. */
         .sidebar-section h3 {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 8pt;
-            line-height: 10.5pt;
+            font-size: 5.85pt;
+            line-height: 8.2pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: #000;
@@ -211,8 +230,8 @@
         .sidebar-section .sidebar-value {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 8pt;
-            line-height: 10.5pt;
+            font-size: 7pt;
+            line-height: 8.2pt;
             letter-spacing: 0.01em;
             color: #000;
             margin: 0;
@@ -244,43 +263,23 @@
         .equity-dot.filled circle { fill: var(--naartjie); }
         .equity-dot.empty circle { fill: var(--medium-grey); }
 
-        /* Lipper award — reference: logo left-aligned, no box */
-        .lipper-award {
-            margin-top: 4mm;
-        }
-
-        .lipper-award .award-logo {
-            width: 40mm;
-            height: auto;
-            display: block;
-        }
-
-        .lipper-award .award-detail {
-            font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 400;
-            font-size: 8pt;
-            line-height: 10.5pt;
-            letter-spacing: 0.01em;
-            color: #000;
-            margin-top: 3mm;
-        }
-
         /* === Content area — x=64mm → 204mm (140mm wide) === */
         .content-area {
             flex: 1;
-            padding: 5.4mm 6mm 4mm 4mm;
+            /* 822 reference: the content column starts at x=65.2mm and the
+               right column at x=137.3mm (measured with `pdftotext -bbox`). */
+            padding: 5.1mm 6mm 4mm 5.2mm;
             min-width: 0;
             overflow: hidden;
         }
 
-        /* === Section headings — 7.5pt Avenir Next Medium, dark navy,
-           per the signed-off balanced spec (the July 2026 875 reference
-           adopts it too: heading caps ~12px at 150 dpi) === */
+        /* === Section headings — 9.5pt Avenir Next Medium, dark navy
+           (875 reference: heading caps ~17px at 150 dpi) === */
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 9pt;
+            font-size: 7.3pt;
+            line-height: 8.8pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
@@ -301,33 +300,37 @@
         .section-subtitle {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 9pt;
+            font-size: 7.4pt;
+            line-height: 8.9pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin: -0.5mm 0 0.9mm 0;
+            margin: -0.5mm 0 2.1mm 0;
         }
 
         /* === Two-column layout === */
         .two-col {
             display: flex;
-            gap: 6mm;
-            margin-bottom: 4.2mm;
+            gap: 5.1mm;
+            margin-bottom: 3mm;
         }
 
         .two-col .col-left { flex: 1; min-width: 0; }
         .two-col .col-right { flex: 1; min-width: 0; }
 
         /* === Asset allocation bars === */
+        /* 822 reference row pitch is 4.0mm (measured), not the 809 sheet's
+           3.6mm — both bar lists sit on the wider rhythm. */
         .alloc-row {
             display: flex;
             align-items: center;
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 4.5mm;
+            line-height: 4mm;
             color: #000;
         }
+
+        .alloc-row:first-child { margin-top: 0.6mm; }
 
         /* Reference: labels flush left, bars start after the longest label */
         .alloc-label {
@@ -377,7 +380,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 4.5mm;
+            line-height: 4mm;
             color: #000;
         }
 
@@ -436,7 +439,7 @@
             letter-spacing: 0;
             text-transform: uppercase;
             text-align: right;
-            padding: 0.6mm 1.4mm 0.6mm 1.5mm;
+            padding: 0.6mm 1.4mm 0.6mm 0.45mm;
         }
 
         .foord-table th:first-child { text-align: left; }
@@ -447,7 +450,7 @@
             font-weight: 400;
             font-size: 7.5pt;
             line-height: 8.5pt;
-            padding: 0.62mm 1.4mm 0.62mm 1.5mm;
+            padding: 0.62mm 1.4mm 0.62mm 0.45mm;
             text-align: right;
             overflow: hidden;
         }
@@ -496,24 +499,30 @@
         .geo-table .foord-table th:first-child,
         .geo-table .foord-table td:first-child { width: 45.5%; }
         .geo-table .foord-table td { background-color: var(--row-grey-2); }
+        /* 822 reference geo row pitch is 4.1mm */
+        .geo-table .foord-table td,
+        .geo-table .foord-table th {
+            padding-top: 0.42mm;
+            padding-bottom: 0.42mm;
+        }
 
         /* Top 10 — SECURITY 40.1%, ASSET CLASS 28.3% (left), MARKET and
            % OF FUND centred; row backgrounds fade in pairs. */
         .top10-table .foord-table td,
         .top10-table .foord-table th {
-            padding-top: 0.45mm;
-            padding-bottom: 0.45mm;
+            padding-top: 0.44mm;
+            padding-bottom: 0.44mm;
         }
         .top10-table .foord-table td:first-child,
         .top10-table .foord-table th:first-child {
             width: 40.1%;
-            padding-left: 2.1mm;
+            padding-left: 1.05mm;
         }
         .top10-table .foord-table td:nth-child(2),
         .top10-table .foord-table th:nth-child(2) {
             text-align: left;
             width: 28.3%;
-            padding-left: 2.9mm;
+            padding-left: 1.85mm;
         }
         .top10-table .foord-table td:nth-child(3),
         .top10-table .foord-table th:nth-child(3),
@@ -535,12 +544,15 @@
         .top10-table .foord-table tbody tr:nth-child(9) td,
         .top10-table .foord-table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
 
-        .top10-table { margin-bottom: 4.2mm; }
+        /* Reference: the performance heading sits 5.8mm under the top-10 table */
+        .top10-table { margin-bottom: 5.8mm; }
 
-        /* Performance table — column grid measured off the 875 reference
-           (separators at 533/644/760/833/908/982/1056/1130 px @150 dpi):
-           name 18.75%, cash 13.42%, since inception 14.03%, then
-           8.83/9.07/8.95/8.95/8.95 and the remainder for THIS MONTH. */
+        /* Performance table — seven columns on the 822 sheet (name, cash
+           value, since inception, 3 yrs, 1 yr, 6 months, year to date).
+           Widths derived from the reference's right-hand column edges: the
+           five period columns are a uniform 17.9mm on a 138.3mm table, cash
+           value 18mm (wide enough to hold "CASH VALUE²" on one line) and the
+           name column takes the 31mm balance. */
         .perf-table th {
             font-size: 7pt;
             line-height: 8.7pt;
@@ -550,61 +562,76 @@
         }
         .perf-table th:first-child {
             text-align: left;
-            width: 18.75%;
-            padding-left: 1.5mm;
+            width: 22.4%;
+            padding-left: 0.45mm;
         }
-        .perf-table th:nth-child(2) { width: 13.42%; }
-        .perf-table th:nth-child(3) { width: 14.03%; }
-        .perf-table th:nth-child(4) { width: 8.83%; }
-        .perf-table th:nth-child(5) { width: 9.07%; }
-        .perf-table th:nth-child(6) { width: 8.95%; }
-        .perf-table th:nth-child(7) { width: 8.95%; }
-        .perf-table th:nth-child(8) { width: 8.95%; }
+        .perf-table th:nth-child(2) { width: 13%; }
+        .perf-table th:nth-child(3),
+        .perf-table th:nth-child(4),
+        .perf-table th:nth-child(5),
+        .perf-table th:nth-child(6),
+        .perf-table th:nth-child(7) { width: 12.94%; }
         .perf-table td {
             color: #000;
             font-size: 7.5pt;
             line-height: 8pt;
-            padding: 0.45mm 0.5mm;
+            padding: 0.33mm 0.5mm;
         }
-        .perf-table td:first-child { padding-left: 1.5mm; }
-        /* Row greys fade down the table (measured off the 875 reference):
-           Peer group #d4d4d4, comparators #dddddd, euro/sterling rows
-           #e6e6e6, highest/lowest #f0f0f0. */
+        .perf-table td:first-child {
+            padding-left: 0.45mm;
+            white-space: nowrap;
+        }
+        /* Row greys fade down the table (feeder reference): Fund pink,
+           Peer group darkest, comparator rows fading, highest/lowest
+           lightest after the spacer row. */
         .perf-table tbody tr td { background-color: var(--row-grey-1); }
         .perf-table tbody tr:nth-child(1) td { background-color: var(--naartjie-20); }
         .perf-table tbody tr:nth-child(2) td { background-color: var(--row-grey-0); }
+        .perf-table tbody tr:nth-child(4) td,
+        .perf-table tbody tr:nth-child(5) td { background-color: var(--row-grey-2); }
+        .perf-table tbody tr:nth-child(6).empty-row td { background-color: var(--row-grey-3) !important; }
         .perf-table tbody tr:nth-child(7) td,
-        .perf-table tbody tr:nth-child(8) td { background-color: var(--row-grey-2); }
-        .perf-table tbody tr:nth-child(9).empty-row td { background-color: var(--row-grey-3) !important; }
-        .perf-table tbody tr:nth-child(10) td,
-        .perf-table tbody tr:nth-child(11) td { background-color: var(--row-grey-4); }
+        .perf-table tbody tr:nth-child(8) td { background-color: var(--row-grey-4); }
         .perf-table tbody tr td.cell-empty { background-color: var(--white); }
 
-        /* Annualised cost ratio — reference: three equal ~46.4mm columns,
-           headers and values centred */
-        .cost-table .foord-table th:first-child,
-        .cost-table .foord-table td:first-child {
-            width: 33.2%;
-            padding-left: 1.6mm;
+        /* Fee rates — two columns, values left-aligned at the midline;
+           the underlying Foord global fund row renders pink. */
+        .fee-rates-table .foord-table th:first-child,
+        .fee-rates-table .foord-table td:first-child { width: 50%; }
+        .fee-rates-table .foord-table td {
+            text-align: left;
+            padding-top: 0.52mm;
+            padding-bottom: 0.52mm;
         }
-        .cost-table .foord-table th:not(:first-child),
-        .cost-table .foord-table td:not(:first-child) { text-align: center; }
-        .cost-table .foord-table th { font-size: 6pt; }
-        .cost-table .foord-table td {
-            font-size: 7pt;
-            padding-top: 0.92mm;
-            padding-bottom: 0.92mm;
+        .fee-rates-table .foord-table tr.global-funds-header td {
+            background-color: var(--white);
+            padding-left: 0;
         }
-        .cost-table .foord-table tr.total-row td {
-            font-size: 7pt;
+        .fee-rates-table .foord-table tr.sub-item td {
+            background-color: var(--naartjie-20);
+        }
+
+        /* Total investment charge — name column 55%, values centred */
+        .tic-table .foord-table th:first-child,
+        .tic-table .foord-table td:first-child {
+            width: 55%;
+            padding-left: 0.55mm;
+        }
+        .tic-table .foord-table th:not(:first-child),
+        .tic-table .foord-table td:not(:first-child) { text-align: center; }
+        .tic-table .foord-table td {
+            padding-top: 0.61mm;
+            padding-bottom: 0.61mm;
+        }
+        .tic-table .foord-table tr.total-row td {
             font-weight: 500;
-            padding-top: 0.95mm;
-            padding-bottom: 0.95mm;
+            padding-top: 0.64mm;
+            padding-bottom: 0.64mm;
         }
 
         /* === Chart === */
         .chart-wrapper {
-            height: 47mm;
+            height: 43.5mm;
             position: relative;
         }
 
@@ -664,6 +691,17 @@
             line-height: 7.2pt;
             color: var(--dark-navy);
             letter-spacing: 0.01em;
+            /* Hanging indent: wrapped lines align after the superscript */
+            padding-left: 1.8mm;
+            text-indent: -1.8mm;
+        }
+
+        .footnote sup {
+            font-size: 4.5pt;
+            line-height: 0;
+            vertical-align: baseline;
+            position: relative;
+            top: -0.3em;
         }
 
         /* =====================================================
@@ -704,33 +742,87 @@
 
         .info-sidebar-content { padding: 6.3mm 4mm 4mm 9mm; }
 
-        /* Reference: 8.5pt Lato Light on a 9.6pt leading */
+        /* Feeder reference: the SA important-information column runs longer
+           than the international one — 6.5pt Lato Light keeps it on the page. */
         .info-sidebar-content p,
         .important-info-text {
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 300;
-            font-size: 8.5pt;
-            line-height: 9.6pt;
+            font-size: 6.5pt;
+            line-height: 7.23pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin: 0 0 0.7mm 0;
+            margin: 0 0 1.3mm 0;
             text-align: left;
         }
 
-        /* Hyperlinks render gold with an underline (measured #c09000) */
+        /* 822 reference: unlike the Foord-branded 809 sheet, URLs and email
+           addresses set in the same colour as the body copy — no gold, no
+           underline. The markup still routes through `linkify` so an edited
+           value re-renders identically. */
         .ref-link {
-            color: #c09000;
-            text-decoration: underline;
+            color: inherit;
+            text-decoration: none;
         }
 
         .info-sidebar-content p:last-child { margin-bottom: 0; }
+
+        /* 822 reference: the closing "This document is for information
+           purposes only …" disclaimer sets in grey italics, with the issue
+           date returning to the body colour beneath it. */
+        .important-info-text.disclaimer {
+            font-style: italic;
+            color: var(--dark-navy-70);
+        }
+
+        /* === Page 3 — contact details + glossary === */
+        .contact-heading {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 6.25pt;
+            line-height: 8.2pt;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: var(--dark-navy-70);
+            margin: 0 0 5.1mm 0;
+        }
+
+        /* Reference page 3: contact lines run on a 2.75mm pitch with a
+           1.45mm gap between blocks — looser than the page 2 column. */
+        .contact-block { margin-bottom: 2.05mm; }
+        .contact-block:last-child { margin-bottom: 0; }
+
+        .contact-block p { margin: 0; line-height: 7.8pt; }
+
+        .contact-block strong {
+            font-weight: 700;
+            color: var(--dark-navy);
+        }
+
+        /* Reference: 3.3mm line pitch, 4.65mm between entries */
+        .glossary-entry {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 7pt;
+            line-height: 9.35pt;
+            letter-spacing: 0.01em;
+            color: #000;
+            margin: 0 0 1.35mm 0;
+        }
+
+        /* Reference page 3: the glossary column starts 2mm left of the page 2
+           column and its heading sits 0.9mm higher. */
+        .page2-content.page3-content { padding-top: 27mm; padding-left: 3.2mm; }
+        .page2-content.page3-content .page2-heading { margin-bottom: 3mm; }
+
+        .glossary-entry strong { font-weight: 700; }
 
         /* === Page 2 content === */
         .page2-content {
             flex: 1;
             /* ANNUALISED COST RATIO % table header lands at y=31.7mm; the
                main column spans x 65.2mm → 202.9mm (875 reference) */
-            padding: 26.8mm 7.1mm 4mm 5.2mm;
+            padding: 27.9mm 7.1mm 4mm 5.2mm;
             min-width: 0;
             overflow: hidden;
             display: flex;
@@ -739,11 +831,21 @@
 
         .page2-section { margin-bottom: 5.6mm; }
 
+        /* 822 reference: the contributors/detractors label column runs to
+           ~35% of the main column, the names fill the rest. */
+        .contributors-table td:first-child { width: 35%; }
+        /* Block spacing measured off the reference: contributors → policy
+           17.9mm, policy → fee rates 19.1mm, fee rates → TIC 31.7mm. */
+        .contributors-table { margin-bottom: 6.7mm; }
+        .policy-objective-section { margin-bottom: 11mm; }
+        .fee-rates-table { margin-bottom: 7.1mm; }
+        .tic-table { margin-bottom: 5.4mm; }
+
         .page2-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 9pt;
+            font-size: 7.3pt;
+            line-height: 8.8pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
@@ -977,22 +1079,19 @@
                 </div>
             </div>
 
-            <!-- Fund Name Banner (naartjie per the 875 reference) -->
+            <!-- Fund Name Banner — 822 reference carries NO class suffix;
+                 the class prints in the sidebar CLASS row instead. -->
             <div class="fund-banner">
                 @php
                     $fundName = $fund->data['fund']['name'] ?? $fund->name;
-                    if (preg_match('/^(.+?)\s*[-—–]\s*(CLASS\s+[A-Z][0-9]*)$/iu', $fundName, $nameMatches)) {
-                        $mainName = trim($nameMatches[1]);
-                        $classText = mb_strtoupper(trim($nameMatches[2]));
-                    } else {
-                        $mainName = $fundName;
-                        $classText = '';
-                    }
+                    // Strip any "— CLASS X" the record carries so the banner
+                    // reads PRESCIENT FOORD INTERNATIONAL FEEDER FUND alone.
+                    $mainName = preg_replace('/\s*[-—–]\s*CLASS\s+[A-Z][0-9]*$/iu', '', $fundName);
                 @endphp
                 <h1>
-                    <span x-data="editableField('fund.name', '{{ addslashes($fund->data['fund']['name'] ?? $fund->name) }}', 'fundName')"
+                    <span x-data="editableField('fund.name', '{{ addslashes($fund->data['fund']['name'] ?? $fund->name) }}', 'fundNameNoClass')"
                           @click="editMode && startEdit()"
-                          :class="editMode ? 'editable' : ''">{{ mb_strtoupper($mainName) }}@if($classText) <span class="class-suffix">&mdash; {{ $classText }}</span>@endif</span>
+                          :class="editMode ? 'editable' : ''">{{ mb_strtoupper($mainName) }}</span>
                 </h1>
                 <p class="description">
                     <span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')"
@@ -1038,37 +1137,50 @@
                     @if(isset($fund->data['sidebar']))
                         @php
                             $sidebar = $fund->data['sidebar'];
+                            // Prescient feeder sidebar per the published 822
+                            // fact sheets. `foreignAssets` carries the RETURNS
+                            // IN US$ note — the column is unused on feeder
+                            // funds and keeps editable-field saves routed to a
+                            // real column.
                             $labelMap = [
-                                'marketingCommunication' => 'MARKETING COMMUNICATION',
-                                'subInvestmentManager' => 'SUB-INVESTMENT MANAGER',
-                                'monthEndSharePrice' => 'MONTH END SHARE PRICE',
-                                'morningstarCategory' => 'MORNINGSTAR CATEGORY',
-                                'initialInvestmentAmount' => 'INITIAL INVESTMENT AMOUNT',
-                                'totalFundSize' => 'TOTAL FUND SIZE',
-                                'numberOfShares' => 'NUMBER OF SHARES',
-                                'investmentManager' => 'INVESTMENT MANAGER',
+                                // The reference breaks the label after DOCUMENT
+                                'mddHeading' => 'MINIMUM DISCLOSURE DOCUMENT<br>AND GENERAL INVESTOR REPORT',
+                                'shareClass' => 'CLASS',
+                                'domicile' => 'DOMICILE',
                                 'managementCompany' => 'MANAGEMENT COMPANY',
-                                'fundManagers' => 'FUND MANAGERS',
+                                'fundManagers' => 'MASTER FUND MANAGERS',
                                 'inceptionDate' => 'INCEPTION DATE',
                                 'baseCurrency' => 'BASE CURRENCY',
                                 'equityIndicator' => 'EQUITY INDICATOR',
-                                'typeOfShares' => 'TYPE OF SHARES',
+                                'category' => 'CATEGORY',
+                                'benchmark' => 'BENCHMARK',
+                                'minimums' => 'MINIMUM LUMP SUM / MONTHLY',
+                                'portfolioSize' => 'PORTFOLIO SIZE',
+                                'unitPrice' => 'UNIT PRICE',
+                                'numberOfUnits' => 'NUMBER OF UNITS',
+                                'lastDistributions' => 'DISTRIBUTIONS',
+                                'incomeCharacteristics' => 'INCOME CHARACTERISTICS',
+                                'portfolioOrientation' => 'PORTFOLIO ORIENTATION',
+                                'significantRestrictions' => 'SIGNIFICANT RESTRICTIONS',
+                                'riskIndicator' => 'RISK INDICATOR',
+                                'riskIndicatorDefinition' => 'RISK INDICATOR DEFINITION',
                                 'timeHorizon' => 'TIME HORIZON',
-                                'domicile' => 'DOMICILE',
-                                'depository' => 'DEPOSITORY',
+                                'foreignAssets' => 'RETURNS IN US$',
                                 'isinNumber' => 'ISIN NUMBER',
-                                'fees' => 'FEES',
-                                'lipperAward' => 'REFINITIV LIPPER FUND AWARDS',
                             ];
 
-                            // Define display order to match PDF
+                            // Display order per the 822 reference sidebar
                             $displayOrder = [
-                                'marketingCommunication', 'domicile', 'managementCompany', 'depository',
-                                'investmentManager', 'subInvestmentManager', 'fundManagers',
+                                'mddHeading', 'shareClass', 'domicile',
+                                'managementCompany', 'fundManagers',
                                 'inceptionDate', 'baseCurrency', 'equityIndicator',
-                                'morningstarCategory', 'typeOfShares', 'initialInvestmentAmount',
-                                'totalFundSize', 'monthEndSharePrice', 'numberOfShares',
-                                'timeHorizon', 'fees', 'isinNumber', 'lipperAward'
+                                'category', 'benchmark', 'minimums',
+                                'portfolioSize', 'unitPrice',
+                                'numberOfUnits', 'lastDistributions',
+                                'incomeCharacteristics', 'portfolioOrientation',
+                                'significantRestrictions', 'riskIndicator',
+                                'riskIndicatorDefinition',
+                                'timeHorizon', 'foreignAssets', 'isinNumber',
                             ];
                         @endphp
 
@@ -1079,22 +1191,11 @@
                                     $label = $labelMap[$key] ?? strtoupper(implode(' ', preg_split('/(?=[A-Z])/', $key, -1, PREG_SPLIT_NO_EMPTY)));
                                 @endphp
 
-                                @if ($key === 'lipperAward' && is_array($value))
-                                    {{-- Reference: the Refinitiv Lipper Fund Awards logo
-                                         (extracted from the published 875 fact sheet),
-                                         left-aligned with the award detail lines below. --}}
-                                    <div class="lipper-award">
-                                        <img src="{{ asset('images/lipper-award.png') }}" alt="Refinitiv Lipper Fund Awards {{ $value['year'] ?? '' }} Winner {{ $value['region'] ?? '' }}" class="award-logo">
-                                        <div class="award-detail">
-                                            Refinitiv Lipper Awards {{ $value['year'] ?? '' }}<br>
-                                            {{ $value['category'] ?? '' }}<br>
-                                            {{ $value['type'] ?? '' }}
-                                        </div>
-                                    </div>
-                                @elseif ($key === 'equityIndicator' && is_array($value))
+                                @if ($key === 'equityIndicator' && is_array($value))
                                     <div class="sidebar-section">
                                         @php
-                                            $filledDots = $value['filled'] ?? 7;
+                                            /* 822 reference: six of ten dots filled */
+                                            $filledDots = $value['filled'] ?? 6;
                                             $totalDots = $value['total'] ?? 10;
                                         @endphp
                                         {{-- Heading + dots share one line; SVG circles stay
@@ -1114,10 +1215,11 @@
                                                   x-text="value"></span>
                                         </p>
                                     </div>
-                                @elseif ($key === 'marketingCommunication')
-                                    {{-- Reference: larger bold black label with a clear gap below --}}
-                                    <div class="sidebar-section" style="margin-bottom: 2.6mm;">
-                                        <h3 style="font-size: 7pt; line-height: 8.2pt; font-weight: 700;">{{ $label }}</h3>
+                                @elseif ($key === 'mddHeading')
+                                    {{-- 822 reference: two-line heading, no value,
+                                         with a clear gap before the CLASS row --}}
+                                    <div class="sidebar-section mdd-heading">
+                                        <h3>{!! $label !!}</h3>
                                     </div>
                                 @elseif (!is_array($value))
                                     <div class="sidebar-section">
@@ -1207,10 +1309,19 @@
                             @endif
 
                             <!-- Equity Sector Allocation (the importer-maintained
-                                 sector_allocation column, as on show-feeder) -->
+                                 sector_allocation JSON; bars only, no change
+                                 arrows on the published feeder sheet) -->
                             @if(!empty($fund->data['mainContent']['sectorAllocation']['sectors']))
-                                <div style="margin-bottom: 2mm;">
-                                    <h3 class="section-heading">EQUITY SECTOR ALLOCATION %</h3>
+                                {{-- 822 reference: EQUITY SECTOR ALLOCATION sits
+                                     6.1mm lower than on the 809 sheet — its first
+                                     bar lands at y=115.9mm. --}}
+                                <div style="margin-top: 9.2mm; margin-bottom: 2mm;">
+                                    <h3 class="section-heading">
+                                        <span x-data="editableField('mainContent.sectorAllocation.title', '{{ addslashes($fund->data['mainContent']['sectorAllocation']['title'] ?? 'EQUITY SECTOR ALLOCATION %') }}')"
+                                              @click="editMode && startEdit()"
+                                              :class="editMode ? 'editable' : ''"
+                                              x-text="value"></span>
+                                    </h3>
                                     @php
                                         $sectorMax = max(1.0, ...array_map(
                                             fn ($r) => (float) ($r['value'] ?? 0),
@@ -1253,7 +1364,7 @@
                                     $geoTotals = $fund->data['mainContent']['assetAllocation']['geographicTotals'] ?? [];
                                     $geoFmt = fn ($v) => (is_numeric($v) && (float) $v == 0.0) ? '-' : $v;
                                 @endphp
-                                <div class="geo-table" style="margin-bottom: 2mm;">
+                                <div class="geo-table" style="margin-bottom: 3.4mm;">
                                     <h3 class="section-heading">GEOGRAPHIC EXPOSURE %</h3>
                                     <p class="section-subtitle">(Gross exposure)</p>
                                     <div class="table-wrapper">
@@ -1302,7 +1413,7 @@
                                               x-text="value"></span>
                                     </h3>
                                     <div class="chart-wrapper">
-                                        <div class="chart-ytitle">Cash Value<sup>2</sup> ($&rsquo;000)</div>
+                                        <div class="chart-ytitle">Cash Value<sup>2</sup> (R&rsquo;000)</div>
                                         <canvas id="performanceChart"></canvas>
                                     </div>
                                     {{-- Legend colours per the 875 reference: Fund red, US inflation
@@ -1389,30 +1500,27 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {{-- International display rules (875 reference, mirrored in
-                                             pdf-international.blade.php): the import writes raw row
-                                             names (Fund, Benchmark, Comparator 2…6, Fund highest/
-                                             lowest); the fact sheet displays them renamed with
-                                             footnote superscripts, ordered Fund/Peer group/US
-                                             inflation/World equities/World bonds, spacer, euro and
-                                             sterling fund rows, spacer, highest/lowest. --}}
+                                        {{-- Feeder display rules (809 reference): the import writes
+                                             raw row names (Fund, Benchmark, Comparator 2…4, Fund
+                                             highest/lowest); the fact sheet displays them renamed
+                                             with footnote superscripts, ordered Fund/Peer group/US
+                                             inflation/World equities/World bonds, spacer,
+                                             highest/lowest. --}}
                                         @php
                                             $perfRowsRaw = $fund->data['mainContent']['performanceTable']['rows'];
                                             $perfColKeysIntl = $fund->data['mainContent']['performanceTable']['columnKeys'] ?? [];
                                             $intlNames = [
                                                 'fund' => 'Fund <sup>3</sup>',
-                                                'benchmark' => 'Peer group <sup>4</sup>',
-                                                'comparator 2' => 'US inflation <sup>5</sup>',
+                                                'benchmark' => 'Peer group <sup>3,4</sup>',
+                                                // 822 reference capitalises Inflation here
+                                                'comparator 2' => 'US Inflation <sup>5</sup>',
                                                 'comparator 3' => 'World equities <sup>6</sup>',
                                                 'comparator 4' => 'World bonds <sup>7</sup>',
-                                                'comparator 5' => 'Fund in euros <sup>3</sup>',
-                                                'comparator 6' => 'Fund in sterling <sup>3</sup>',
                                                 'fund highest' => 'Fund highest <sup>3,8</sup>',
                                                 'fund lowest' => 'Fund lowest <sup>3,8</sup>',
                                             ];
                                             $intlOrder = [
                                                 ['fund', 'benchmark', 'comparator 2', 'comparator 3', 'comparator 4'],
-                                                ['comparator 5', 'comparator 6'],
                                                 ['fund highest', 'fund lowest'],
                                             ];
                                             $rowsByKey = [];
@@ -1449,8 +1557,20 @@
                                 </table>
                             </div>
 
-                            {{-- Footnotes render on page 2 under NOTES (875 reference);
-                                 see the page2Content.notes section below. --}}
+                            {{-- Feeder reference: footnotes sit at the foot of
+                                 page 1, directly below the performance table. --}}
+                            @if(!empty($fund->data['mainContent']['performanceTable']['footnotes']))
+                                <div style="margin-top: 0.8mm;">
+                                    @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $note)
+                                        <p class="footnote">
+                                            <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($note) !!}')"
+                                                  @click="editMode && startEdit()"
+                                                  :class="editMode ? 'editable' : ''"
+                                                  x-html="value"></span>
+                                        </p>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -1473,8 +1593,14 @@
                             </h2>
                         </div>
                         <div class="info-sidebar-content">
+                            @php
+                                // 822 reference: the closing "This document is
+                                // for information purposes only …" paragraph
+                                // sets in grey italics.
+                                $lastInfoIndex = array_key_last($fund->data['importantInfo']['paragraphs']);
+                            @endphp
                             @foreach ($fund->data['importantInfo']['paragraphs'] as $index => $paragraph)
-                                <p class="important-info-text">
+                                <p class="important-info-text {{ $index === $lastInfoIndex ? 'disclaimer' : '' }}">
                                     <span x-data="editableField('importantInfo.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}', 'linkify')"
                                           @click="editMode && startEdit()"
                                           :class="editMode ? 'editable' : ''">{!! $linkify($paragraph) !!}</span>
@@ -1492,11 +1618,109 @@
 
                 <!-- Right Content -->
                 <div class="page2-content">
-                    <!-- Annualised Cost Ratio -->
-                    @if(isset($fund->data['fees']['annualisedCostRatio']))
-                        <div class="page2-section cost-table">
+                    <!-- Contributors / Detractors -->
+                    @if(!empty($fund->data['page2Content']['contributorsDetractors']['rows']))
+                        <div class="page2-section contributors-table">
                             <h3 class="page2-heading">
-                                <span x-data="editableField('fees.annualisedCostRatio.title', '{{ $fund->data['fees']['annualisedCostRatio']['title'] }}')"
+                                <span x-data="editableField('page2Content.contributorsDetractors.title', '{{ $fund->data['page2Content']['contributorsDetractors']['title'] ?? 'CONTRIBUTORS/DETRACTORS' }}')"
+                                      @click="editMode && startEdit()"
+                                      :class="editMode ? 'editable' : ''"
+                                      x-text="value"></span>
+                            </h3>
+                            <div class="table-wrapper">
+                                <table class="foord-table">
+                                    <tbody>
+                                        @foreach ($fund->data['page2Content']['contributorsDetractors']['rows'] as $rowIndex => $row)
+                                            <tr>
+                                                <td>{{ $row['name'] ?? '' }}</td>
+                                                <td>
+                                                    <span x-data="editableField('page2Content.contributorsDetractors.rows.{{ $rowIndex }}.value', '{{ addslashes($row['value'] ?? '') }}')"
+                                                          @click="editMode && startEdit()"
+                                                          :class="editMode ? 'editable' : ''"
+                                                          x-text="value"></span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Policy Objective -->
+                    @if(!empty($fund->data['page2Content']['policyObjective']))
+                        <div class="page2-section policy-objective-section">
+                            <h3 class="page2-heading">
+                                <span x-data="editableField('page2Content.policyObjective.title', '{{ $fund->data['page2Content']['policyObjective']['title'] ?? 'POLICY OBJECTIVE' }}')"
+                                      @click="editMode && startEdit()"
+                                      :class="editMode ? 'editable' : ''"
+                                      x-text="value"></span>
+                            </h3>
+                            <p class="page2-body">
+                                <span x-data="editableField('page2Content.policyObjective.text', '{{ addslashes($fund->data['page2Content']['policyObjective']['text'] ?? '') }}')"
+                                      @click="editMode && startEdit()"
+                                      :class="editMode ? 'editable' : ''"
+                                      x-text="value"></span>
+                            </p>
+                        </div>
+                    @endif
+
+                    <!-- Fee Rates -->
+                    @if(isset($fund->data['fees']['feeRates']))
+                        <div class="page2-section fee-rates-table">
+                            <h3 class="page2-heading">
+                                <span x-data="editableField('fees.feeRates.title', '{{ $fund->data['fees']['feeRates']['title'] ?? 'FEE RATES' }}')"
+                                      @click="editMode && startEdit()"
+                                      :class="editMode ? 'editable' : ''"
+                                      x-text="value"></span>
+                            </h3>
+                            <div class="table-wrapper">
+                                <table class="foord-table">
+                                    <tbody>
+                                        @foreach ($fund->data['fees']['feeRates']['rates'] as $rowIndex => $rate)
+                                            <tr>
+                                                <td>
+                                                    <span x-data="editableField('fees.feeRates.rates.{{ $rowIndex }}.name', '{{ addslashes($rate['name']) }}')"
+                                                          @click="editMode && startEdit()"
+                                                          :class="editMode ? 'editable' : ''"
+                                                          x-text="value"></span>
+                                                </td>
+                                                <td>
+                                                    <span x-data="editableField('fees.feeRates.rates.{{ $rowIndex }}.value', '{{ addslashes($rate['value']) }}')"
+                                                          @click="editMode && startEdit()"
+                                                          :class="editMode ? 'editable' : ''"
+                                                          x-text="value"></span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                        @if(isset($fund->data['fees']['feeRates']['globalFunds']))
+                                            <tr class="global-funds-header">
+                                                <td colspan="2">{{ $fund->data['fees']['feeRates']['globalFunds']['title'] ?? 'Foord global funds:' }}</td>
+                                            </tr>
+                                            @foreach ($fund->data['fees']['feeRates']['globalFunds']['funds'] as $rowIndex => $gfund)
+                                                @php $gName = ltrim($gfund['name'], "- \t"); @endphp
+                                                <tr class="sub-item">
+                                                    <td>- {{ $gName }}</td>
+                                                    <td>
+                                                        <span x-data="editableField('fees.feeRates.globalFunds.funds.{{ $rowIndex }}.value', '{{ addslashes($gfund['value']) }}')"
+                                                              @click="editMode && startEdit()"
+                                                              :class="editMode ? 'editable' : ''"
+                                                              x-text="value"></span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Total Investment Charge -->
+                    @if(isset($fund->data['fees']['totalInvestmentCharge']))
+                        <div class="page2-section tic-table">
+                            <h3 class="page2-heading">
+                                <span x-data="editableField('fees.totalInvestmentCharge.title', '{{ $fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %' }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
                                       x-text="value"></span>
@@ -1505,44 +1729,31 @@
                                 <table class="foord-table">
                                     <thead>
                                         <tr>
-                                            @foreach ($fund->data['fees']['annualisedCostRatio']['headers'] as $header)
+                                            @foreach ($fund->data['fees']['totalInvestmentCharge']['headers'] ?? ['', '12 MONTHS', '36 MONTHS'] as $header)
                                                 <th>{{ $header }}</th>
                                             @endforeach
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($fund->data['fees']['annualisedCostRatio']['rows'] as $rowIndex => $row)
+                                        @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] ?? [] as $rowIndex => $row)
                                             <tr>
-                                                <td>
-                                                    <span x-data="editableField('fees.annualisedCostRatio.rows.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.annualisedCostRatio.rows.{{ $rowIndex }}.12m', '{{ $row['12m'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
-                                                <td>
-                                                    <span x-data="editableField('fees.annualisedCostRatio.rows.{{ $rowIndex }}.36m', '{{ $row['36m'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </td>
+                                                <td>{{ $row['name'] }}</td>
+                                                <td>{{ $fmt($row['12m'] ?? '', 2) }}</td>
+                                                <td>{{ $fmt($row['36m'] ?? '', 2) }}</td>
                                             </tr>
                                         @endforeach
-                                        <tr class="total-row">
-                                            <td>{{ $fund->data['fees']['annualisedCostRatio']['total']['name'] }}</td>
-                                            <td>{{ $fund->data['fees']['annualisedCostRatio']['total']['12m'] }}</td>
-                                            <td>{{ $fund->data['fees']['annualisedCostRatio']['total']['36m'] }}</td>
-                                        </tr>
+                                        @if(isset($fund->data['fees']['totalInvestmentCharge']['total']))
+                                            <tr class="total-row">
+                                                <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] ?? 'Total investment charge' }}</td>
+                                                <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? '', 2) }}</td>
+                                                <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? '', 2) }}</td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
-                            <p class="page2-body" style="margin-top: 5px;">
-                                <span x-data="editableField('fees.annualisedCostRatio.description', '{{ addslashes($fund->data['fees']['annualisedCostRatio']['description'] ?? '') }}')"
+                            <p class="page2-body" style="margin-top: 2.2mm;">
+                                <span x-data="editableField('fees.totalInvestmentCharge.description', '{{ addslashes($fund->data['fees']['totalInvestmentCharge']['description'] ?? '') }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
                                       x-text="value"></span>
@@ -1550,114 +1761,71 @@
                         </div>
                     @endif
 
-                    <!-- Share Pricing and Transactions -->
-                    @if(isset($fund->data['page2Content']['sharePricing']))
+                    <!-- Investing Offshore -->
+                    @if(isset($fund->data['page2Content']['investingOffshore']))
                         <div class="page2-section">
                             <h3 class="page2-heading">
-                                <span x-data="editableField('page2Content.sharePricing.title', '{{ $fund->data['page2Content']['sharePricing']['title'] }}')"
+                                <span x-data="editableField('page2Content.investingOffshore.title', '{{ $fund->data['page2Content']['investingOffshore']['title'] ?? 'INVESTING OFFSHORE' }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
                                       x-text="value"></span>
                             </h3>
                             <p class="page2-body">
-                                <span x-data="editableField('page2Content.sharePricing.text', '{{ addslashes($fund->data['page2Content']['sharePricing']['text']) }}', 'linkify')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''">{!! $linkify($fund->data['page2Content']['sharePricing']['text']) !!}</span>
-                            </p>
-                        </div>
-                    @endif
-
-                    <!-- More About the Fund -->
-                    @if(isset($fund->data['page2Content']['moreAboutFund']))
-                        <div class="page2-section">
-                            <h3 class="page2-heading">
-                                <span x-data="editableField('page2Content.moreAboutFund.title', '{{ $fund->data['page2Content']['moreAboutFund']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            @foreach ($fund->data['page2Content']['moreAboutFund']['paragraphs'] as $index => $paragraph)
-                                <p class="page2-body" style="margin-bottom: 2.2mm;">
-                                    <span x-data="editableField('page2Content.moreAboutFund.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}', 'linkify')"
-                                          @click="editMode && startEdit()"
-                                          :class="editMode ? 'editable' : ''">{!! $linkify($paragraph) !!}</span>
-                                </p>
-                            @endforeach
-                        </div>
-                    @endif
-
-                    <!-- Refinitiv Lipper Fund Award -->
-                    @if(isset($fund->data['page2Content']['lipperAward']))
-                        <div class="page2-section">
-                            <h3 class="page2-heading">
-                                <span x-data="editableField('page2Content.lipperAward.title', '{{ $fund->data['page2Content']['lipperAward']['title'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </h3>
-                            <p class="page2-body">
-                                <span x-data="editableField('page2Content.lipperAward.text', '{{ addslashes($fund->data['page2Content']['lipperAward']['text']) }}', 'linkify')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''">{!! $linkify($fund->data['page2Content']['lipperAward']['text']) !!}</span>
-                            </p>
-                        </div>
-                    @endif
-
-                    <!-- Notes (the performance-table footnotes, displayed on
-                         page 2 per the 875 reference) -->
-                    @if(!empty($fund->data['mainContent']['performanceTable']['footnotes']))
-                        <div class="page2-section">
-                            <h3 class="page2-heading">NOTES</h3>
-                            <div>
-                                @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $note)
-                                    <p class="page2-note">
-                                        <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($note) !!}')"
-                                              @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-html="value"></span>
-                                    </p>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- Footer -->
-                    @if(isset($fund->data['footer']))
-                        <div class="footer-divider">
-                            <p class="footer-info">
-                                <span x-data="editableField('footer.info', '{{ addslashes($fund->data['footer']['info']) }}')"
+                                <span x-data="editableField('page2Content.investingOffshore.text', '{{ addslashes($fund->data['page2Content']['investingOffshore']['text'] ?? '') }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
                                       x-text="value"></span>
                             </p>
-                            <p class="footer-info">
-                                <span x-data="editableField('footer.freeOfCharge', '{{ $fund->data['footer']['freeOfCharge'] }}')"
-                                      @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
-                            </p>
-                            <div class="footer-contact">
-                                <p>T. <span x-data="editableField('footer.contact.phone', '{{ $fund->data['footer']['contact']['phone'] }}')"
-                                           @click="editMode && startEdit()"
-                                           :class="editMode ? 'editable' : ''"
-                                           x-text="value"></span></p>
-                                <p>E. <span x-data="editableField('footer.contact.email', '{{ $fund->data['footer']['contact']['email'] }}')"
-                                           @click="editMode && startEdit()"
-                                           :class="editMode ? 'editable' : ''"
-                                           x-text="value"></span></p>
-                                <p><span x-data="editableField('footer.contact.website', '{{ $fund->data['footer']['contact']['website'] }}')"
-                                         @click="editMode && startEdit()"
-                                         :class="editMode ? 'editable' : ''"
-                                         x-text="value"></span></p>
-                                {{-- Red Foord acorn leaf — same asset as the signed-off
-                                     balanced/flexible templates --}}
-                                <img src="{{ asset('images/leaf.png') }}" alt="" class="footer-leaf">
-                            </div>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
+
+        <!-- ==================== PAGE 3 ==================== -->
+        {{-- 822 reference: contact details beside the glossary summary. Both
+             blocks are static per fund and live in `page2_content`. --}}
+        @if(!empty($fund->data['page2Content']['contactDetails']) || !empty($fund->data['page2Content']['glossary']))
+        <div class="page page-break">
+            <div class="main-body" style="min-height: 297mm;">
+                <!-- Left Sidebar - Contact Details -->
+                <div class="info-sidebar">
+                    {{-- The navy header box repeats from page 2 --}}
+                    <div class="important-info-header">
+                        <h2>{{ $fund->data['importantInfo']['title'] ?? '' }}</h2>
+                    </div>
+                    <div class="info-sidebar-content">
+                        <h3 class="contact-heading">{{ $fund->data['page2Content']['contactDetails']['title'] ?? 'CONTACT DETAILS' }}</h3>
+                        @foreach ($fund->data['page2Content']['contactDetails']['blocks'] ?? [] as $blockIndex => $block)
+                            <div class="contact-block">
+                                @foreach ($block as $lineIndex => $line)
+                                    <p class="important-info-text">
+                                        @if(!empty($line['label']))<strong>{{ $line['label'] }}:</strong> @endif{!! $linkify($line['value'] ?? '') !!}
+                                    </p>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Right Content - Glossary -->
+                <div class="page2-content page3-content">
+                    <div class="page2-section">
+                        <h3 class="page2-heading">{{ $fund->data['page2Content']['glossary']['title'] ?? 'GLOSSARY SUMMARY' }}</h3>
+                        @foreach ($fund->data['page2Content']['glossary']['entries'] ?? [] as $entry)
+                            <p class="glossary-entry">
+                                @if(!empty($entry['term']))
+                                    {{-- The reference leaves "Liquidity risk:" unbolded --}}
+                                    @if(($entry['bold'] ?? true))<strong>{{ $entry['term'] }}</strong>@else{{ $entry['term'] }}@endif
+                                @endif
+                                {{ $entry['definition'] ?? '' }}
+                            </p>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- ==================== JAVASCRIPT ==================== -->
@@ -1678,10 +1846,10 @@
         // Display formatters — keep the styled rendering (e.g. the smaller
         // "— CLASS R" suffix) after Alpine re-renders an edited value.
         const editableFormatters = {
-            fundName(value) {
-                const m = String(value).match(/^(.+?)\s*[—–-]\s*(CLASS\s+[A-Z][0-9]*)$/i);
-                if (!m) return String(value).toUpperCase();
-                return m[1].toUpperCase() + ' <span class="class-suffix">&mdash; ' + m[2].toUpperCase() + '</span>';
+            // 822 banner drops any "— CLASS X" suffix (the class prints in
+            // the sidebar CLASS row).
+            fundNameNoClass(value) {
+                return String(value).replace(/\s*[—–-]\s*CLASS\s+[A-Z][0-9]*$/i, '').toUpperCase();
             },
             headingSuffix(value) {
                 return String(value).replace(/\s*\(([^)]+)\)/, ' <span class="title-suffix">($1)</span>');
@@ -1806,7 +1974,7 @@
                     const lastPoint = meta.data[meta.data.length - 1];
                     if (!lastPoint) return;
                     const lastValue = dataset.data[dataset.data.length - 1];
-                    const label = '$ ' + Math.round(lastValue).toLocaleString();
+                    const label = 'R ' + Math.round(lastValue).toLocaleString();
                     ctx.save();
                     ctx.font = 'bold 7px Avenir Next, Lato, sans-serif';
                     ctx.fillStyle = dataset.borderColor;
@@ -1880,10 +2048,12 @@
                             color: '#535353',
                             maxRotation: 0,
                             autoSkip: false,
-                            // Reference ticks: Mar 97, Mar 01, … — every 48
-                            // months anchored on the first data point.
+                            // 822 reference ticks: Feb 22, Nov 22, Aug 23,
+                            // May 24, Feb 25, Nov 25 — every 9 months anchored
+                            // on the first data point (the 822 series opens at
+                            // the Feb 2022 inception, with no baseline row).
                             callback: function (value, index) {
-                                return index % 48 === 0 ? formatChartDate(this.getLabelForValue(value)) : null;
+                                return index % 9 === 0 ? formatChartDate(this.getLabelForValue(value)) : null;
                             }
                         }
                     },
@@ -1899,7 +2069,11 @@
                             color: '#535353',
                             callback: (value) => value === 100 ? '100' : null
                         },
-                        min: 100,
+                        // The 822 series dips below the 100 baseline (world
+                        // bonds bottom out at 88.8 and end at R 99), so the
+                        // floor sits under the data rather than on 100 —
+                        // clamping at 100 would clip the grey line.
+                        min: 85,
                         beginAtZero: false
                     }
                 },

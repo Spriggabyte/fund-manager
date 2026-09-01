@@ -9,6 +9,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fund extends Model
 {
+    /**
+     * Fact sheets that share the Global Equity (Luxembourg) sidebar and page
+     * layout: 877, the Foord-Hassen Shariah Global Equity Fund (878), the
+     * Australian feeder sheet (880), and the Foord Asia ex-Japan Fund (879).
+     */
+    public const GLOBAL_EQUITY_TEMPLATES = ['show-global-equity', 'show-hassen-shariah', 'show-australian-feeder', 'show-asia-ex-japan'];
+
+    /**
+     * The Australian feeder sheet (880). It shares the Global Equity sidebar
+     * aliases above but labels the price and unit rows for a unit trust, and
+     * carries its own responsible-entity / custodian / APIR rows.
+     */
+    public const AUSTRALIAN_FEEDER_TEMPLATE = 'show-australian-feeder';
+
     use HasFactory;
 
     protected $fillable = [
@@ -28,11 +42,18 @@ class Fund extends Model
         'category',
         'domicile',
         'minimums',
+        // Global Equity (Luxembourg) sidebar: SUBSEQUENT SUBSCRIPTION AMOUNT
+        // (`minimums` holds the MINIMUM SUBSCRIPTION AMOUNT)
+        'subsequent_subscription_amount',
         'benchmark',
         'unit_price',
         'isin_number',
         'sedol',
         'risk_of_loss',
+        // Prescient-branded feeder sidebar (822): RISK INDICATOR + the
+        // RISK INDICATOR DEFINITION paragraph beneath it
+        'risk_indicator',
+        'risk_indicator_definition',
         'time_horizon',
         'base_currency',
         'fund_managers',
@@ -43,6 +64,13 @@ class Fund extends Model
         'equity_indicator_description',
         'last_distributions',
         'management_company',
+        'shariah_supervisory_board',
+        // Australian feeder sidebar (880)
+        'responsible_entity',
+        'custodian',
+        'distribution_partner',
+        'fund_features',
+        'apir_arsn',
         'income_distributions',
         'portfolio_orientation',
         'income_characteristics',
@@ -53,6 +81,9 @@ class Fund extends Model
         'sub_investment_manager',
         'type_of_shares',
         'fees_summary',
+        // International Trust (Guernsey) sidebar prose
+        'master_fund',
+        'master_fund_returns',
         'lipper_award',
         'page2_content',
         // Footer
@@ -106,6 +137,8 @@ class Fund extends Model
         'sidebar.isinNumber' => 'isin_number',
         'sidebar.sedol' => 'sedol',
         'sidebar.riskOfLoss' => 'risk_of_loss',
+        'sidebar.riskIndicator' => 'risk_indicator',
+        'sidebar.riskIndicatorDefinition' => 'risk_indicator_definition',
         'sidebar.timeHorizon' => 'time_horizon',
         'sidebar.baseCurrency' => 'base_currency',
         'sidebar.fundManagers' => 'fund_managers',
@@ -116,6 +149,12 @@ class Fund extends Model
         'sidebar.equityIndicator.description' => 'equity_indicator_description',
         'sidebar.lastDistributions' => 'last_distributions',
         'sidebar.managementCompany' => 'management_company',
+        'sidebar.shariahSupervisoryBoard' => 'shariah_supervisory_board',
+        'sidebar.responsibleEntity' => 'responsible_entity',
+        'sidebar.custodian' => 'custodian',
+        'sidebar.distributionPartner' => 'distribution_partner',
+        'sidebar.fundFeatures' => 'fund_features',
+        'sidebar.apirArsn' => 'apir_arsn',
         'sidebar.incomeDistributions' => 'income_distributions',
         'sidebar.portfolioOrientation' => 'portfolio_orientation',
         'sidebar.incomeCharacteristics' => 'income_characteristics',
@@ -125,6 +164,8 @@ class Fund extends Model
         'sidebar.subInvestmentManager' => 'sub_investment_manager',
         'sidebar.typeOfShares' => 'type_of_shares',
         'sidebar.fees' => 'fees_summary',
+        'sidebar.masterFund' => 'master_fund',
+        'sidebar.masterFundReturns' => 'master_fund_returns',
         // Domestic-only funds label the minimums column NEW INVESTMENTS
         // ("At the manager's discretion" — the 820 fund is closed to
         // lump-sum minimums).
@@ -135,6 +176,9 @@ class Fund extends Model
         'sidebar.totalFundSize' => 'portfolio_size',
         'sidebar.monthEndSharePrice' => 'unit_price',
         'sidebar.numberOfShares' => 'number_of_units',
+        // Global Equity (Luxembourg) subscription rows (876 reference)
+        'sidebar.minimumSubscriptionAmount' => 'minimums',
+        'sidebar.subsequentSubscriptionAmount' => 'subsequent_subscription_amount',
         'footer.info' => 'footer_info',
         'footer.contact.email' => 'footer_email',
         'footer.contact.phone' => 'footer_phone',
@@ -186,6 +230,8 @@ class Fund extends Model
                 'isinNumber' => $this->isin_number,
                 'sedol' => $this->sedol,
                 'riskOfLoss' => $this->risk_of_loss,
+                'riskIndicator' => $this->risk_indicator,
+                'riskIndicatorDefinition' => $this->risk_indicator_definition,
                 'timeHorizon' => $this->time_horizon,
                 'baseCurrency' => $this->base_currency,
                 'fundManagers' => $this->fund_managers,
@@ -202,19 +248,43 @@ class Fund extends Model
                 // International (Luxembourg) fact-sheet sidebar. The aliases
                 // re-expose existing columns under the keys the international
                 // templates label differently (MORNINGSTAR CATEGORY, …).
-                'marketingCommunication' => ($this->template === 'show-international') ? true : null,
+                'marketingCommunication' => in_array($this->template, array_merge(['show-international', 'show-international-trust'], self::GLOBAL_EQUITY_TEMPLATES), true) ? true : null,
+                // Prescient feeder sheets open the sidebar with the two-line
+                // MINIMUM DISCLOSURE DOCUMENT AND GENERAL INVESTOR REPORT label
+                'mddHeading' => in_array($this->template, ['show-prescient-feeder', 'show-prescient-global-equity'], true) ? true : null,
+                // Global Equity (Luxembourg): SHARE CLASS heading under the
+                // marketing-communication label (876 reference)
+                // The Prescient sheets label the same row CLASS and print the
+                // code beneath it
+                'shareClass' => in_array($this->template, array_merge(self::GLOBAL_EQUITY_TEMPLATES, ['show-prescient-feeder', 'show-prescient-global-equity']), true) ? $this->class_code : null,
                 'depository' => $this->depository,
+                // 878 only: SHARIAH SUPERVISORY BOARD sits under MANAGEMENT COMPANY.
+                'shariahSupervisoryBoard' => $this->shariah_supervisory_board,
+                // 880 only: the Australian responsible entity, custodian and
+                // distribution partner, the FUND FEATURES list and the
+                // APIR / ARSN codes beneath the ISIN.
+                'responsibleEntity' => $this->responsible_entity,
+                'custodian' => $this->custodian,
+                'distributionPartner' => $this->distribution_partner,
+                'fundFeatures' => $this->fund_features,
+                'apirArsn' => $this->apir_arsn,
                 'investmentManager' => $this->investment_manager,
                 'subInvestmentManager' => $this->sub_investment_manager,
                 'typeOfShares' => $this->type_of_shares,
                 'fees' => $this->fees_summary,
+                'masterFund' => $this->master_fund,
+                'masterFundReturns' => $this->master_fund_returns,
                 'lipperAward' => $this->lipper_award,
                 'newInvestments' => ($this->template === 'show-domestic') ? $this->minimums : null,
-                'morningstarCategory' => ($this->template === 'show-international') ? $this->category : null,
+                'morningstarCategory' => in_array($this->template, array_merge(['show-international', 'show-international-trust'], self::GLOBAL_EQUITY_TEMPLATES), true) ? $this->category : null,
                 'initialInvestmentAmount' => ($this->template === 'show-international') ? $this->minimums : null,
-                'totalFundSize' => ($this->template === 'show-international') ? $this->portfolio_size : null,
-                'monthEndSharePrice' => ($this->template === 'show-international') ? $this->unit_price : null,
-                'numberOfShares' => ($this->template === 'show-international') ? $this->number_of_units : null,
+                'totalFundSize' => in_array($this->template, array_merge(['show-international', 'show-international-trust'], self::GLOBAL_EQUITY_TEMPLATES), true) ? $this->portfolio_size : null,
+                'monthEndSharePrice' => in_array($this->template, array_merge(['show-international'], self::GLOBAL_EQUITY_TEMPLATES), true) ? $this->unit_price : null,
+                'numberOfShares' => in_array($this->template, array_merge(['show-international'], self::GLOBAL_EQUITY_TEMPLATES), true) ? $this->number_of_units : null,
+                // Global Equity (Luxembourg) subscription rows (876 reference:
+                // MINIMUM / SUBSEQUENT SUBSCRIPTION AMOUNT)
+                'minimumSubscriptionAmount' => in_array($this->template, self::GLOBAL_EQUITY_TEMPLATES, true) ? $this->minimums : null,
+                'subsequentSubscriptionAmount' => in_array($this->template, self::GLOBAL_EQUITY_TEMPLATES, true) ? $this->subsequent_subscription_amount : null,
             ], fn ($v) => $v !== null),
             'mainContent' => [
                 'assetAllocation' => $this->asset_allocation,

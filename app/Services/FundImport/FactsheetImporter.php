@@ -7,6 +7,80 @@ use Carbon\Carbon;
 
 class FactsheetImporter extends AbstractExcelImporter
 {
+    /**
+     * The Prescient-branded sheets. They share two feed quirks: the published
+     * line reads "Issue date …" rather than "Published on …", and their
+     * DISTRIBUTIONS row is static prose because the fund feeds a roll-up that
+     * never distributes — yet the export still emits zero-value
+     * LAST_DISTRIBUTION rows that would clobber it on a monthly re-import.
+     *
+     * @var list<string>
+     */
+    private const PRESCIENT_TEMPLATES = ['show-prescient-feeder', 'show-prescient-global-equity'];
+
+    /**
+     * Sheets whose published line carries no full stop (877, 878). The 879
+     * reference prints one, so it is deliberately absent here.
+     *
+     * @var list<string>
+     */
+    private const PUBLISHED_LINE_NO_STOP_TEMPLATES = ['show-global-equity', 'show-hassen-shariah'];
+
+    /**
+     * Sheets whose ANNUALISED COST RATIO breaks the performance-fee
+     * component out as an indented "— Performance" row. Classes that levy no
+     * performance fee export blank cells and drop the row regardless.
+     *
+     * @var list<string>
+     */
+    private const PERFORMANCE_COMPONENT_ROW_TEMPLATES = ['show-global-equity', 'show-hassen-shariah', 'show-asia-ex-japan'];
+
+    /**
+     * Cost-table row labels that differ per sheet. 877/878 total as "Total
+     * investment charge" over a plain "Transaction costs" row; the 879
+     * reference reads "Total cost ratio" over "Transaction costs (incl VAT)".
+     *
+     * @var array<string, array{transactionCosts: string, total: string}>
+     */
+    private const COST_TABLE_LABELS = [
+        'show-asia-ex-japan' => [
+            'transactionCosts' => 'Transaction costs (incl VAT)',
+            'total' => 'Total cost ratio',
+        ],
+    ];
+
+    private const COST_TABLE_LABELS_LUX = [
+        'transactionCosts' => 'Transaction costs',
+        'total' => 'Total investment charge',
+    ];
+
+    private const COST_TABLE_LABELS_DEFAULT = [
+        'transactionCosts' => 'Transaction costs',
+        'total' => 'Total cost ratio',
+    ];
+
+    /**
+     * Sheets that take the Lux cost-table labels ("Transaction costs" /
+     * "Total investment charge") when COST_TABLE_LABELS has no per-template
+     * entry for them. This is byte-identical to PUBLISHED_LINE_NO_STOP_TEMPLATES
+     * today but is deliberately a separate list: it gates the cost-table
+     * label lookup, not the published-line full stop, and the two are free
+     * to diverge — e.g. a future Lux sheet that gets the "no stop" treatment
+     * without needing the Lux cost labels, or vice versa. Do not merge them.
+     *
+     * @var list<string>
+     */
+    private const COST_TABLE_LUX_TEMPLATES = ['show-global-equity', 'show-hassen-shariah'];
+
+    /**
+     * Templates whose page 1 draws the PORTFOLIO STRUCTURE % list, which
+     * prints the property sector as "Real estate" where the feed exports
+     * "Property".
+     *
+     * @var list<string>
+     */
+    private const PORTFOLIO_STRUCTURE_TEMPLATES = ['show-global-equity', 'show-hassen-shariah', 'show-prescient-global-equity', 'show-australian-feeder'];
+
     public function supports(string $filename): bool
     {
         return $this->filenameMatches($filename, 'FACTSHEET');
@@ -45,6 +119,24 @@ class FactsheetImporter extends AbstractExcelImporter
         return $value !== null && $value !== '' && $value !== 'ERR';
     }
 
+    /**
+     * Statistic cells additionally have to carry a digit — or be the feed's
+     * explicit "-" no-exposure marker. A broken STAT_ export does not always
+     * read "ERR": the 841 feed exports a bare "%" for STAT_YIELD and
+     * STAT_SPREAD_TO_JIBAR (the number dropped, the suffix survived), which
+     * would otherwise overwrite the seeded value.
+     */
+    private function isUsableStat(mixed $value): bool
+    {
+        if (! $this->isUsable($value)) {
+            return false;
+        }
+
+        $value = (string) $value;
+
+        return trim($value) === '-' || preg_match('/\d/', $value) === 1;
+    }
+
     private function mapScalarFields(Fund $fund, array $data): void
     {
         if (isset($data['MONTH_END_DATE'])) {
@@ -53,20 +145,49 @@ class FactsheetImporter extends AbstractExcelImporter
         if (isset($data['PORTFOLIO_SIZE'])) {
             // Sheets export the bare figure ("5.0 billion"); the fact sheets
             // display the fund currency — rands for SA funds, dollars for the
-            // USD-based international fund (TOTAL FUND SIZE "$1.5 billion").
+            // USD-based international funds (TOTAL FUND SIZE "$1.5 billion").
             $size = $data['PORTFOLIO_SIZE'];
-            $currency = ($fund->template ?? '') === 'show-international' ? '$' : 'R';
-            $fund->portfolio_size = preg_match('/^\s*[R$€£]/u', $size) ? $size : $currency.$size;
+            $currency = match (true) {
+                // The Australian feeder reports in Australian dollars
+                // ("A$11.6 million", 880 reference).
+                ($fund->template ?? '') === Fund::AUSTRALIAN_FEEDER_TEMPLATE => 'A$',
+                in_array($fund->template ?? '', ['show-international', 'show-international-trust', 'show-global-equity', 'show-hassen-shariah', 'show-asia-ex-japan'], true) => '$',
+                default => 'R',
+            };
+            $size = preg_match('/^\s*[R$€£]/u', $size) ? $size : $currency.$size;
+            // The feeder's TOTAL PORTFOLIO SIZE row prints the master fund's
+            // size (in its own US-dollar base currency) on a second line.
+            if (($fund->template ?? '') === Fund::AUSTRALIAN_FEEDER_TEMPLATE
+                && $this->isUsable($data['MASTER_FUND_PORTFOLIO_SIZE'] ?? null)) {
+                $size .= '<br>Master fund: $'.$data['MASTER_FUND_PORTFOLIO_SIZE'];
+            }
+            $fund->portfolio_size = $size;
         }
         if (isset($data['UNIT_PRICE'])) {
-            $fund->unit_price = $data['UNIT_PRICE'];
+            $price = (string) $data['UNIT_PRICE'];
+            // The 880 feed exports the price with a bare dollar sign; the
+            // published sheet marks it Australian ("A$22.35").
+            if (($fund->template ?? '') === Fund::AUSTRALIAN_FEEDER_TEMPLATE && str_starts_with($price, '$')) {
+                $price = 'A'.$price;
+            }
+            $fund->unit_price = $price;
         }
         if (isset($data['NUMBER_OF_UNITS'])) {
+            $units = $data['NUMBER_OF_UNITS'];
+            // The 877 feed mixes formats per class: some export the worded
+            // count ("7.6 million"), others the raw share count
+            // ("5,268,388") — the published sheet prints millions
+            // ("5.3 million", NUMBER OF SHARES, 876 reference).
+            if (($fund->template ?? '') === 'show-global-equity' && is_numeric(str_replace(',', '', $units))) {
+                $units = number_format(((float) str_replace(',', '', $units)) / 1e6, 1).' million';
+            }
             // The published sheets space-separate thousands ("4 434"); the
             // 820 feed exports commas ("4,517").
-            $fund->number_of_units = str_replace(',', ' ', $data['NUMBER_OF_UNITS']);
+            $fund->number_of_units = str_replace(',', ' ', $units);
         }
-        if (isset($data['ISIN'])) {
+        // The 880 feed has no ISIN column of its own and exports "0"; the
+        // sheet's registration codes are seeded statics (as for SEDOL).
+        if (isset($data['ISIN']) && (string) $data['ISIN'] !== '0') {
             $fund->isin_number = $data['ISIN'];
         }
         if (isset($data['SEDOL']) && $data['SEDOL'] !== '0') {
@@ -79,12 +200,27 @@ class FactsheetImporter extends AbstractExcelImporter
                 fn ($m) => str_pad($m[1], 2, '0', STR_PAD_LEFT).' ',
                 $data['PUBLISHED_DATE']
             );
-            $fund->important_info_published_date = 'Published on '.$published.'.';
+            // The 876 reference prints the published line with no full stop;
+            // the other signed-off designs end it with one.
+            $suffix = in_array($fund->template ?? '', self::PUBLISHED_LINE_NO_STOP_TEMPLATES, true) ? '' : '.';
+            // The Prescient-branded sheets (822, 823) label it "Issue date"
+            // rather than "Published on".
+            $prefix = in_array($fund->template ?? '', self::PRESCIENT_TEMPLATES, true)
+                ? 'Issue date '
+                : 'Published on ';
+            $fund->important_info_published_date = $prefix.$published.$suffix;
         }
 
         // Distributions. The equity design omits the colon between date and
         // amount; the other signed-off designs include it.
-        if (isset($data['LAST_DISTRIBUTION_DATE']) && isset($data['LAST_DISTRIBUTION_AMOUNT'])) {
+        //
+        // The Prescient feeder sheets (822, 823) are the exception: both feed
+        // roll-up funds that never distribute, so their DISTRIBUTIONS row
+        // carries static prose while the export still emits zero-value
+        // distribution rows. Importing those would clobber the seeded
+        // sentence, so the feed's distribution keys are ignored for them.
+        if (! in_array($fund->template ?? '', self::PRESCIENT_TEMPLATES, true)
+            && isset($data['LAST_DISTRIBUTION_DATE']) && isset($data['LAST_DISTRIBUTION_AMOUNT'])) {
             $separator = $fund->template === 'show-equity' ? ' ' : ': ';
             $dist = $data['LAST_DISTRIBUTION_DATE'].$separator.$data['LAST_DISTRIBUTION_AMOUNT'];
             if (isset($data['SECOND_LAST_DISTRIBUTION_DATE']) && isset($data['SECOND_LAST_DISTRIBUTION_AMOUNT'])) {
@@ -108,7 +244,12 @@ class FactsheetImporter extends AbstractExcelImporter
             }
             $rows[] = [
                 'security' => $security,
-                'assetClass' => $data["TOPX_ASSET_CLASS_{$i}"] ?? '',
+                // The 877 feed names the second column by sector rather than
+                // asset class (TOP 10 INVESTMENTS "SECTOR" column).
+                'assetClass' => $this->normaliseAssetClass(
+                    $fund,
+                    $data["TOPX_ASSET_CLASS_{$i}"] ?? $data["TOPX_SECURITY_SECTOR_{$i}"] ?? ''
+                ),
                 'market' => $data["TOPX_MARKET_{$i}"] ?? '',
                 'percentage' => $this->toNumber($data["TOPX_PERCENT_OF_FUNDS_{$i}"] ?? '0'),
             ];
@@ -127,11 +268,44 @@ class FactsheetImporter extends AbstractExcelImporter
         }
     }
 
+    /**
+     * The 840 sheet prints its top-10 asset classes plural ("Equities",
+     * "Commodities"), matching the asset-allocation rows above them, while the
+     * feed exports them singular.
+     *
+     * Scoped to the Shariah template on purpose: every other Foord sheet
+     * publishes the feed's singular wording, so normalising globally would
+     * rewrite twenty signed-off fact sheets.
+     */
+    private function normaliseAssetClass(Fund $fund, string $assetClass): string
+    {
+        if (($fund->template ?? '') !== 'show-shariah') {
+            return $assetClass;
+        }
+
+        return match ($assetClass) {
+            'Equity' => 'Equities',
+            'Commodity' => 'Commodities',
+            default => $assetClass,
+        };
+    }
+
     private function mapAssetAllocation(Fund $fund, array $data): void
     {
         // Detect format: equity (AA_SHARE_*) vs SA balanced (AA_DOM_*) vs
         // domestic-only (bare AA_TOTAL_* without the DOM/FRGN split) vs
-        // international (AAOT_*) vs flex income (PS_* portfolio structure)
+        // international (AAOT_*) vs Shariah balanced (PS_SA_EQUITY, a
+        // SA/FOREIGN/TOTAL asset allocation on PS_* keys) vs flex income
+        // (PS_* portfolio structure).
+        //
+        // The Shariah branch MUST come before the flex-income one: 840 also
+        // exports PS_SA_TOTAL, so the flex-income branch would otherwise claim
+        // it and map an asset allocation onto the cash/bond category list.
+        // PS_SA_EQUITY is the discriminator — 824, 825 and 827 do not export it.
+        //
+        // The Shariah income fund (841) exports PS_SA_EQUITY too, but publishes
+        // the flex-income SA/FOREIGN/TOTAL/CHANGE portfolio structure rather
+        // than the 840 asset allocation, so it is excluded by template.
         if (isset($data['AA_SHARE_CURRENT'])) {
             $this->mapEquityAssetAllocation($fund, $data);
         } elseif (isset($data['AA_DOM_EQ']) || isset($data['AA_DOM_TOTAL'])) {
@@ -140,6 +314,8 @@ class FactsheetImporter extends AbstractExcelImporter
             $this->mapDomesticAssetAllocation($fund, $data);
         } elseif (isset($data['AAOT_RANK_1_ITEM'])) {
             $this->mapGlobalAssetAllocation($fund, $data);
+        } elseif (isset($data['PS_SA_EQUITY']) && ($fund->template ?? '') !== 'show-shariah-income') {
+            $this->mapShariahAssetAllocation($fund, $data);
         } elseif (isset($data['PS_SA_TOTAL'])) {
             $this->mapPortfolioStructure($fund, $data);
         }
@@ -162,28 +338,58 @@ class FactsheetImporter extends AbstractExcelImporter
      */
     private function mapPortfolioStructure(Fund $fund, array $data): void
     {
-        $isIncome = ($fund->template ?? '') === 'show-income';
-
-        $categories = [
-            'CASH_AND_CALL' => 'Cash and call',
-            'MONEY_MARKET' => 'Money market',
-            'FLOATING_RATE_NOTES' => 'Floating rate notes',
-            'FIXED_RATE_BONDS' => 'Fixed rate bonds',
-            'FIXED_RATE_NCDS' => 'Fixed rate NCDs',
-            'INFLATION_LINKED_BONDS' => 'Inflation linked bonds',
-        ];
-        if (! $isIncome) {
-            $categories += [
-                'PREFERENCE_SHARES' => 'Preference shares',
-                'CONVERTIBLE_BONDS' => 'Convertible bonds',
-                'PROPERTY' => 'Property',
-                'EQTY' => 'Equity',
-            ];
+        // The inflation linked income fund (827) exports the same PS_* asset
+        // classes, but its PUBLISHED structure table lists ILB maturity
+        // buckets ("RSA ILB 2—3 years", …) that are not on the feed at all —
+        // the stored rows are seeded from the reference and maintained by
+        // hand (inline edit), like the bond fund's ALBI benchmark bars.
+        if (($fund->template ?? '') === 'show-inflation-income') {
+            return;
         }
 
-        $display = function (mixed $value): string {
+        $isIncome = ($fund->template ?? '') === 'show-income';
+
+        // The Shariah income fund (841) reports on the coarse PS_* asset
+        // classes rather than the bond family's maturity/instrument classes,
+        // and renames the debt row "Sukuks" (no separate money-market row —
+        // deposits sit in Income). Its published table also prints zero
+        // holdings as "0.0" rather than the bond family's "-".
+        $isShariahIncome = ($fund->template ?? '') === 'show-shariah-income';
+
+        if ($isShariahIncome) {
+            $categories = [
+                'CASH' => 'Cash and call',
+                'EQUITY' => 'Equities',
+                'INCOME' => 'Income',
+                'BOND' => 'Sukuks',
+                'PROPERTY' => 'Property',
+            ];
+        } else {
+            $categories = [
+                'CASH_AND_CALL' => 'Cash and call',
+                'MONEY_MARKET' => 'Money market',
+                'FLOATING_RATE_NOTES' => 'Floating rate notes',
+                'FIXED_RATE_BONDS' => 'Fixed rate bonds',
+                'FIXED_RATE_NCDS' => 'Fixed rate NCDs',
+                'INFLATION_LINKED_BONDS' => 'Inflation linked bonds',
+            ];
+            if (! $isIncome) {
+                $categories += [
+                    'PREFERENCE_SHARES' => 'Preference shares',
+                    'CONVERTIBLE_BONDS' => 'Convertible bonds',
+                    'PROPERTY' => 'Property',
+                    'EQTY' => 'Equity',
+                ];
+            }
+        }
+
+        $display = function (mixed $value) use ($isShariahIncome): string {
             if ($value === null || $value === '' || $value === '-') {
                 return '-';
+            }
+
+            if ($isShariahIncome) {
+                return is_numeric($value) ? number_format((float) $value, 1) : (string) $value;
             }
 
             return is_numeric($value) && (float) $value == 0.0 ? '-' : (string) $value;
@@ -255,9 +461,16 @@ class FactsheetImporter extends AbstractExcelImporter
             'name' => 'TOTAL',
             'sa' => $display($data['PS_SA_TOTAL'] ?? '-'),
             'foreign' => $display($data['PS_FOREIGN_TOTAL'] ?? '-'),
-            'total' => '100',
+            'total' => $isShariahIncome ? '100.0' : '100',
             'change' => '',
         ];
+
+        if ($isShariahIncome) {
+            // 841 exports no foreign currency hedge/exposure rows.
+            $fund->asset_allocation = $assetAllocation;
+
+            return;
+        }
 
         // The hedge prints in accounting brackets ("(6)"); both rows sit
         // under the FOREIGN column on the published sheet.
@@ -468,6 +681,85 @@ class FactsheetImporter extends AbstractExcelImporter
         $fund->asset_allocation = $assetAllocation;
     }
 
+    /**
+     * Shariah balanced funds (840) carry a balanced-style SA/FOREIGN/TOTAL
+     * asset allocation, but the feed exports it on PS_* keys rather than the
+     * AA_DOM_/AA_FRGN_ pair, with a different set of asset classes: the debt
+     * row is Shariah-compliant Sukuk and there is no separate money-market
+     * row (cash sits in Income).
+     *
+     * The published sheet prints a change arrow only where the change is
+     * non-zero — PS_TOTAL_CHANGE_SIGN_* still carries a sign for zero rows
+     * (Listed property exports "-" against a 0.0 change), and rendering that
+     * arrow would contradict the reference.
+     */
+    private function mapShariahAssetAllocation(Fund $fund, array $data): void
+    {
+        $categories = [
+            'EQUITY' => 'Equities',
+            'PROPERTY' => 'Listed property',
+            'BOND' => 'Sukuk',
+            'COMM' => 'Commodities',
+            'INCOME' => 'Income',
+        ];
+
+        // Mandate max limits shown in brackets after each asset class
+        // ("ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)").
+        $maxLimits = [
+            'EQUITY' => '75',
+            'PROPERTY' => '25',
+            'BOND' => '50',
+            'COMM' => '10',
+            'INCOME' => '100',
+        ];
+
+        $rows = [];
+        foreach ($categories as $key => $name) {
+            $total = $data["PS_TOTAL_{$key}"] ?? null;
+
+            if ($total === null) {
+                continue;
+            }
+
+            $sign = $data["PS_TOTAL_CHANGE_SIGN_{$key}"] ?? '+';
+            // Always one decimal: the sheet prints "0.0" / "2.0", and the feed
+            // types these cells inconsistently (sometimes numeric), so passing
+            // the raw value through would print a bare "0" or "2".
+            $change = number_format($this->toNumber($data["PS_TOTAL_CHANGE_{$key}"] ?? 0), 1);
+            $isZeroChange = (float) $change == 0.0;
+
+            $rows[] = [
+                'name' => $name,
+                'limit' => $maxLimits[$key],
+                'sa' => $this->toNumber($data["PS_SA_{$key}"] ?? 0),
+                'foreign' => $this->toNumber($data["PS_FOREIGN_{$key}"] ?? 0),
+                'total' => $this->toNumber($total),
+                'change' => $isZeroChange ? $change : ($sign === '-' ? '▼ ' : '▲ ').$change,
+                'changeDirection' => $isZeroChange ? '' : ($sign === '-' ? 'down' : 'up'),
+            ];
+        }
+
+        if (! $rows) {
+            return;
+        }
+
+        $assetAllocation = $fund->asset_allocation ?? [];
+        $assetAllocation['rows'] = $rows;
+        $assetAllocation['title'] = $assetAllocation['title'] ?? 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)';
+        if ($this->formatChangeDate($data) !== '') {
+            $assetAllocation['subtitle'] = 'Change since '.$this->formatChangeDate($data);
+        }
+        $assetAllocation['headers'] = ['', 'SA (100)', 'FOREIGN (45)', 'TOTAL', 'CHANGE'];
+        $assetAllocation['total'] = [
+            'name' => 'TOTAL',
+            'sa' => $this->toNumber($data['PS_SA_TOTAL'] ?? 0),
+            'foreign' => $this->toNumber($data['PS_FOREIGN_TOTAL'] ?? 0),
+            'total' => 100,
+            'change' => '',
+        ];
+        $fund->asset_allocation = $assetAllocation;
+    }
+
     private function mapGlobalAssetAllocation(Fund $fund, array $data): void
     {
         $previous = collect($fund->asset_allocation['rows'] ?? [])->keyBy('name');
@@ -565,21 +857,45 @@ class FactsheetImporter extends AbstractExcelImporter
                 continue;
             }
 
+            // The published 877 and 823 PORTFOLIO STRUCTURE bars list the
+            // property sector as "Real estate" while the feed exports
+            // "Property". (Page 2's ASSET ALLOCATION table on the 823 sheet
+            // keeps "Property" — it is static text, not this list.)
+            if (in_array($fund->template ?? '', self::PORTFOLIO_STRUCTURE_TEMPLATES, true) && $item === 'Property') {
+                $item = 'Real estate';
+            }
+
             $value = $this->toNumber($data["ESAOT_RANK_{$i}_CURRENT"] ?? 0);
             $prior = $previous->get($item);
 
-            if ($prior !== null && is_numeric($prior['value'] ?? null) && $prior['value'] != $value) {
+            // The 877 feed exports an explicit change sign per sector; the
+            // equity-fund feed carries the magnitude only, so the direction
+            // falls back to comparing against the previously stored value.
+            $sign = $data["ESAOT_RANK_{$i}_CHANGE_SIGN"] ?? null;
+            if ($sign === '+' || $sign === '-') {
+                $direction = $sign === '-' ? 'down' : 'up';
+            } elseif ($prior !== null && is_numeric($prior['value'] ?? null) && $prior['value'] != $value) {
                 $direction = $value > $prior['value'] ? 'up' : 'down';
             } else {
                 $direction = $prior['direction'] ?? '';
             }
 
-            $sectors[] = [
+            $sector = [
                 'name' => $item,
                 'value' => $value,
                 'change' => number_format((float) ($data["ESAOT_RANK_{$i}_CHANGE"] ?? 0), 1),
                 'direction' => $direction,
             ];
+
+            // Variance to the benchmark (876 reference "Variance to MSCI
+            // ACWI" column) — the feed spaces the sign ("+ 11.5"); the
+            // published sheet prints it tight ("+11.5").
+            $varToBm = $data["ESAOT_RANK_{$i}_VAR_TO_BM"] ?? null;
+            if ($this->isUsable($varToBm)) {
+                $sector['variance'] = str_replace(' ', '', (string) $varToBm);
+            }
+
+            $sectors[] = $sector;
         }
 
         if (! $sectors) {
@@ -601,6 +917,71 @@ class FactsheetImporter extends AbstractExcelImporter
 
     private function mapGeographicExposure(Fund $fund, array $data): void
     {
+        // The 879 feed reports a country split (GEO_COUNTRY_RANK_n_ITEM /
+        // _CURRENT, with a "RANK_7+" catch-all) rather than the region
+        // exposure the other international sheets carry. It feeds the
+        // GEOGRAPHIC COUNTRY EXPOSURE pie, whose slices are drawn in this
+        // order — the feed already ranks descending with the catch-all last.
+        if (isset($data['GEO_COUNTRY_RANK_1_ITEM'])) {
+            $slices = [];
+            foreach ([...range(1, 6), '7+'] as $rank) {
+                $item = $data["GEO_COUNTRY_RANK_{$rank}_ITEM"] ?? null;
+                $value = $data["GEO_COUNTRY_RANK_{$rank}_CURRENT"] ?? null;
+                if (! $item || ! $this->isUsable($value)) {
+                    continue;
+                }
+                $slices[] = [
+                    'name' => (string) $item,
+                    'value' => $this->toNumber($value),
+                ];
+            }
+
+            if ($slices) {
+                $assetAllocation = $fund->asset_allocation ?? [];
+                $assetAllocation['geographicCountryExposure'] = $slices;
+                $fund->asset_allocation = $assetAllocation;
+
+                return;
+            }
+        }
+
+        // The global equity (Lux) feed carries fund-vs-benchmark equity
+        // exposure per region (GEO_EXP_US_EQTY / GEO_EXP_US_EQTY_BM) and no
+        // TOTAL/CASH split — it feeds the grouped GEOGRAPHIC EQUITY EXPOSURE
+        // column chart (876 reference: North America, EM Asia, Europe,
+        // Pacific).
+        if (isset($data['GEO_EXP_US_EQTY_BM'])) {
+            // 878 adds a fifth "Other" column; 877's feed carries no OTH
+            // keys, so the row is skipped for that fund.
+            $chartRegions = [
+                'US' => 'North America',
+                'ASIA_EM' => 'EM Asia',
+                'EUR' => 'Europe',
+                'PAC' => 'Pacific',
+                'OTH' => 'Other',
+            ];
+            $chartRows = [];
+            foreach ($chartRegions as $key => $name) {
+                $fundVal = $data["GEO_EXP_{$key}_EQTY"] ?? null;
+                $bmVal = $data["GEO_EXP_{$key}_EQTY_BM"] ?? null;
+                if (! $this->isUsable($fundVal) || ! $this->isUsable($bmVal)) {
+                    continue;
+                }
+                $chartRows[] = [
+                    'name' => $name,
+                    'fund' => $this->toNumber($fundVal),
+                    'benchmark' => $this->toNumber($bmVal),
+                ];
+            }
+            if ($chartRows) {
+                $assetAllocation = $fund->asset_allocation ?? [];
+                $assetAllocation['geographicEquityExposure'] = $chartRows;
+                $fund->asset_allocation = $assetAllocation;
+
+                return;
+            }
+        }
+
         // Region display names and order per the published international
         // fact sheet (875 reference: North America, Europe, Pacific,
         // Emerging Asia, Africa & Middle East, EM Latin America).
@@ -629,13 +1010,24 @@ class FactsheetImporter extends AbstractExcelImporter
         }
 
         if ($rows) {
+            // The column totals sometimes export a dash while the regions
+            // carry values (874: EQTY_TOTAL "-" against a published 69) —
+            // fall back to summing the column.
+            $columnTotal = function (string $key, string $column) use ($data, $rows) {
+                $exported = $this->dashToZero($data[$key] ?? '-');
+
+                return (float) $exported != 0.0
+                    ? $exported
+                    : array_sum(array_map(fn ($r) => (float) $r[$column], $rows));
+            };
+
             $assetAllocation = $fund->asset_allocation ?? [];
             $assetAllocation['geographicExposure'] = $rows;
             $assetAllocation['geographicTotals'] = [
                 'name' => 'TOTAL',
                 'total' => array_sum(array_column($rows, 'total')),
-                'equity' => $this->dashToZero($data['GEO_EXP_EQTY_TOTAL'] ?? '-'),
-                'cash' => $this->dashToZero($data['GEO_EXP_CASH_TOTAL'] ?? '-'),
+                'equity' => $columnTotal('GEO_EXP_EQTY_TOTAL', 'equity'),
+                'cash' => $columnTotal('GEO_EXP_CASH_TOTAL', 'cash'),
             ];
             $fund->asset_allocation = $assetAllocation;
         }
@@ -656,11 +1048,11 @@ class FactsheetImporter extends AbstractExcelImporter
             return;
         }
 
-        // The flex income and income sheets export the same MATURITY_* keys
-        // but their published charts are horizontal MATURITY SPREAD % bar
-        // lists (using the 12+ bucket and Perpetual, no benchmark or change
-        // labels).
-        if (in_array($fund->template ?? '', ['show-flex-income', 'show-income'], true)) {
+        // The flex income, income and inflation linked income sheets export
+        // the same MATURITY_* keys but their published charts are horizontal
+        // MATURITY SPREAD % bar lists (using the 12+ bucket and Perpetual,
+        // no benchmark or change labels).
+        if (in_array($fund->template ?? '', ['show-flex-income', 'show-income', 'show-inflation-income', 'show-shariah-income'], true)) {
             $this->mapMaturitySpread($fund, $data);
 
             return;
@@ -833,7 +1225,7 @@ class FactsheetImporter extends AbstractExcelImporter
 
             foreach (['fund', 'benchmark', 'relative'] as $col) {
                 $key = $def[$col];
-                if ($key !== null && $this->isUsable($data[$key] ?? null)) {
+                if ($key !== null && $this->isUsableStat($data[$key] ?? null)) {
                     $row[$col] = $this->formatStatValue($data[$key], $def['format'] ?? 'duration');
                 } else {
                     // No feed key for this cell, or an ERR month — keep the
@@ -867,7 +1259,15 @@ class FactsheetImporter extends AbstractExcelImporter
      */
     private function mapFlexPortfolioStatistics(Fund $fund, array $data): void
     {
-        if (($fund->template ?? '') === 'show-income') {
+        if (($fund->template ?? '') === 'show-inflation-income') {
+            // The 827 published table has just two rows — Real Yield¹ and
+            // Duration² (no Spread to JIBAR, no duration split; the feed
+            // exports ERR/overridden dashes for all of those anyway).
+            $rowDefs = [
+                ['name' => 'Real Yield', 'sup' => '1', 'key' => 'STAT_YIELD', 'format' => 'percent'],
+                ['name' => 'Duration', 'sup' => '2', 'key' => 'STAT_SA_DURATION'],
+            ];
+        } elseif (($fund->template ?? '') === 'show-income') {
             $rowDefs = [
                 ['name' => 'Yield', 'sup' => '1', 'key' => 'STAT_YIELD', 'format' => 'percent'],
                 ['name' => 'Spread to JIBAR', 'key' => 'STAT_SPREAD_TO_JIBAR', 'format' => 'percent'],
@@ -913,7 +1313,7 @@ class FactsheetImporter extends AbstractExcelImporter
                 $row['bold'] = true;
             }
 
-            $row['value'] = $this->isUsable($data[$def['key']] ?? null)
+            $row['value'] = $this->isUsableStat($data[$def['key']] ?? null)
                 ? $this->formatStatValue($data[$def['key']], $def['format'] ?? 'duration')
                 : ($prior['value'] ?? '');
 
@@ -952,14 +1352,20 @@ class FactsheetImporter extends AbstractExcelImporter
      *
      * The rating table keeps its full fixed row list (dashes print as "-");
      * the sector table only lists sectors with exposure, per the published
-     * fact sheet. Values are effective exposures, so negatives and values
-     * above 100 are legitimate.
+     * fact sheet — except the inflation linked income fund (827), whose
+     * published sheet prints the full fixed sector list with dashes.
+     * Values are effective exposures, so negatives and values above 100 are
+     * legitimate.
      */
     private function mapCreditExposure(Fund $fund, array $data): void
     {
         if (! isset($data['RATING_AAA'])) {
             return;
         }
+
+        // 827 and 841 both print the full fixed sector list with dashes; the
+        // other bond-family sheets list only sectors with exposure.
+        $keepDashSectors = in_array($fund->template ?? '', ['show-inflation-income', 'show-shariah-income'], true);
 
         $ratings = [];
         foreach ([
@@ -982,7 +1388,7 @@ class FactsheetImporter extends AbstractExcelImporter
             'SECTOR_OTHER' => 'Other',
         ] as $key => $label) {
             $value = $data[$key] ?? '-';
-            if ($value === '-') {
+            if ($value === '-' && ! $keepDashSectors) {
                 continue;
             }
             $sectors[] = ['name' => $label, 'value' => (string) $value];
@@ -1114,7 +1520,13 @@ class FactsheetImporter extends AbstractExcelImporter
             $benchmarkRow['1yr'] = $this->toNumber($data['FOORD_COMP_1_1Y_TO_D']);
         }
 
-        $rows = [$fundRow, $benchmarkRow, $highestRow, $lowestRow];
+        // The 840/841/880 sheets list Fund and Benchmark only — no
+        // highest/lowest rolling-return rows, and correspondingly no footnote
+        // for them — although the feed still exports
+        // FOORD_HIGHEST_*/FOORD_LOWEST_*.
+        $rows = in_array($fund->template ?? '', ['show-shariah', 'show-shariah-income', Fund::AUSTRALIAN_FEEDER_TEMPLATE], true)
+            ? [$fundRow, $benchmarkRow]
+            : [$fundRow, $benchmarkRow, $highestRow, $lowestRow];
 
         // Additional comparators (COMP_2 through COMP_7)
         for ($c = 2; $c <= 7; $c++) {
@@ -1132,6 +1544,21 @@ class FactsheetImporter extends AbstractExcelImporter
             }
             if ($hasData) {
                 $rows[] = $compRow;
+            }
+        }
+
+        // The Australian feeder quotes two inception columns. The fund's own
+        // FOORD_I_TO_D runs from the class launch (11 August 2022) and belongs
+        // in the SINCE 11 AUG 22 column; the comparators' I_TO_D run from the
+        // master fund's launch and stay under SINCE INCEPTION. The two
+        // remaining corners are annualised off the price series by the price
+        // graph importer, which runs next.
+        if (($fund->template ?? '') === Fund::AUSTRALIAN_FEEDER_TEMPLATE) {
+            foreach ($rows as $i => $row) {
+                if ($row['name'] === 'Fund' && isset($row['sinceInception'])) {
+                    $rows[$i]['sinceClassInception'] = $row['sinceInception'];
+                    unset($rows[$i]['sinceInception']);
+                }
             }
         }
 
@@ -1190,11 +1617,12 @@ class FactsheetImporter extends AbstractExcelImporter
                     && ($m36 === null || $this->toNumber($m36) == 0.0)) {
                     continue;
                 }
-                // The bond, flex income and income funds levy no performance
-                // fee; their published fact sheets omit the zero row
-                // (826/824/825 references).
+                // The bond, flex income, income, inflation linked income and
+                // Shariah income funds levy no performance fee; their
+                // published fact sheets omit the zero row
+                // (826/824/825/827/841 references).
                 if ($prefix === 'SA_TER_PERFORMANCE_CHARGE'
-                    && in_array($fund->template ?? '', ['show-bond', 'show-flex-income', 'show-income'], true)
+                    && in_array($fund->template ?? '', ['show-bond', 'show-flex-income', 'show-income', 'show-inflation-income', 'show-shariah-income'], true)
                     && $this->toNumber($m12) == 0.0
                     && ($m36 === null || $this->toNumber($m36) == 0.0)) {
                     continue;
@@ -1223,21 +1651,24 @@ class FactsheetImporter extends AbstractExcelImporter
             foreach ($mapping as $prefix => $name) {
                 $m12 = $data["{$prefix}_12_MONTH"] ?? null;
                 $m36 = $data["{$prefix}_36_MONTH"] ?? null;
-                if ($m12 !== null && $m12 !== 'ER9') {
+                // The 880 export sends every GLOBAL_TER cell as the error
+                // marker "ER9>>" — a non-numeric cell carries no charge and
+                // must not import as 0.00.
+                if (is_numeric($m12)) {
                     $rows[] = [
                         'name' => $name,
                         '12m' => $this->toNumber($m12),
-                        '36m' => $m36 !== null && $m36 !== 'ER9' ? $this->toNumber($m36) : null,
+                        '36m' => is_numeric($m36) ? $this->toNumber($m36) : null,
                     ];
                 }
             }
             $totalM12 = $data['GLOBAL_TER_TOTAL_12_MONTH'] ?? null;
             $totalM36 = $data['GLOBAL_TER_TOTAL_36_MONTH'] ?? null;
-            if ($totalM12 !== null && $totalM12 !== 'ER9') {
+            if (is_numeric($totalM12)) {
                 $tic['total'] = [
                     'name' => 'Total investment charge',
                     '12m' => $this->toNumber($totalM12),
-                    '36m' => $totalM36 !== null && $totalM36 !== 'ER9' ? $this->toNumber($totalM36) : null,
+                    '36m' => is_numeric($totalM36) ? $this->toNumber($totalM36) : null,
                 ];
             }
         }
@@ -1247,6 +1678,85 @@ class FactsheetImporter extends AbstractExcelImporter
             $fees['totalInvestmentCharge'] = $tic;
             $fund->fees = $fees;
         }
+
+        // Must run after the totalInvestmentCharge write above — it re-reads
+        // $fund->fees, and writing the stale $fees copy afterwards would
+        // discard the refreshed cost ratio table.
+        if ($hasGlobalFormat) {
+            $this->refreshAnnualisedCostRatio($fund, $data);
+        }
+    }
+
+    /**
+     * The international page templates render the GLOBAL_TER export as the
+     * ANNUALISED COST RATIO % table (fees['annualisedCostRatio']: TER — Basic
+     * / Transaction costs / Total cost ratio). Values refresh monthly; the
+     * title, headers and TER paragraph are seeded statics. The "latest
+     * audited TER" figure in the paragraph is an audited annual value not on
+     * the feed — it stays as seeded (inline-editable).
+     */
+    private function refreshAnnualisedCostRatio(Fund $fund, array $data): void
+    {
+        $basic12 = $data['GLOBAL_TER_BASIC_12_MONTH'] ?? null;
+        // A non-numeric basic fee means the whole export is unusable this
+        // month (the 880 feed sends "ER9>>" in every GLOBAL_TER cell) —
+        // leave the stored table alone rather than blanking it.
+        if (! is_numeric($basic12)) {
+            return;
+        }
+
+        $cell = fn (?string $value) => $this->isUsable($value) && $value !== 'ER9' && is_numeric($value)
+            ? number_format((float) $value, 2)
+            : null;
+
+        $fees = $fund->fees ?? [];
+        $acr = $fees['annualisedCostRatio'] ?? [];
+        $acr['title'] = $acr['title'] ?? 'ANNUALISED COST RATIO %';
+        $acr['headers'] = $acr['headers'] ?? ['', '12 MONTHS', '36 MONTHS'];
+        $rows = [
+            [
+                'name' => 'TER — Basic',
+                '12m' => $cell($basic12),
+                '36m' => $cell($data['GLOBAL_TER_BASIC_36_MONTH'] ?? null),
+            ],
+        ];
+        // Cost-table row labels resolve in three steps: an explicit
+        // per-template override in COST_TABLE_LABELS (e.g. 879's "Total cost
+        // ratio" / "Transaction costs (incl VAT)"), else the Lux labels for
+        // COST_TABLE_LUX_TEMPLATES (877/878's "Total investment charge" /
+        // "Transaction costs"), else the shared default. This is independent
+        // of whether the indented "— Performance" row appears below — that
+        // is gated separately by PERFORMANCE_COMPONENT_ROW_TEMPLATES, and
+        // 879 shows the row while still totalling as "Total cost ratio", not
+        // "Total investment charge".
+        $template = $fund->template ?? '';
+        $labels = self::COST_TABLE_LABELS[$template]
+            ?? (in_array($template, self::COST_TABLE_LUX_TEMPLATES, true)
+                ? self::COST_TABLE_LABELS_LUX
+                : self::COST_TABLE_LABELS_DEFAULT);
+
+        $performance12 = $cell($data['GLOBAL_TER_PERFORMANCE_12_MONTH'] ?? null);
+        if (in_array($template, self::PERFORMANCE_COMPONENT_ROW_TEMPLATES, true) && $performance12 !== null) {
+            $rows[] = [
+                'name' => '— Performance',
+                '12m' => $performance12,
+                '36m' => $cell($data['GLOBAL_TER_PERFORMANCE_36_MONTH'] ?? null),
+            ];
+        }
+        $rows[] = [
+            'name' => $labels['transactionCosts'],
+            '12m' => $cell($data['GLOBAL_TER_TRANSACTION_COSTS_12_MONTH'] ?? null),
+            '36m' => $cell($data['GLOBAL_TER_TRANSACTION_COSTS_36_MONTH'] ?? null),
+        ];
+        $acr['rows'] = $rows;
+        $acr['total'] = [
+            'name' => $labels['total'],
+            '12m' => $cell($data['GLOBAL_TER_TOTAL_12_MONTH'] ?? null),
+            '36m' => $cell($data['GLOBAL_TER_TOTAL_36_MONTH'] ?? null),
+        ];
+
+        $fees['annualisedCostRatio'] = $acr;
+        $fund->fees = $fees;
     }
 
     private function updateTerFootnote(Fund $fund, array $data): void
@@ -1268,6 +1778,20 @@ class FactsheetImporter extends AbstractExcelImporter
                 $tic['description'] = $desc;
                 $fees['totalInvestmentCharge'] = $tic;
                 $fund->fees = $fees;
+            }
+
+            // The 877 sheets carry the TER paragraph in the page-2 sidebar
+            // ("The latest audited TER is 0.96%."); the figure is per class
+            // and refreshes from the class's own export.
+            $paragraphs = $fund->important_info_paragraphs;
+            if (is_array($paragraphs)) {
+                $updated = array_map(
+                    fn (string $p) => preg_replace('/The latest audited TER is \d+\.\d+%\./', "The latest audited TER is {$ter}.", $p),
+                    $paragraphs
+                );
+                if ($updated !== $paragraphs) {
+                    $fund->important_info_paragraphs = $updated;
+                }
             }
         }
     }
