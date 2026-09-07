@@ -583,20 +583,28 @@
 
         /* Performance-fees narrative — 7.5pt navy, continuous line rhythm */
         .performance-fees-section {
-            margin: 6.3mm 0 0 0;
+            margin: 3mm 0 0 0;
         }
 
         .tic-section {
             margin-top: 6mm;
         }
         .pfe-section {
-            margin-top: 7.5mm;
+            margin-top: 5mm;
         }
         .performance-fees-text {
             font-size: 7.5pt;
             line-height: 9.24pt;
             color: var(--dark-navy);
+        }
+        /* The conservative reference runs the two performance-fee paragraphs
+           as one block (line break, no blank line) so the five-column example
+           table and footer still fit above the page foot. */
+        .performance-fees-section .fee-description.performance-fees-text {
             margin: 0;
+        }
+        .performance-fees-section .section-heading + .performance-fees-text {
+            margin-top: 1.7mm;
         }
 
         /* Total row */
@@ -848,7 +856,7 @@
             font-size: 7.5pt;
             line-height: 9.24pt;
             color: var(--dark-navy);
-            margin: 2.4mm 0 0 0;
+            margin: 1.7mm 0 0 0;
         }
 
         /* TER paragraph is black in the reference (fee-rates/perf-fees are navy) */
@@ -862,7 +870,7 @@
         /* Footer — short naartjie rule (like the reference "______"), then
            Merriweather body and Avenir Next Medium contact lines, all naartjie. */
         .footer {
-            margin-top: 8mm;
+            margin-top: 5.6mm;
             padding-top: 5.5mm;
             border-top: none;
             position: relative;
