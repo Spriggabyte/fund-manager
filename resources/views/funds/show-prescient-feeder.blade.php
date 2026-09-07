@@ -592,7 +592,7 @@
         .perf-table tbody tr:nth-child(6).empty-row td { background-color: var(--row-grey-3) !important; }
         .perf-table tbody tr:nth-child(7) td,
         .perf-table tbody tr:nth-child(8) td { background-color: var(--row-grey-4); }
-        .perf-table tbody tr td.cell-empty { background-color: var(--white); }
+        /* Reference shades every cell, including the empty ones. */
 
         /* Fee rates — two columns, values left-aligned at the midline;
            the underlying Foord global fund row renders pink. */
@@ -623,6 +623,10 @@
             padding-top: 0.61mm;
             padding-bottom: 0.61mm;
         }
+        /* Reference: the TER row and the Transaction costs row are unshaded;
+           only the indented "–" component rows carry the grey. */
+        .tic-table .foord-table tbody tr:first-child td,
+        .tic-table .foord-table tbody tr:nth-last-child(2) td { background-color: var(--white); }
         .tic-table .foord-table tr.total-row td {
             font-weight: 500;
             padding-top: 0.64mm;
@@ -830,6 +834,8 @@
         }
 
         .page2-section { margin-bottom: 5.6mm; }
+        /* Reviewer (822 B2): more air above INVESTING OFFSHORE. */
+        .page2-section.investing-offshore { margin-top: 3mm; }
 
         /* 822 reference: the contributors/detractors label column runs to
            ~35% of the main column, the names fill the rest. */
@@ -1763,7 +1769,7 @@
 
                     <!-- Investing Offshore -->
                     @if(isset($fund->data['page2Content']['investingOffshore']))
-                        <div class="page2-section">
+                        <div class="page2-section investing-offshore">
                             <h3 class="page2-heading">
                                 <span x-data="editableField('page2Content.investingOffshore.title', '{{ $fund->data['page2Content']['investingOffshore']['title'] ?? 'INVESTING OFFSHORE' }}')"
                                       @click="editMode && startEdit()"
@@ -2041,8 +2047,11 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { display: false },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                         border: { color: '#000' },
+                        // Tick marks only under the labelled dates (Chart.js draws a
+                        // mark per tick, so unlabelled months are dropped here).
+                        afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 9 === 0); },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
@@ -2052,8 +2061,8 @@
                             // May 24, Feb 25, Nov 25 — every 9 months anchored
                             // on the first data point (the 822 series opens at
                             // the Feb 2022 inception, with no baseline row).
-                            callback: function (value, index) {
-                                return index % 9 === 0 ? formatChartDate(this.getLabelForValue(value)) : null;
+                            callback: function (value) {
+                                return formatChartDate(this.getLabelForValue(value));
                             }
                         }
                     },

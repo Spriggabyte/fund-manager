@@ -1132,7 +1132,7 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: false,
-                        layout: { padding: { right: 34 } },
+                        layout: { padding: { right: 48 } },
                         plugins: {
                             legend: {
                                 position: 'bottom',
@@ -1151,7 +1151,7 @@
                         scales: {
                             x: {
                                 // No gridlines, but black axis line + tick marks at the labels
-                                border: { display: true, color: '#000', width: 1 },
+                                border: { display: false }, // reference: no bottom rule under the monthly bars
                                 grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                                 afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => keepTicks.has(t.value)); },
                                 ticks: {

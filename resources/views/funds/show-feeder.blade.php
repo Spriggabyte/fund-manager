@@ -117,7 +117,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: var(--dark-navy);
+            background-color: var(--naartjie);
             color: #ffffff;
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 500;
@@ -141,7 +141,9 @@
            text inset 7.75mm, same as the signed-off navy banner.
            ===================================================== */
         .fund-banner {
-            background-color: var(--naartjie);
+            /* 809 reference: navy title banner, naartjie date badge (the
+               inverse of the 875 international sheet). */
+            background-color: var(--dark-navy);
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
@@ -261,8 +263,8 @@
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 9.5pt;
-            line-height: 11.4pt;
+            font-size: 7.5pt;
+            line-height: 9pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
@@ -283,8 +285,8 @@
         .section-subtitle {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 9.5pt;
-            line-height: 11.4pt;
+            font-size: 7.5pt;
+            line-height: 9pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
             margin: -0.5mm 0 0.9mm 0;
@@ -293,8 +295,8 @@
         /* === Two-column layout === */
         .two-col {
             display: flex;
-            gap: 6mm;
-            margin-bottom: 3mm;
+            gap: 9mm;
+            margin-bottom: 7.7mm;
         }
 
         .two-col .col-left { flex: 1; min-width: 0; }
@@ -307,7 +309,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 3.6mm;
+            line-height: 4.4mm;
             color: #000;
         }
 
@@ -539,7 +541,7 @@
             color: #000;
             font-size: 7.5pt;
             line-height: 8pt;
-            padding: 0.4mm 0.5mm;
+            padding: 0.65mm 0.5mm;
         }
         .perf-table td:first-child {
             padding-left: 1.5mm;
@@ -556,7 +558,7 @@
         .perf-table tbody tr:nth-child(6).empty-row td { background-color: var(--row-grey-3) !important; }
         .perf-table tbody tr:nth-child(7) td,
         .perf-table tbody tr:nth-child(8) td { background-color: var(--row-grey-4); }
-        .perf-table tbody tr td.cell-empty { background-color: var(--white); }
+        /* Reference shades every cell, including the empty ones. */
 
         /* Fee rates — two columns, values left-aligned at the midline;
            the underlying Foord global fund row renders pink. */
@@ -584,9 +586,13 @@
         .tic-table .foord-table th:not(:first-child),
         .tic-table .foord-table td:not(:first-child) { text-align: center; }
         .tic-table .foord-table td {
-            padding-top: 0.92mm;
-            padding-bottom: 0.92mm;
+            padding-top: 0.72mm;
+            padding-bottom: 0.72mm;
         }
+        /* Reference: the TER row and the Transaction costs row are unshaded;
+           only the indented "–" component rows carry the grey. */
+        .tic-table .foord-table tbody tr:first-child td,
+        .tic-table .foord-table tbody tr:nth-last-child(2) td { background-color: var(--white); }
         .tic-table .foord-table tr.total-row td {
             font-weight: 500;
             padding-top: 0.95mm;
@@ -640,6 +646,15 @@
             display: flex;
             align-items: center;
             gap: 1mm;
+        }
+        /* Four-entry legend as two aligned columns (reference), not a
+           centred wrap whose second row drifts. */
+        .chart-legend.legend-grid {
+            display: grid;
+            grid-template-columns: repeat(2, max-content);
+            column-gap: 4.2mm;
+            row-gap: 0.4mm;
+            justify-content: center;
         }
 
         .legend-line {
@@ -733,7 +748,7 @@
             flex: 1;
             /* ANNUALISED COST RATIO % table header lands at y=31.7mm; the
                main column spans x 65.2mm → 202.9mm (875 reference) */
-            padding: 26.8mm 7.1mm 4mm 5.2mm;
+            padding: 26.8mm 7.1mm 9mm 5.2mm;
             min-width: 0;
             overflow: hidden;
             display: flex;
@@ -741,6 +756,9 @@
         }
 
         .page2-section { margin-bottom: 5.6mm; }
+        /* Reference: the TER paragraph sits close under the TIC table. */
+        .page2-section.tic-table { margin-bottom: 11.7mm; }
+        .page2-section.tic-table .table-wrapper { margin-bottom: 0.4mm; }
 
         .page2-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
@@ -1142,7 +1160,8 @@
                         <!-- Left: Asset Allocation -->
                         <div class="col-left">
                             @if(isset($fund->data['mainContent']['assetAllocation']))
-                                <div style="margin-bottom: 8px;">
+                                {{-- Reference: EQUITY SECTOR ALLOCATION starts 111mm down the page. --}}
+                                <div style="margin-bottom: 13.1mm;">
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.assetAllocation.title', '{{ addslashes($fund->data['mainContent']['assetAllocation']['title']) }}', 'headingSuffix')"
                                               @click="editMode && startEdit()"
@@ -1303,7 +1322,7 @@
                                     </div>
                                     {{-- Legend colours per the 875 reference: Fund red, US inflation
                                          dark navy, World equities steel blue, World bonds light grey --}}
-                                    <div class="chart-legend" style="max-width: 52mm; margin-left: auto; margin-right: auto;">
+                                    <div class="chart-legend legend-grid" style="max-width: 52mm; margin-left: auto; margin-right: auto;">
                                         <span><span class="legend-line" style="background: var(--naartjie);"></span> Fund</span>
                                         <span><span class="legend-line" style="background: var(--dark-navy);"></span> US inflation</span>
                                         <span><span class="legend-line" style="background: var(--light-blue);"></span> World equities</span>
@@ -1583,7 +1602,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <p class="page2-body" style="margin-top: 2.2mm;">
+                            <p class="page2-body" style="margin-top: 0;">
                                 <span x-data="editableField('fees.totalInvestmentCharge.description', '{{ addslashes($fund->data['fees']['totalInvestmentCharge']['description'] ?? '') }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
@@ -1862,8 +1881,11 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { display: false },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                         border: { color: '#000' },
+                        // Tick marks only under the labelled dates (Chart.js draws a
+                        // mark per tick, so unlabelled months are dropped here).
+                        afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 48 === 1); },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
@@ -1872,8 +1894,8 @@
                             // Feeder reference ticks: Mar 06, Mar 10, … — every
                             // 48 months anchored on the second data point (the
                             // series opens with the Feb 2006 baseline at 100).
-                            callback: function (value, index) {
-                                return index % 48 === 1 ? formatChartDate(this.getLabelForValue(value)) : null;
+                            callback: function (value) {
+                                return formatChartDate(this.getLabelForValue(value));
                             }
                         }
                     },

@@ -556,7 +556,7 @@
         .perf-table tbody tr:nth-child(7).empty-row td { background-color: var(--row-grey-3) !important; }
         .perf-table tbody tr:nth-child(8) td,
         .perf-table tbody tr:nth-child(9) td { background-color: var(--row-grey-4); }
-        .perf-table tbody tr td.cell-empty { background-color: var(--white); }
+        /* Reference shades every cell, including the empty ones. */
 
         /* Annualised cost ratio — reference: three equal ~46.4mm columns,
            headers and values centred. The "— Performance" component row
@@ -748,7 +748,8 @@
             flex: 1;
             /* ANNUALISED COST RATIO % table header lands at y=20.6mm; the
                main column spans x 64.9mm → 202.9mm (877 reference) */
-            padding: 20.8mm 7.1mm 6mm 5.2mm;
+            /* 4mm more foot room: the reference footer (and leaf) sits higher. */
+            padding: 20.8mm 7.1mm 10mm 5.2mm;
             min-width: 0;
             overflow: hidden;
             display: flex;
@@ -1615,7 +1616,8 @@
                                       x-text="value"></span>
                             </h3>
                             @foreach ($fund->data['page2Content']['moreAboutFund']['paragraphs'] as $index => $paragraph)
-                                <p class="page2-body" style="margin-bottom: 1.4mm;">
+                                {{-- Reference: a full blank-line gap between the MORE ABOUT paragraphs. --}}
+                                <p class="page2-body" style="margin-bottom: 3mm;">
                                     <span x-data="editableField('page2Content.moreAboutFund.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}', 'linkify')"
                                           @click="editMode && startEdit()"
                                           :class="editMode ? 'editable' : ''">{!! $linkify($paragraph) !!}</span>
@@ -1857,7 +1859,7 @@
                 },
                 scales: {
                     x: {
-                        grid: { display: false },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000', offset: true },
                         border: { color: '#000' },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
@@ -1959,8 +1961,11 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { display: false },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                         border: { color: '#000' },
+                        // Tick marks only under the labelled dates (Chart.js draws a
+                        // mark per tick, so unlabelled months are dropped here).
+                        afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 36 === 0); },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
@@ -1968,8 +1973,8 @@
                             autoSkip: false,
                             // Reference ticks: Apr 13, Apr 16, … — every 36
                             // months anchored on the first data point.
-                            callback: function (value, index) {
-                                return index % 36 === 0 ? formatChartDate(this.getLabelForValue(value)) : null;
+                            callback: function (value) {
+                                return formatChartDate(this.getLabelForValue(value));
                             }
                         }
                     },

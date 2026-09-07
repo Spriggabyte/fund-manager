@@ -271,7 +271,9 @@
         /* === Content area — x=64mm → 204mm (140mm wide) === */
         .content-area {
             flex: 1;
-            padding: 4.2mm 6mm 4mm 4mm;
+            /* PORTFOLIO STRUCTURE % / TOP 10 headings sit on the MARKETING
+               COMMUNICATION line (reviewer: align the text). */
+            padding: 6.2mm 6mm 4mm 4mm;
             min-width: 0;
             overflow: hidden;
         }
@@ -350,10 +352,10 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8.03pt;
-            /* Fixed 4.0mm rows: the inline-block change columns would
-               otherwise inflate the line box. */
-            height: 4.0mm;
-            line-height: 4.0mm;
+            /* Fixed 5.0mm rows (reference pitch): the inline-block change
+               columns would otherwise inflate the line box. */
+            height: 5.0mm;
+            line-height: 5.0mm;
             color: #000;
         }
 
@@ -499,9 +501,16 @@
             padding-top: 0.41mm;
             padding-bottom: 0.41mm;
         }
+        /* Reference rows run at ~5.3mm pitch (the sector bars alongside
+           sit at 5.0mm), and "% OF FUND" stays on one line. */
+        .top10-table .foord-table td {
+            padding-top: 0.95mm;
+            padding-bottom: 0.95mm;
+        }
+        .top10-table .foord-table th { white-space: nowrap; }
         .top10-table .foord-table td:first-child,
         .top10-table .foord-table th:first-child {
-            width: 72%;
+            width: 66%;
             padding-left: 1.74mm;
         }
         .top10-table .foord-table tbody tr td { background-color: var(--row-grey-2); }
@@ -567,7 +576,7 @@
         .perf-table tbody tr:nth-child(7).empty-row td { background-color: var(--row-grey-3) !important; }
         .perf-table tbody tr:nth-child(8) td,
         .perf-table tbody tr:nth-child(9) td { background-color: var(--row-grey-4); }
-        .perf-table tbody tr td.cell-empty { background-color: var(--white); }
+        /* Reference shades every cell, including the empty ones. */
 
         /* Annualised cost ratio — reference: three equal ~46.4mm columns,
            headers and values centred. The "— Performance" component row
@@ -646,11 +655,13 @@
            margin-left: -3mm below) — so the extra canvas width can be
            spent on right-hand label room without the two columns
            overlapping (each claims half the 6mm gap). */
-        .geo-pie-wrapper { height: 49mm; margin-right: -3mm; }
+        .geo-pie-wrapper { height: 57mm; margin-right: -3mm; }
         /* The reference sets the "100" axis label outside the column's left
            edge, so the canvas is widened into the gutter and the plot's left
            padding grows to match. */
-        .perf-wrapper { height: 46.06mm; margin-left: -3mm; }
+        .perf-wrapper { height: 54mm; margin-left: -3mm; }
+        /* Reference: 70mm from the chart headings to PORTFOLIO PERFORMANCE %. */
+        .charts-row { margin-bottom: 5.3mm; }
         .perf-wrapper .chart-ytitle { left: -7mm; }
 
         .chart-wrapper canvas {
@@ -661,7 +672,7 @@
         .chart-ytitle {
             position: absolute;
             left: -10mm;
-            top: 10.3mm;
+            top: 14.3mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
@@ -807,21 +818,21 @@
             flex: 1;
             /* ANNUALISED COST RATIO % table header lands at y=20.6mm; the
                main column spans x 64.9mm → 202.9mm (877 reference) */
-            padding: 20.8mm 5.5mm 7.7mm 4.86mm;
+            padding: 22.8mm 5.5mm 7.7mm 4.86mm;
             min-width: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        .page2-section { margin-bottom: 2.6mm; }
+        .page2-section { margin-bottom: 6.5mm; }
 
         /* The reference sets each page-2 block in its own Publisher text box,
            so the measured column width and leading differ per block. */
         .pfe-table.page2-section { margin-bottom: 3.5mm; }
-        .page2-section.share-pricing { padding-right: 4.1mm; margin-bottom: 2.1mm; }
+        .page2-section.share-pricing { padding-right: 4.1mm; margin-bottom: 6mm; }
         .page2-section.share-pricing .page2-body { line-height: 9.07pt; }
-        .page2-section.more-about { margin-bottom: 1.8mm; }
+        .page2-section.more-about { margin-bottom: 5.7mm; }
         .page2-section.more-about .page2-body { line-height: 9.5pt; }
         .page2-section.more-about .page2-heading { margin-bottom: 0.5mm; }
 
@@ -1358,7 +1369,7 @@
                     </div>
 
                     <!-- Two-column: Geographic Country Exposure pie + Performance chart -->
-                    <div class="two-col">
+                    <div class="two-col charts-row">
                         <!-- Left: Geographic Country Exposure (pie chart) -->
                         <div class="col-left">
                             @if(!empty($fund->data['mainContent']['assetAllocation']['geographicCountryExposure']))
@@ -1632,7 +1643,7 @@
                     @endphp
                     @if($terParagraphIndex !== null)
                         <div class="page2-section ter-note">
-                            <p class="page2-body" style="margin-top: 5px;">
+                            <p class="page2-body" style="margin-top: 0;">
                                 <span x-data="editableField('importantInfo.paragraphs.{{ $terParagraphIndex }}', '{{ addslashes($fund->data['importantInfo']['paragraphs'][$terParagraphIndex]) }}', 'linkify')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''">{!! $linkify($fund->data['importantInfo']['paragraphs'][$terParagraphIndex]) !!}</span>
@@ -2122,13 +2133,13 @@
                 ctx.moveTo(chartArea.left, yHundred);
                 ctx.lineTo(chartArea.right, yHundred);
                 ctx.moveTo(chartArea.left, chartArea.top);
-                ctx.lineTo(chartArea.left, yHundred);
+                ctx.lineTo(chartArea.left, chartArea.bottom);
                 ctx.stroke();
                 ctx.font = '7.9px Avenir Next, Lato, sans-serif';
                 ctx.fillStyle = '#535353';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('100', chartArea.left - 8.7, yHundred - 11.9);
+                ctx.fillText('100', chartArea.left - 2.5, yHundred - 5);
                 ctx.restore();
             }
         };
@@ -2189,20 +2200,23 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { display: false },
+                        // Tick marks under each labelled month, no gridlines
+                        // and no bottom rule (the 100 baseline is the axis).
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                         border: { display: false },
+                        // Reference ticks: Jul 21, Jul 22, … Jul 26 — every
+                        // 12 months from the series' opening month (879
+                        // opens at Jul 2021, index 0 — unlike 878, whose
+                        // series opens at Dec 2020 and so ticks off index 1).
+                        afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 12 === 0); },
                         ticks: {
                             font: { size: 7.9, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
                             maxRotation: 0,
                             autoSkip: false,
                             padding: 3,
-                            // Reference ticks: Jul 21, Jul 22, … Jul 26 — every
-                            // 12 months from the series' opening month (879
-                            // opens at Jul 2021, index 0 — unlike 878, whose
-                            // series opens at Dec 2020 and so ticks off index 1).
-                            callback: function (value, index) {
-                                return index % 12 === 0 ? formatChartDate(this.getLabelForValue(value)) : null;
+                            callback: function (value) {
+                                return formatChartDate(this.getLabelForValue(value));
                             }
                         }
                     },

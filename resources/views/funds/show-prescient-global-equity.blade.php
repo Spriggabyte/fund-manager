@@ -633,7 +633,7 @@
         .perf-table tbody tr:nth-child(4).empty-row td { background-color: var(--row-grey-2) !important; }
         .perf-table tbody tr:nth-child(5) td,
         .perf-table tbody tr:nth-child(6) td { background-color: var(--row-grey-3); }
-        .perf-table tbody tr td.cell-empty { background-color: var(--white); }
+        /* Reference shades every cell, including the empty ones. */
 
         /* Fee rates — two columns, values left-aligned at the midline;
            the underlying Foord global fund row renders pink. */
@@ -664,6 +664,10 @@
             padding-top: 0.61mm;
             padding-bottom: 0.61mm;
         }
+        /* Reference: the TER row and the Transaction costs row are unshaded;
+           only the indented "–" component rows carry the grey. */
+        .tic-table .foord-table tbody tr:first-child td,
+        .tic-table .foord-table tbody tr:nth-last-child(2) td { background-color: var(--white); }
         .tic-table .foord-table tr.total-row td {
             font-weight: 500;
             padding-top: 0.64mm;
@@ -2180,12 +2184,15 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { display: false },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                         // The reference draws no rule along the bottom of the
                         // plot: its only horizontal line is the 100 baseline,
                         // which the series dip below early on. That rule is
                         // drawn as the y axis's single gridline instead.
                         border: { display: false },
+                        // Tick marks only under the labelled dates (Chart.js draws a
+                        // mark per tick, so unlabelled months are dropped here).
+                        afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 9 === 0); },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
@@ -2196,8 +2203,8 @@
                             // May 24, Feb 25, Nov 25 — every 9 months anchored
                             // on the first data point (the series opens at the
                             // Feb 2022 inception, with no baseline row).
-                            callback: function (value, index) {
-                                return index % 9 === 0 ? formatChartDate(this.getLabelForValue(value)) : null;
+                            callback: function (value) {
+                                return formatChartDate(this.getLabelForValue(value));
                             }
                         }
                     },

@@ -590,7 +590,7 @@
         .perf-table tbody tr:nth-child(7).empty-row td { background-color: var(--row-grey-3) !important; }
         .perf-table tbody tr:nth-child(8) td,
         .perf-table tbody tr:nth-child(9) td { background-color: var(--row-grey-4); }
-        .perf-table tbody tr td.cell-empty { background-color: var(--white); }
+        /* Reference shades every cell, including the empty ones. */
 
         /* Annualised cost ratio — reference: three equal ~46.4mm columns,
            headers and values centred. The "— Performance" component row
@@ -1953,7 +1953,7 @@
                 },
                 scales: {
                     x: {
-                        grid: { display: false },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000', offset: true },
                         border: { color: '#a5a5a5' },
                         ticks: {
                             font: { size: 7.2, family: 'Avenir Next, Lato, sans-serif' },
@@ -2028,13 +2028,13 @@
                 ctx.moveTo(chartArea.left, yHundred);
                 ctx.lineTo(chartArea.right, yHundred);
                 ctx.moveTo(chartArea.left, chartArea.top);
-                ctx.lineTo(chartArea.left, yHundred);
+                ctx.lineTo(chartArea.left, chartArea.bottom);
                 ctx.stroke();
                 ctx.font = '7.9px Avenir Next, Lato, sans-serif';
                 ctx.fillStyle = '#535353';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('100', chartArea.left - 8.7, yHundred - 11.9);
+                ctx.fillText('100', chartArea.left - 2.5, yHundred - 5);
                 ctx.restore();
             }
         };
@@ -2095,8 +2095,11 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { display: false },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                         border: { display: false },
+                        // Tick marks only under the labelled dates (Chart.js draws a
+                        // mark per tick, so unlabelled months are dropped here).
+                        afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 12 === 1); },
                         ticks: {
                             font: { size: 7.9, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
@@ -2106,8 +2109,8 @@
                             // Reference ticks: Jan 21, Jan 22, … — every 12
                             // months from the first January (the series opens
                             // at Dec 2020, index 0).
-                            callback: function (value, index) {
-                                return index % 12 === 1 ? formatChartDate(this.getLabelForValue(value)) : null;
+                            callback: function (value) {
+                                return formatChartDate(this.getLabelForValue(value));
                             }
                         }
                     },

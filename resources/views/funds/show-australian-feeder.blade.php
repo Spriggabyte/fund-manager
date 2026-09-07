@@ -1942,13 +1942,13 @@
                 ctx.moveTo(chartArea.left, yHundred);
                 ctx.lineTo(chartArea.right, yHundred);
                 ctx.moveTo(chartArea.left, chartArea.top);
-                ctx.lineTo(chartArea.left, yHundred);
+                ctx.lineTo(chartArea.left, chartArea.bottom);
                 ctx.stroke();
                 ctx.font = '7.9px Avenir Next, Lato, sans-serif';
                 ctx.fillStyle = '#535353';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('100', chartArea.left - 8.7, yHundred - 11.9);
+                ctx.fillText('100', chartArea.left - 2.5, yHundred - 5);
                 ctx.restore();
             }
         };

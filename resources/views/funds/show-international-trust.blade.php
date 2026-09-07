@@ -318,6 +318,9 @@
             margin-bottom: 4.2mm;
         }
 
+        /* Reference: 11mm more air between the allocation row and the
+           EQUITY SECTOR / PERFORMANCE row. */
+        .two-col.alloc-row { margin-bottom: 1mm; }
         .two-col .col-left { flex: 1; min-width: 0; }
         .two-col .col-right { flex: 1; min-width: 0; }
 
@@ -344,12 +347,12 @@
 
         .alloc-bar-container {
             flex: 1;
-            height: 2.4mm;
+            height: 2.8mm;
             position: relative;
         }
 
         .alloc-bar {
-            height: 2.4mm;
+            height: 2.8mm;
             background-color: var(--naartjie);
         }
 
@@ -396,12 +399,12 @@
 
         .sector-bar-container {
             flex: 1;
-            height: 2.4mm;
+            height: 2.8mm;
             position: relative;
         }
 
         .sector-bar {
-            height: 2.4mm;
+            height: 2.8mm;
             background-color: var(--naartjie);
         }
 
@@ -587,7 +590,7 @@
         .perf-table tbody tr:nth-child(10).empty-row td { background-color: var(--row-grey-3) !important; }
         .perf-table tbody tr:nth-child(11) td,
         .perf-table tbody tr:nth-child(12) td { background-color: var(--row-grey-4); }
-        .perf-table tbody tr td.cell-empty { background-color: var(--white); }
+        /* Reference shades every cell, including the empty ones. */
 
         /* Annualised cost ratio — reference: three equal ~46.4mm columns,
            headers and values centred */
@@ -1153,11 +1156,11 @@
                 <!-- Content Area -->
                 <div class="content-area">
                     <!-- Two-column: Asset Allocation + Geographic Exposure -->
-                    <div class="two-col">
+                    <div class="two-col alloc-row">
                         <!-- Left: Asset Allocation -->
                         <div class="col-left">
                             @if(isset($fund->data['mainContent']['assetAllocation']))
-                                <div style="margin-bottom: 8px;">
+                                <div style="margin-bottom: 0;">
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.assetAllocation.title', '{{ addslashes($fund->data['mainContent']['assetAllocation']['title']) }}', 'headingSuffix')"
                                               @click="editMode && startEdit()"
@@ -1876,8 +1879,11 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { display: false },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                         border: { color: '#000' },
+                        // Tick marks only under the labelled dates (Chart.js draws a
+                        // mark per tick, so unlabelled months are dropped here).
+                        afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 48 === 0); },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
@@ -1885,8 +1891,8 @@
                             autoSkip: false,
                             // Reference ticks: Mar 97, Mar 01, … — every 48
                             // months anchored on the first data point.
-                            callback: function (value, index) {
-                                return index % 48 === 0 ? formatChartDate(this.getLabelForValue(value)) : null;
+                            callback: function (value) {
+                                return formatChartDate(this.getLabelForValue(value));
                             }
                         }
                     },
