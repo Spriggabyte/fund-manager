@@ -651,7 +651,7 @@
             /* Measured from the flexible reference: y-axis line 195px at
                150dpi (33mm plot) → 46mm wrapper including x labels + legend.
                (39mm rendered the plot area ~22% too short.) */
-            height: 46mm;
+            height: 43mm;
             position: relative;
         }
 
@@ -696,7 +696,9 @@
             line-height: 9.25pt;
             letter-spacing: 0.01em;
             color: #000;
-            margin: 1.5mm 0 2.4mm 0;
+            /* Tightened (with the 3mm shorter charts) so the page-1 footnotes
+               clear the foot of the page when the explanation runs long. */
+            margin: 1.5mm 0 0.8mm 0;
         }
 
         /* =====================================================
