@@ -375,35 +375,18 @@ class FundController extends Controller
 
     public function internalPdfView(Fund $fund): View
     {
+        // Every page template is itself the print layout (A4 pages,
+        // @media print rules, .no-print edit chrome), so the PDF renders the
+        // same blade the browser shows. The equity sheet is the one remaining
+        // template with a separate print twin.
         $template = $fund->template ?? 'show';
+        if (! in_array($template, self::ALLOWED_TEMPLATES)) {
+            $template = 'show';
+        }
         $pdfTemplate = match ($template) {
             'show-equity' => 'pdf-equity',
-            'show-flexible' => 'pdf-flexible',
-            'show-conservative' => 'pdf-conservative',
-            'show-bond' => 'pdf-bond',
-            'show-flex-income' => 'pdf-flex-income',
-            'show-income' => 'pdf-income',
-            'show-inflation-income' => 'pdf-inflation-income',
-            'show-domestic' => 'pdf-domestic',
-            'show-absolute' => 'pdf-absolute',
-            'show-shariah' => 'pdf-shariah',
-            'show-shariah-income' => 'pdf-shariah-income',
-            // The international and feeder page templates are themselves the
-            // print layout (A4 pages, @media print rules, .no-print chrome).
-            'show-international' => 'show-international',
-            'show-international-trust' => 'show-international-trust',
-            'show-global-equity' => 'show-global-equity',
-            'show-feeder' => 'show-feeder',
-            'show-prescient-feeder' => 'show-prescient-feeder',
-            'show-prescient-global-equity' => 'show-prescient-global-equity',
-            'show-hassen-shariah' => 'show-hassen-shariah',
-            'show-australian-feeder' => 'show-australian-feeder',
-            'show-asia-ex-japan' => 'show-asia-ex-japan',
-            default => 'pdf',
+            default => $template,
         };
-        if (! view()->exists('funds.'.$pdfTemplate)) {
-            $pdfTemplate = 'pdf';
-        }
 
         return view('funds.'.$pdfTemplate, compact('fund'));
     }

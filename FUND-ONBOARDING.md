@@ -17,13 +17,12 @@ Each fund folder under `Funds/<code> Class <X> - <Name>/` contains:
 
 The fund's `template` column drives rendering: `show` (balanced, default), `show-equity`,
 `show-flexible`, `show-conservative`, `show-international`, `show-feeder`, `show-absolute`,
-`show-shariah`, `show-australian-feeder`. PDF:
-`show-equity` → `pdf-equity.blade.php`, `show-flexible` → `pdf-flexible.blade.php`,
-`show-conservative` → `pdf-conservative.blade.php`, `show-absolute` →
-`pdf-absolute.blade.php`, `show-shariah` → `pdf-shariah.blade.php`,
-the international/feeder page
-templates map to themselves, everything else → the signed-off `pdf.blade.php`
-(frozen — never edit).
+`show-shariah`, `show-australian-feeder`. PDF: every page template is itself the
+print layout (A4 `.page` blocks, `@media print` rules, `.no-print` edit chrome), so
+`FundController::internalPdfView` renders the same blade the browser shows. The one
+exception is `show-equity` → `pdf-equity.blade.php`. (Until September 2026 the domestic
+templates had separate `pdf-*.blade.php` twins; those were folded back into the
+`show-*` files so the web preview and the PDF can no longer drift apart.)
 
 ## 3. Seed static text (once per fund)
 

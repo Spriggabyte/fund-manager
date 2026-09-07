@@ -12,13 +12,14 @@ class FundTemplateSelectionTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_internal_pdf_view_uses_pdf_template_by_default(): void
+    public function test_internal_pdf_view_uses_page_template_by_default(): void
     {
+        // The page template is itself the print layout; there is no pdf twin.
         $fund = Fund::factory()->create(['template' => 'show']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf', $view->name());
+        $this->assertSame('funds.show', $view->name());
     }
 
     public function test_internal_pdf_view_uses_equity_pdf_template(): void
@@ -30,31 +31,31 @@ class FundTemplateSelectionTest extends TestCase
         $this->assertSame('funds.pdf-equity', $view->name());
     }
 
-    public function test_internal_pdf_view_uses_conservative_pdf_template(): void
+    public function test_internal_pdf_view_uses_conservative_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-conservative']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf-conservative', $view->name());
+        $this->assertSame('funds.show-conservative', $view->name());
     }
 
-    public function test_internal_pdf_view_uses_bond_pdf_template(): void
+    public function test_internal_pdf_view_uses_bond_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-bond']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf-bond', $view->name());
+        $this->assertSame('funds.show-bond', $view->name());
     }
 
-    public function test_internal_pdf_view_uses_income_pdf_template(): void
+    public function test_internal_pdf_view_uses_income_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-income']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf-income', $view->name());
+        $this->assertSame('funds.show-income', $view->name());
     }
 
     public function test_show_renders_income_template(): void
@@ -67,13 +68,13 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-income');
     }
 
-    public function test_internal_pdf_view_uses_shariah_income_pdf_template(): void
+    public function test_internal_pdf_view_uses_shariah_income_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-shariah-income']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf-shariah-income', $view->name());
+        $this->assertSame('funds.show-shariah-income', $view->name());
     }
 
     public function test_show_renders_shariah_income_template(): void
@@ -86,13 +87,13 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-shariah-income');
     }
 
-    public function test_internal_pdf_view_uses_inflation_income_pdf_template(): void
+    public function test_internal_pdf_view_uses_inflation_income_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-inflation-income']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf-inflation-income', $view->name());
+        $this->assertSame('funds.show-inflation-income', $view->name());
     }
 
     public function test_show_renders_inflation_income_template(): void
@@ -194,13 +195,13 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-prescient-global-equity');
     }
 
-    public function test_internal_pdf_view_uses_absolute_pdf_template(): void
+    public function test_internal_pdf_view_uses_absolute_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-absolute']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf-absolute', $view->name());
+        $this->assertSame('funds.show-absolute', $view->name());
     }
 
     public function test_show_renders_absolute_template(): void
@@ -213,13 +214,13 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-absolute');
     }
 
-    public function test_internal_pdf_view_uses_domestic_pdf_template(): void
+    public function test_internal_pdf_view_uses_domestic_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-domestic']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf-domestic', $view->name());
+        $this->assertSame('funds.show-domestic', $view->name());
     }
 
     public function test_show_renders_domestic_template(): void
@@ -273,13 +274,13 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-international-trust');
     }
 
-    public function test_internal_pdf_view_falls_back_to_pdf_for_unknown_template(): void
+    public function test_internal_pdf_view_falls_back_to_default_for_unknown_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'does-not-exist']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf', $view->name());
+        $this->assertSame('funds.show', $view->name());
     }
 
     public function test_show_falls_back_to_default_template_for_unknown_value(): void
