@@ -56,16 +56,26 @@ class GenerateFundPdfJob implements ShouldQueue
 
         $disk = config('puppeteer.output_disk');
         $dir = trim((string) config('puppeteer.output_dir'), '/');
-        // Stored under the published-document name, in a folder per export
-        // so re-exports of the same sheet never overwrite each other.
-        $name = "{$this->export->id}/".$this->export->fund->exportFilename($this->export->created_at);
+        // Stored under the published-document name with the export id
+        // appended, so re-exports of the same sheet never overwrite each
+        // other. Kept FLAT inside the output dir on purpose: Flysystem creates
+        // new directories with private (0700) visibility, and on staging the
+        // Horizon worker and PHP-FPM run as different users — a per-export
+        // folder written by the worker was unreadable by the download
+        // request ("Unable to retrieve the file_size …").
+        $name = preg_replace('/\.pdf$/', '', $this->export->fund->exportFilename($this->export->created_at))
+            ." (export {$this->export->id}).pdf";
         $path = $dir === '' ? $name : "{$dir}/{$name}";
 
         // The local disk is configured with 'throw' => false, so a failed write
         // (permissions, no space) comes back as a plain false. Marking the
         // export done on top of that would hand the user a download link to a
         // file that is not there.
-        $stored = Storage::disk($disk)->put($path, file_get_contents($tempPath));
+        //
+        // directory_visibility public: should the output dir itself not exist
+        // yet, it is created 0755 rather than Flysystem's default 0700, so the
+        // web user can traverse it (see above).
+        $stored = Storage::disk($disk)->put($path, file_get_contents($tempPath), ['directory_visibility' => 'public']);
 
         @unlink($tempPath);
 

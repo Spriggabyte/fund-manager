@@ -143,8 +143,11 @@ class FundPdfExportTest extends TestCase
         $export->refresh();
         $this->assertTrue($export->isDone());
         $this->assertNotNull($export->path);
-        // Stored under the published name, one folder per export.
-        $this->assertSame("pdfs/{$export->id}/Foord Bond Fund Class B2 at 2026-07-31.pdf", $export->path);
+        // Stored flat under the published name plus the export id — no
+        // per-export folder (Flysystem would create it 0700, unreadable by a
+        // web user that differs from the queue worker's).
+        $this->assertSame("pdfs/Foord Bond Fund Class B2 at 2026-07-31 (export {$export->id}).pdf", $export->path);
+        $this->assertSame(1, substr_count($export->path, '/'));
         Storage::disk('local')->assertExists($export->path);
     }
 
