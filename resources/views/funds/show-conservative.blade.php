@@ -207,7 +207,10 @@
         }
 
         .sidebar-section {
-            margin-bottom: 1.05mm;
+            /* Reference 818 sidebar: single-line sections repeat on a 7.45mm
+               pitch (heading 6.8pt + text 8.2pt = 5.3mm, so 2.15mm between
+               sections). Measured with PyMuPDF on the Aug-2026 sheet. */
+            margin-bottom: 2.15mm;
         }
 
         .sidebar-section:last-child {
@@ -616,17 +619,26 @@
         }
 
         /* Change indicators — arrow coloured only; number inherits table colour.
-           Reference arrows are ~5pt Wingdings triangles, smaller than the digits. */
+           The reference arrows are 5pt Wingdings-3 triangles whose ink measures
+           1.40mm wide × 1.31mm tall, top-aligned with the digits' cap height.
+           They are drawn as inline SVG (not a ▲ glyph) so the size no longer
+           depends on which fallback font the viewer's browser picks — the
+           reviewer's web preview rendered the glyph noticeably smaller than
+           the PDF did. */
         td.change-cell { color: #000; }
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            font-size: 5.1pt;
-            /* Reference gap between triangle and value is ~8-9px at 150dpi;
-               the bare word space only gave ~4px. */
-            margin-right: 0.8mm;
+            display: inline-block;
+            width: 1.4mm;
+            height: 1.31mm;
+            /* Bottom of the triangle sits ~0.6mm above the digit baseline. */
+            vertical-align: 0.55mm;
+            /* Reference gap between triangle and value is ~1mm. */
+            margin-right: 0.6mm;
+            overflow: visible;
         }
-        td.change-cell .change-arrow-up { color: #000; }
-        td.change-cell .change-arrow-down { color: #7A9CB4; }
+        td.change-cell .change-arrow-up { fill: #000; }
+        td.change-cell .change-arrow-down { fill: #7A9CB4; }
 
         /* =====================================================
            CHARTS SECTION
@@ -1167,7 +1179,9 @@
                         <div class="sidebar-section">
                             @if ($key === 'equityIndicator' && is_array($value))
                                 @php
-                                    $filled = $value['filled'] ?? 5;
+                                    // The dot count is not fed; the published 818 sheets
+                                    // (all classes, Aug 2026) show 6 of 10 filled.
+                                    $filled = $value['filled'] ?? 6;
                                     $total = $value['total'] ?? 10;
                                 @endphp
                                 {{-- Heading + dots share a single line so the dots sit
@@ -1262,7 +1276,7 @@
                                                     }
                                                 @endphp
                                                 <td class="change-cell">
-                                                    @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span>@endif {{ $numPart }}
+                                                    @if ($arrowChar === '▲')<svg class="change-arrow-up" viewBox="0 0 10 9" xmlns="http://www.w3.org/2000/svg"><path d="M5 0 L10 9 L0 9 Z"/></svg>@elseif ($arrowChar === '▼')<svg class="change-arrow-down" viewBox="0 0 10 9" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 L10 0 L5 9 Z"/></svg>@endif{{ $numPart }}
                                                 </td>
                                             @else
                                                 <td>{{ $fmt($row[$colKey] ?? '', 1) }}</td>
@@ -1666,7 +1680,14 @@
                 const maxVal = Math.max(
                     ...data.map(d => Math.max(...seriesDefs.map(s => d[s.key] || 0)))
                 );
-                const yMax = Math.ceil(maxVal * 1.05 / 100) * 100;
+                // Reference (818, Aug 2026): the y-axis tops out just above the
+                // highest end value (R 296 → 300) and its line continues ~14% of
+                // the plot height BELOW the 100 baseline, with the x-axis crossing
+                // at 100 (Excel "axis crosses at 100"). Measured with PyMuPDF:
+                // axis 175.7→213.3mm, 100 baseline at 208.0mm.
+                const yMax = Math.ceil(maxVal * 1.01 / 50) * 50;
+                const yMin = 100 - (yMax - 100) * 0.164;
+                const MIN_LABEL_GAP = 12; // px — reference keeps end labels ≥3.3mm apart
 
                 const dates = data.map(d => d.date);
                 const tickPositions = (function () {
@@ -1684,9 +1705,16 @@
                     return positions;
                 })();
 
-                Highcharts.chart(containerId, {
+                const endLabel = (s, yShift) => ({
+                    enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: yShift,
+                    style: { fontSize: '9px', fontWeight: '500', color: s.color, textOutline: 'none' },
+                    formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
+                    crop: false, overflow: 'allow', allowOverlap: true,
+                });
+
+                const chart = Highcharts.chart(containerId, {
                     chart: {
-                        type: 'spline', backgroundColor: 'transparent', spacing: [4, 46, 4, 0], animation: false,
+                        type: 'spline', backgroundColor: 'transparent', spacing: [10, 46, 4, 0], animation: false,
                     },
                     title: { text: null },
                     xAxis: {
@@ -1709,7 +1737,7 @@
                     },
                     yAxis: {
                         title: { text: null },
-                        // LINEAR axis from 0 — measured from the published reference
+                        // LINEAR axis — measured from the published reference
                         // chart (see note above). Only the 100 baseline is labelled.
                         gridLineWidth: 0,
                         lineColor: '#000',
@@ -1717,16 +1745,17 @@
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
-                        // Axis crosses at the 100 baseline like the reference (the
-                        // curve's first point sits ON the x-axis line).
-                        min: 100,
+                        // The axis line runs below 100 (reference); the x-axis is
+                        // lifted to cross at 100 after the first render (below).
+                        min: yMin,
                         max: yMax,
                         endOnTick: false,
                         startOnTick: false,
                         tickPositions: [100],
                         labels: {
                             distance: 2,
-                            y: 8,
+                            // Reference "100" is vertically centred on the baseline.
+                            y: 3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';
@@ -1755,14 +1784,34 @@
                     },
                     series: seriesDefs.map(s => ({
                         name: s.name, data: data.map(d => d[s.key]), color: s.color,
-                        dataLabels: [{
-                            enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: 0,
-                            style: { fontSize: '9px', fontWeight: '500', color: s.color, textOutline: 'none' },
-                            formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
-                            crop: false, overflow: 'allow', allowOverlap: true,
-                        }],
+                        dataLabels: [endLabel(s, 0)],
                     })),
                 });
+
+                // Post-render pass (animation is off, so the chart is laid out
+                // synchronously):
+                //  1. lift the x-axis line + ticks so they cross the y-axis at
+                //     100 while the tick labels stay below the plot (the
+                //     reference labels sit ~1.5mm under the y-axis foot);
+                //  2. spread the end-of-line value labels apart when the two
+                //     series finish close together (B2/B3: R 296 vs R 284).
+                // Run the axis update twice so the plot height settles after the
+                // labels move.
+                for (let pass = 0; pass < 2; pass++) {
+                    const yAx = chart.yAxis[0];
+                    const lift = yAx.toPixels(100, true) - chart.plotHeight; // negative px
+                    chart.xAxis[0].update({ offset: lift, labels: { y: -lift + 12 } }, true);
+                }
+                const lastY = chart.series.map(s => s.points[s.points.length - 1].plotY);
+                if (lastY.length === 2 && Math.abs(lastY[0] - lastY[1]) < MIN_LABEL_GAP) {
+                    const push = (MIN_LABEL_GAP - Math.abs(lastY[0] - lastY[1])) / 2;
+                    chart.series.forEach((s, i) => {
+                        const other = lastY[1 - i];
+                        const dir = lastY[i] < other ? -1 : (lastY[i] > other ? 1 : (i === 0 ? -1 : 1));
+                        s.update({ dataLabels: [endLabel(seriesDefs[i], dir * push)] }, false);
+                    });
+                    chart.redraw();
+                }
             };
 
             // Strategy — Rolling One-Year Return (left chart): solid naartjie
@@ -1775,26 +1824,36 @@
                 const rollTicks = [];
                 for (let t = rollMin; t < Math.max(...values) + 5; t += 5) rollTicks.push(t);
 
-                const everyNth = (n) => function () {
+                // Reference labels: Dec 15, Dec 17 … Dec 25 — anchored on the LAST
+                // December in the series and stepping back two years, so the
+                // first point (Dec 14, the first full one-year window) carries no
+                // label. (Anchoring on index 0 gave Dec 14 … Dec 24, a year out.)
+                const everySecondDecember = function () {
+                    const cats = this.categories;
+                    let last = cats.length - 1;
+                    while (last >= 0 && !/-12$/.test(cats[last])) last--;
                     const positions = [];
-                    for (let i = 0; i < this.categories.length; i += n) positions.push(i);
-                    return positions;
+                    for (let i = last; i >= 0; i -= 24) positions.unshift(i);
+                    return positions.length ? positions : [0];
                 };
 
                 Highcharts.chart('rollingChart', {
-                    chart: { type: 'column', backgroundColor: 'transparent', spacing: [4, 4, 4, 0], animation: false },
+                    // Reference plot top sits ~10mm below the heading (ours was
+                    // 5mm) and the x labels ~1.5mm under the axis foot.
+                    chart: { type: 'column', backgroundColor: 'transparent', spacing: [22, 4, 4, 0], animation: false },
                     title: { text: null },
                     xAxis: {
                         categories: rollingData.map(d => d.date),
                         lineWidth: 0,
                         tickWidth: 0,
                         labels: {
+                            y: 12,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () { return formatXTickPortfolio(this.value); },
                             rotation: 0,
                             autoRotation: false,
                         },
-                        tickPositioner: everyNth(24),
+                        tickPositioner: everySecondDecember,
                     },
                     yAxis: {
                         title: { text: null },

@@ -118,7 +118,14 @@ class PriceGraphImporter extends AbstractExcelImporter
         // the peer column in E, no CPI/WGBI columns); re-emitted under
         // semantic keys for the three-series PORTFOLIO PERFORMANCE VS
         // BENCHMARK chart (the 821 sheet draws only fund and benchmark).
-        if (! isset($chartData['performanceData']) && $fundCol !== null && $msciCol === 3) {
+        // Guarded on `$fourSeries`, not `! isset($chartData['performanceData'])`:
+        // $chartData is seeded from the fund's SAVED chart_data, so the isset
+        // test was true from the second monthly import onwards and left the
+        // three-series chart (and 880's since-11-Aug-22 columns, derived
+        // from it) a month stale while portfolioData moved on (QC 2026-09-14,
+        // 879/880 chart end-value cards).
+        $fourSeries = isset($semanticByColumn);
+        if (! $fourSeries && $fundCol !== null && $msciCol === 3) {
             $peerHeader = (string) ($headers[4] ?? '');
             $isPeerColumn = str_contains($peerHeader, 'Benchmark (2nd)')
                 || str_contains($peerHeader, 'Misc (3rd)')
@@ -150,8 +157,13 @@ class PriceGraphImporter extends AbstractExcelImporter
         // benchmark in column D with NOTHING in column E: 821/878/879/880
         // also lead with an MSCI benchmark but carry a peer or second
         // benchmark alongside it, and take the three-series branch above.
-        if (! isset($chartData['performanceData'])
-            && $fundCol !== null
+        // No `! isset($chartData['performanceData'])` guard here: $chartData
+        // is seeded from the fund's SAVED chart_data, so that test skipped
+        // every monthly re-import after the first and left the ILLUSTRATIVE
+        // PERFORMANCE line a month stale (QC 2026-09-14). The header shape
+        // alone is exclusive — the branches above need a CPI/WGBI column or
+        // a populated column E, both of which this one rules out.
+        if ($fundCol !== null
             && $msciCol === 3
             && $cpiCol === null
             && $wgbiCol === null

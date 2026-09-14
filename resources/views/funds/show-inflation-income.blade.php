@@ -1354,7 +1354,7 @@
                                         <div class="maturity-spread-row">
                                             <div class="maturity-spread-label">{{ $bucket['name'] }}</div>
                                             <div class="maturity-spread-track">
-                                                <div class="maturity-spread-bar" style="width: {{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%"></div>
+                                                <div class="maturity-spread-bar" style="width: {{ $spreadMax > 0 ? round(max(0.0, (float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%"></div>
                                             </div>
                                             <div class="maturity-spread-value">{{ $bucket['label'] ?? '' }}</div>
                                         </div>
@@ -1643,9 +1643,10 @@
 
             // The portfolio chart is a cash-value chart in the signed-off balanced
             // style, but with STRAIGHT line segments (the published 827 chart shows
-            // crisp corners, not spline smoothing), ticks every THREE months from
-            // the first data point (Nov 24, Feb 25, … May 26) and a LINEAR y-axis
-            // from the 100 baseline.
+            // crisp corners, not spline smoothing), ticks every SIX months from
+            // the first data point (Nov 24, May 25, Nov 25, May 26 — the August
+            // 2026 reference; the June sheet still used a 3-month pitch) and a
+            // LINEAR y-axis from the 100 baseline.
             const renderCashChart = (containerId, data, seriesDefs, legendItemDistance = 40) => {
                 if (!data.length) return;
                 const formatCashLabel = (v) => 'R ' + Math.round(v).toLocaleString('en-US');
@@ -1664,7 +1665,7 @@
                     const anchor = monthsSinceEpoch(dates[0]);
                     const positions = [];
                     dates.forEach((d, i) => {
-                        if ((monthsSinceEpoch(d) - anchor) % 3 === 0) positions.push(i);
+                        if ((monthsSinceEpoch(d) - anchor) % 6 === 0) positions.push(i);
                     });
                     return positions;
                 })();

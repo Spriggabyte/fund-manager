@@ -151,6 +151,11 @@ class FactsheetImporter extends AbstractExcelImporter
             if (($fund->template ?? '') === Fund::AUSTRALIAN_FEEDER_TEMPLATE && str_starts_with($price, '$')) {
                 $price = 'A'.$price;
             }
+            // The 810 feed drops a trailing zero ("9475.8 cents"); the
+            // published balanced sheets always print two decimals.
+            if (($fund->template ?? '') === 'show') {
+                $price = preg_replace('/^(\d+\.\d) cents$/', '${1}0 cents', $price);
+            }
             $fund->unit_price = $price;
         }
         if (isset($data['NUMBER_OF_UNITS'])) {
@@ -174,7 +179,7 @@ class FactsheetImporter extends AbstractExcelImporter
         if (isset($data['SEDOL']) && $data['SEDOL'] !== '0') {
             $fund->sedol = $data['SEDOL'];
         }
-        if (isset($data['PUBLISHED_DATE'])) {
+        if (isset($data['PUBLISHED_DATE']) && ! $this->isStalePublishedDate($data)) {
             // The signed-off designs zero-pad the day ("Published on 04 February 2026.").
             $published = preg_replace_callback(
                 '/^(\d{1,2}) /',
@@ -320,12 +325,22 @@ class FactsheetImporter extends AbstractExcelImporter
      */
     private function mapPortfolioStructure(Fund $fund, array $data): void
     {
-        // The inflation linked income fund (827) exports the same PS_* asset
-        // classes, but its PUBLISHED structure table lists ILB maturity
-        // buckets ("RSA ILB 2—3 years", …) that are not on the feed at all —
-        // the stored rows are seeded from the reference and maintained by
-        // hand (inline edit), like the bond fund's ALBI benchmark bars.
+        // The inflation linked income fund (827) publishes ILB maturity
+        // buckets ("RSA ILB 2—3 years", …). The July/August 2026 exports do
+        // carry PS_ITEM_NAME_n / PS_ITEM_WEIGHT_n / PS_TOTAL_CHANGE_n keys,
+        // but both months exported the SAME eight values and changes (a
+        // duplicated "Replica ILB 3-5 years" label included) that match
+        // neither published sheet — placeholders, not live data. The stored
+        // rows therefore stay hand-maintained from the reference (inline
+        // edit, like the bond fund's ALBI benchmark bars); only the
+        // "Change since <quarter end>" subtitle tracks the feed.
         if (($fund->template ?? '') === 'show-inflation-income') {
+            if ($this->formatChangeDate($data) !== '') {
+                $assetAllocation = $fund->asset_allocation ?? [];
+                $assetAllocation['subtitle'] = 'Change since '.$this->formatChangeDate($data);
+                $fund->asset_allocation = $assetAllocation;
+            }
+
             return;
         }
 
@@ -470,8 +485,22 @@ class FactsheetImporter extends AbstractExcelImporter
     }
 
     /**
-     * Equity fund layout: current/prior month columns, JSE subsectors
-     * indented beneath the equity total.
+     * Equity fund layout: current month vs LAST QUARTER END columns, JSE
+     * subsectors indented beneath the equity total.
+     *
+     * The 811 feed's AA_*_PRIOR column is always the *prior month*, but the
+     * published sheet compares against the last quarter end ("31 AUG 2026 |
+     * 30 JUN 2026"). The importer therefore keeps a `quarterBaseline`
+     * ({date, values}) on the asset_allocation column:
+     *  - on the first sheet after a quarter end (Jan/Apr/Jul/Oct) the feed's
+     *    PRIOR column *is* the quarter end, so it is captured as the baseline;
+     *  - on a quarter-end sheet (Mar/Jun/Sep/Dec) the CURRENT column becomes
+     *    the baseline for the following two months;
+     *  - otherwise the stored baseline is used when its date matches the
+     *    feed's LAST_QUARTER_END, else the sheet falls back to the feed's
+     *    prior-month column (and labels it truthfully).
+     * To seed a fund mid-quarter, import the month after the quarter end
+     * first (see FUND-ONBOARDING.md §5).
      */
     private function mapEquityAssetAllocation(Fund $fund, array $data): void
     {
@@ -504,20 +533,52 @@ class FactsheetImporter extends AbstractExcelImporter
             return;
         }
 
-        // The reference prints TOTAL as 100 and covers rounding drift with
-        // the "Totals may not cast perfectly" note.
-        $rows[] = ['name' => 'TOTAL', 'current' => '100', 'previous' => '100', 'indent' => false, 'isTotal' => true];
-
         $assetAllocation = $fund->asset_allocation ?? [];
-        $assetAllocation['rows'] = $rows;
         $assetAllocation['title'] = $assetAllocation['title'] ?? 'ASSET ALLOCATION %';
 
         $monthEnd = $this->parseMonthEnd($data);
+        $quarterEnd = $this->parseLastQuarterEnd($data, $monthEnd);
+        $comparisonDate = $monthEnd?->copy()->subMonthNoOverflow()->endOfMonth();
+
+        if ($monthEnd && $quarterEnd) {
+            $baseline = $assetAllocation['quarterBaseline'] ?? null;
+            $valuesOf = fn (string $column) => collect($rows)->mapWithKeys(fn ($row) => [$row['name'] => $row[$column]])->all();
+
+            if ($comparisonDate->isSameDay($quarterEnd)) {
+                // First month of the quarter: the feed's prior column is the
+                // quarter-end snapshot.
+                $baseline = ['date' => $quarterEnd->toDateString(), 'values' => $valuesOf('previous')];
+            }
+
+            if (($baseline['date'] ?? null) === $quarterEnd->toDateString()) {
+                foreach ($rows as &$row) {
+                    $row['previous'] = (string) ($baseline['values'][$row['name']] ?? $row['previous']);
+                }
+                unset($row);
+                $comparisonDate = $quarterEnd;
+            }
+
+            if ($monthEnd->month % 3 === 0) {
+                // Quarter-end sheet: its current column is the baseline the
+                // next two monthly sheets compare against.
+                $baseline = ['date' => $monthEnd->toDateString(), 'values' => $valuesOf('current')];
+            }
+
+            if ($baseline !== null) {
+                $assetAllocation['quarterBaseline'] = $baseline;
+            }
+        }
+
+        // The reference prints TOTAL as 100 and covers rounding drift with
+        // the "Totals may not cast perfectly" note.
+        $rows[] = ['name' => 'TOTAL', 'current' => '100', 'previous' => '100', 'indent' => false, 'isTotal' => true];
+        $assetAllocation['rows'] = $rows;
+
         if ($monthEnd) {
             $assetAllocation['headers'] = [
                 '',
                 strtoupper($monthEnd->format('j M Y')),
-                strtoupper($monthEnd->copy()->subMonthNoOverflow()->endOfMonth()->format('j M Y')),
+                strtoupper($comparisonDate->format('j M Y')),
             ];
         }
 
@@ -587,7 +648,14 @@ class FactsheetImporter extends AbstractExcelImporter
             $assetAllocation = $fund->asset_allocation ?? [];
             $assetAllocation['rows'] = $rows;
             $assetAllocation['title'] = $assetAllocation['title'] ?? ($isUnconstrained ? 'ASSET ALLOCATION %' : 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)');
-            $assetAllocation['subtitle'] = $assetAllocation['subtitle'] ?? 'Change since '.$this->formatChangeDate($data);
+            // The comparison date must follow the feed's LAST_QUARTER_END every
+            // month; preserving the stored subtitle left the 810 sheets on
+            // "Change since 31 December 2025" for two quarters.
+            if ($this->formatChangeDate($data) !== '') {
+                $assetAllocation['subtitle'] = 'Change since '.$this->formatChangeDate($data);
+            } else {
+                $assetAllocation['subtitle'] = $assetAllocation['subtitle'] ?? '';
+            }
             $assetAllocation['headers'] = $isUnconstrained
                 ? ['', 'SA', 'FOREIGN', 'TOTAL', 'CHANGE']
                 : ['', 'SA (100)', 'FOREIGN (45)', 'TOTAL', 'CHANGE'];
@@ -832,6 +900,32 @@ class FactsheetImporter extends AbstractExcelImporter
         $previous = collect($fund->sector_allocation['sectors'] ?? [])
             ->keyBy('name');
 
+        // 811 equity fund: the ESAOT_*_CHANGE column is the quarter-on-quarter
+        // delta on ordinary months, but on a quarter-end export (seen on the
+        // 2026-06 811 feed) it carries the precise unrounded CURRENT value
+        // instead ("29.0" against CURRENT 29, no CHANGE_SIGN). Detect that
+        // "precise-current" export and derive the published delta against the
+        // precise values stored from the previous quarter-end sheet (the same
+        // baseline recipe as mapGlobalAssetAllocation).
+        $isEquityFund = ($fund->template ?? '') === 'show-equity';
+        $monthEnd = $this->parseMonthEnd($data);
+        $isQuarterEnd = $monthEnd !== null && $monthEnd->month % 3 === 0;
+        $preciseSemantics = null;
+        if ($isEquityFund) {
+            for ($i = 1; $i <= 13; $i++) {
+                $current = $data["ESAOT_RANK_{$i}_CURRENT"] ?? null;
+                $change = $data["ESAOT_RANK_{$i}_CHANGE"] ?? null;
+                if (! ($data["ESAOT_RANK_{$i}_ITEM"] ?? null) || $current === null || $current === '-' || $change === null) {
+                    continue;
+                }
+                if (isset($data["ESAOT_RANK_{$i}_CHANGE_SIGN"]) || abs($this->toNumber($change) - $this->toNumber($current)) > 0.5) {
+                    $preciseSemantics = false;
+                    break;
+                }
+                $preciseSemantics ??= true;
+            }
+        }
+
         $sectors = [];
         for ($i = 1; $i <= 13; $i++) {
             $item = $data["ESAOT_RANK_{$i}_ITEM"] ?? null;
@@ -849,6 +943,7 @@ class FactsheetImporter extends AbstractExcelImporter
 
             $value = $this->toNumber($data["ESAOT_RANK_{$i}_CURRENT"] ?? 0);
             $prior = $previous->get($item);
+            $change = number_format((float) ($data["ESAOT_RANK_{$i}_CHANGE"] ?? 0), 1);
 
             // The 877 feed exports an explicit change sign per sector; the
             // equity-fund feed carries the magnitude only, so the direction
@@ -862,12 +957,38 @@ class FactsheetImporter extends AbstractExcelImporter
                 $direction = $prior['direction'] ?? '';
             }
 
+            $precise = null;
+            if ($preciseSemantics === true) {
+                $precise = $this->toNumber($data["ESAOT_RANK_{$i}_CHANGE"]);
+                $baseline = $prior['precise'] ?? null;
+                if ($baseline !== null) {
+                    $delta = $precise - (float) $baseline;
+                    $change = number_format(abs($delta), 1);
+                    $direction = $delta < 0 ? 'down' : 'up';
+                } else {
+                    // No quarter-end baseline stored yet: the delta cannot be
+                    // derived. Leave the change blank rather than print the
+                    // precise current value as a change.
+                    $change = '';
+                    $direction = '';
+                }
+            }
+
             $sector = [
                 'name' => $item,
                 'value' => $value,
-                'change' => number_format((float) ($data["ESAOT_RANK_{$i}_CHANGE"] ?? 0), 1),
+                'change' => $change,
                 'direction' => $direction,
             ];
+
+            // Keep the quarter-end precise value as the baseline for the
+            // next quarter-end sheet; carry the stored one forward otherwise.
+            if ($isEquityFund) {
+                $keep = ($isQuarterEnd && $precise !== null) ? $precise : ($prior['precise'] ?? null);
+                if ($keep !== null) {
+                    $sector['precise'] = $keep;
+                }
+            }
 
             // Variance to the benchmark (876 reference "Variance to MSCI
             // ACWI" column) — the feed spaces the sign ("+ 11.5"); the
@@ -889,7 +1010,15 @@ class FactsheetImporter extends AbstractExcelImporter
         $sectorAllocation['title'] = $sectorAllocation['title'] ?? 'EQUITY SECTOR ALLOCATION %';
 
         $monthEnd = $this->parseMonthEnd($data);
-        if ($monthEnd) {
+        if (in_array($fund->template ?? '', [Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE, 'show-prescient-global-equity', 'show-asia-ex-japan', Fund::AUSTRALIAN_FEEDER_TEMPLATE], true)
+            && $this->isUsable($data['LAST_QUARTER_END'] ?? null)) {
+            // The published 821, 823, 879 and 880 PORTFOLIO STRUCTURE lists
+            // report their change against the last quarter end ("Change since
+            // 30 June 2026" on the August sheets — the ESAOT_* deltas are
+            // quarter-on-quarter: 879's August +2.4 on Consumer discretionary
+            // is 28.8 less June's 26.4), not the prior month like the equity fund.
+            $sectorAllocation['subtitle'] = 'Change since '.$this->formatChangeDate($data);
+        } elseif ($monthEnd) {
             $sectorAllocation['subtitle'] = 'Change since '
                 .$monthEnd->copy()->subMonthNoOverflow()->endOfMonth()->format('j F Y');
         }
@@ -1061,7 +1190,9 @@ class FactsheetImporter extends AbstractExcelImporter
                 'name' => $label,
                 'fund' => $this->dashToZero((string) ($data[$key] ?? '-')),
                 'benchmark' => $prior['benchmark'] ?? null,
-                'change' => $this->isUsable($change) && $change !== '-'
+                // The 826 feed exports a bare "%" (number dropped) for every
+                // MAT_CHANGE_ key some months — a label needs a digit.
+                'change' => $this->isUsableStat($change) && $change !== '-'
                     ? $this->formatChangeLabel($change)
                     : ($prior['change'] ?? ''),
             ];
@@ -1163,28 +1294,51 @@ class FactsheetImporter extends AbstractExcelImporter
 
         // The flex income export carries its own single-column statistics
         // layout (spread to JIBAR + SA/offshore duration split, no benchmark).
-        if (isset($data['STAT_SPREAD_TO_JIBAR'])) {
+        // The 826 bond export carries STAT_SPREAD_TO_JIBAR too, so the bond
+        // template must never take this branch (it would swap the published
+        // FUND / BENCHMARK / RELATIVE TO ALBI row set for the flex one and
+        // blank every value).
+        // The 825 income and 827 inflation linked income templates ALWAYS use
+        // the single-column layout: the 827 export carries neither
+        // STAT_SPREAD_TO_JIBAR nor the SA_ duration keys, so keying on the
+        // feed alone dropped it into the bond row set (RELATIVE TO ALBI).
+        $singleColumnTemplates = ['show-income', 'show-inflation-income'];
+        if (in_array($fund->template ?? '', $singleColumnTemplates, true)
+            || (($fund->template ?? '') !== 'show-bond' && isset($data['STAT_SPREAD_TO_JIBAR']))) {
             $this->mapFlexPortfolioStatistics($fund, $data);
 
             return;
         }
 
+        // Each cell lists its candidate feed keys in preference order: the
+        // June 2026 826 export used the SA_-prefixed duration keys, the
+        // July/August exports dropped the SA_ prefix (STAT_DURATION,
+        // BM_DURATION, VAR_TO_BM_DURATION, …).
         $rowDefs = [
             ['name' => 'Yield', 'sup' => '1', 'format' => 'percent',
-                'fund' => 'STAT_YIELD', 'benchmark' => 'BM_YIELD', 'relative' => null],
+                'fund' => ['STAT_YIELD'], 'benchmark' => ['BM_YIELD'], 'relative' => null],
             ['name' => 'Weighted average time to maturity', 'format' => 'years',
-                'fund' => 'STAT_WEIGHTED_AVERAGE_TTM', 'benchmark' => 'BM_WEIGHTED_AVERAGE_TTM', 'relative' => null],
+                'fund' => ['STAT_WEIGHTED_AVERAGE_TTM'], 'benchmark' => ['BM_WEIGHTED_AVERAGE_TTM'], 'relative' => null],
             ['spacer' => true],
             ['name' => 'Total duration', 'sup' => '2',
-                'fund' => 'STAT_SA_DURATION', 'benchmark' => 'BM_SA_DURATION', 'relative' => 'VAR_TO_BM_SA_DURATION'],
+                'fund' => ['STAT_SA_DURATION', 'STAT_DURATION'],
+                'benchmark' => ['BM_SA_DURATION', 'BM_DURATION'],
+                'relative' => ['VAR_TO_BM_SA_DURATION', 'VAR_TO_BM_DURATION']],
             ['name' => '— Fixed rate duration',
-                'fund' => 'STAT_SA_FIXED_RATE_DURATION', 'benchmark' => 'BM_SA_FIXED_RATE_DURATION_BOND', 'relative' => 'VAR_TO_BM_SA_FIXED_RATE_DURATION_BOND'],
+                'fund' => ['STAT_SA_FIXED_RATE_DURATION', 'STAT_FIXED_RATE_DURATION'],
+                'benchmark' => ['BM_SA_FIXED_RATE_DURATION_BOND', 'BM_FIXED_RATE_DURATION'],
+                'relative' => ['VAR_TO_BM_SA_FIXED_RATE_DURATION_BOND', 'VAR_TO_BM_FIXED_RATE_DURATION']],
             ['name' => '— Inflation linked duration',
-                'fund' => 'STAT_SA_INFLATION_LINKED_DURATION', 'benchmark' => 'BM_SA_INFLATION_LINKED_DURATION', 'relative' => 'VAR_TO_BM_SA_INFLATION_LINKED_DURATION'],
+                'fund' => ['STAT_SA_INFLATION_LINKED_DURATION', 'STAT_INFLATION_LINKED_DURATION'],
+                'benchmark' => ['BM_SA_INFLATION_LINKED_DURATION', 'BM_INFLATION_LINKED_DURATION'],
+                'relative' => ['VAR_TO_BM_SA_INFLATION_LINKED_DURATION', 'VAR_TO_BM_INFLATION_LINKED_DURATION']],
             // The ALBI holds no floating-rate paper, so the published relative
-            // column repeats the fund's own duration (no VAR_* key on the feed).
+            // column repeats the fund's own duration (no VAR_* key on the June
+            // feed; the later feeds carry an explicit VAR_TO_BM_ key).
             ['name' => '— Floating rate duration',
-                'fund' => 'STAT_SA_FLOATING_RATE_DURATION', 'benchmark' => null, 'relative' => 'STAT_SA_FLOATING_RATE_DURATION'],
+                'fund' => ['STAT_SA_FLOATING_RATE_DURATION', 'STAT_FLOATING_RATE_DURATION'],
+                'benchmark' => ['BM_FLOATING_RATE_DURATION'],
+                'relative' => ['VAR_TO_BM_FLOATING_RATE_DURATION', 'STAT_SA_FLOATING_RATE_DURATION', 'STAT_FLOATING_RATE_DURATION']],
         ];
 
         $assetAllocation = $fund->asset_allocation ?? [];
@@ -1206,13 +1360,20 @@ class FactsheetImporter extends AbstractExcelImporter
             }
 
             foreach (['fund', 'benchmark', 'relative'] as $col) {
-                $key = $def[$col];
-                if ($key !== null && $this->isUsableStat($data[$key] ?? null)) {
+                $keys = $def[$col];
+                $key = null;
+                foreach ((array) $keys as $candidate) {
+                    if ($this->isUsableStat($data[$candidate] ?? null)) {
+                        $key = $candidate;
+                        break;
+                    }
+                }
+                if ($key !== null) {
                     $row[$col] = $this->formatStatValue($data[$key], $def['format'] ?? 'duration');
                 } else {
                     // No feed key for this cell, or an ERR month — keep the
                     // stored value (blank when nothing has been stored yet).
-                    $row[$col] = $prior[$col] ?? ($key === null ? '' : '-');
+                    $row[$col] = $prior[$col] ?? ($keys === null ? '' : '-');
                 }
             }
 
@@ -1245,14 +1406,19 @@ class FactsheetImporter extends AbstractExcelImporter
             // The 827 published table has just two rows — Real Yield¹ and
             // Duration² (no Spread to JIBAR, no duration split; the feed
             // exports ERR/overridden dashes for all of those anyway).
+            // The June 2026 export keyed the duration STAT_SA_DURATION; the
+            // July/August exports dropped the SA_ prefix (STAT_DURATION).
             $rowDefs = [
                 ['name' => 'Real Yield', 'sup' => '1', 'key' => 'STAT_YIELD', 'format' => 'percent'],
-                ['name' => 'Duration', 'sup' => '2', 'key' => 'STAT_SA_DURATION'],
+                ['name' => 'Duration', 'sup' => '2',
+                    'key' => array_key_exists('STAT_SA_DURATION', $data) ? 'STAT_SA_DURATION' : 'STAT_DURATION'],
             ];
         } elseif (($fund->template ?? '') === 'show-income') {
+            // JIBAR was retired in 2026; the 825 August 2026 reference labels
+            // the row "Spread to Zaronia" (feed key still STAT_SPREAD_TO_JIBAR).
             $rowDefs = [
                 ['name' => 'Yield', 'sup' => '1', 'key' => 'STAT_YIELD', 'format' => 'percent'],
-                ['name' => 'Spread to JIBAR', 'key' => 'STAT_SPREAD_TO_JIBAR', 'format' => 'percent'],
+                ['name' => 'Spread to Zaronia', 'previousName' => 'Spread to JIBAR', 'key' => 'STAT_SPREAD_TO_JIBAR', 'format' => 'percent'],
                 ['spacer' => true],
                 ['name' => 'SA duration', 'sup' => '2', 'bold' => true, 'key' => 'STAT_SA_DURATION'],
                 ['name' => '— Fixed rate duration', 'key' => 'STAT_SA_FIXED_RATE_DURATION'],
@@ -1260,9 +1426,15 @@ class FactsheetImporter extends AbstractExcelImporter
                 ['name' => '— Inflation linked duration', 'key' => 'STAT_SA_INFLATION_LINKED_DURATION'],
             ];
         } else {
+            // JIBAR was retired in 2026; the 824 August 2026 reference labels
+            // the row "Spread to Zaronia" (the feed key is still
+            // STAT_SPREAD_TO_JIBAR). Other templates on this branch keep the
+            // old label; `previousName` lets an ERR month still find the value
+            // stored under the retired label.
+            $spreadLabel = ($fund->template ?? '') === 'show-flex-income' ? 'Spread to Zaronia' : 'Spread to JIBAR';
             $rowDefs = [
                 ['name' => 'Yield', 'sup' => '1', 'key' => 'STAT_YIELD', 'format' => 'percent'],
-                ['name' => 'Spread to JIBAR', 'key' => 'STAT_SPREAD_TO_JIBAR', 'format' => 'percent'],
+                ['name' => $spreadLabel, 'previousName' => 'Spread to JIBAR', 'key' => 'STAT_SPREAD_TO_JIBAR', 'format' => 'percent'],
                 ['spacer' => true],
                 ['name' => 'SA duration', 'sup' => '2', 'bold' => true, 'key' => 'STAT_SA_DURATION'],
                 ['name' => '— SA fixed rate duration', 'key' => 'STAT_SA_FIXED_RATE_DURATION'],
@@ -1286,7 +1458,7 @@ class FactsheetImporter extends AbstractExcelImporter
                 continue;
             }
 
-            $prior = $previous->get($def['name']) ?? [];
+            $prior = $previous->get($def['name']) ?? $previous->get($def['previousName'] ?? '') ?? [];
             $row = ['name' => $def['name']];
             if (isset($def['sup'])) {
                 $row['sup'] = $def['sup'];
@@ -1785,6 +1957,8 @@ class FactsheetImporter extends AbstractExcelImporter
      */
     private function updateChartDescription(Fund $fund, array $data): void
     {
+        $this->updateRegulation28Narrative($fund, $data);
+
         $pct = $data['BETTER_THAN_ALSI_WHEN_ALSI_NEGATIVE'] ?? null;
 
         if ($pct === null || ! $fund->chart_description) {
@@ -1798,6 +1972,57 @@ class FactsheetImporter extends AbstractExcelImporter
         );
     }
 
+    /**
+     * Flexible fund (817) only: the paragraph under the charts quotes the
+     * fund's outperformance of the Reg 28 Foord Balanced Fund since inception
+     * ("… by 1.5% per annum since its inception"). The sheet exports it as
+     * COST_OF_REG_28_SINCE_INCEPTION (per class — A and B2 differ), so keep the
+     * seeded narrative in step with the feed (QC 2026-09-14).
+     */
+    private function updateRegulation28Narrative(Fund $fund, array $data): void
+    {
+        $pct = $data['COST_OF_REG_28_SINCE_INCEPTION'] ?? null;
+
+        if (! is_string($pct) || ! preg_match('/^\d+(?:\.\d+)?%$/', trim($pct))) {
+            return;
+        }
+
+        $chartData = $fund->chart_data ?? [];
+        $narrative = $chartData['explanation'] ?? null;
+
+        if (! is_string($narrative) || $narrative === '') {
+            return;
+        }
+
+        $chartData['explanation'] = preg_replace(
+            '/outperformed Foord Balanced Fund by \d+(?:\.\d+)?% per annum/',
+            'outperformed Foord Balanced Fund by '.trim($pct).' per annum',
+            $narrative
+        );
+        $fund->chart_data = $chartData;
+    }
+
+    /**
+     * A sheet cannot be published before its own month end. The 810 feed
+     * carries a PUBLISHED_DATE override ("5 February 2026", system comment
+     * "Override in place") that would otherwise clobber the stored line
+     * every month; such values are ignored so the published line keeps
+     * whatever was last set from a real publish date.
+     */
+    private function isStalePublishedDate(array $data): bool
+    {
+        $monthEnd = $this->parseMonthEnd($data);
+        if (! $monthEnd) {
+            return false;
+        }
+
+        try {
+            return Carbon::parse((string) $data['PUBLISHED_DATE'])->lt($monthEnd);
+        } catch (\Exception) {
+            return false;
+        }
+    }
+
     private function parseMonthEnd(array $data): ?Carbon
     {
         if (empty($data['MONTH_END_DATE'])) {
@@ -1809,6 +2034,33 @@ class FactsheetImporter extends AbstractExcelImporter
         } catch (\Exception) {
             return null;
         }
+    }
+
+    /**
+     * The feed's LAST_QUARTER_END (the quarter end strictly before the
+     * sheet's month end, e.g. 30 June for the July–September sheets); derived
+     * from the month end when the key is missing.
+     */
+    private function parseLastQuarterEnd(array $data, ?Carbon $monthEnd): ?Carbon
+    {
+        if ($this->isUsable($data['LAST_QUARTER_END'] ?? null)) {
+            try {
+                return Carbon::parse((string) $data['LAST_QUARTER_END']);
+            } catch (\Exception) {
+                // fall through to the derived date
+            }
+        }
+
+        if ($monthEnd === null) {
+            return null;
+        }
+
+        $quarterEnd = $monthEnd->copy()->subMonthNoOverflow()->endOfMonth();
+        while ($quarterEnd->month % 3 !== 0) {
+            $quarterEnd = $quarterEnd->subMonthNoOverflow()->endOfMonth();
+        }
+
+        return $quarterEnd;
     }
 
     private function formatChangeDate(array $data): string

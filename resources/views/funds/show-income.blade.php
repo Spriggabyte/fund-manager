@@ -407,9 +407,15 @@
         .structure-block { width: 49%; min-width: 0; }
         .stats-block { flex: 1; min-width: 0; }
 
+        /* 825 reference column split: name 42% / date 30% / change 28% (the
+           name column at 54% squeezed the "31 AUG 2026" header into CHANGE). */
         .structure-table table th:first-child,
         .structure-table table td:first-child {
-            width: 54%;
+            width: 42%;
+        }
+        .structure-table table th:nth-child(2),
+        .structure-table table td:nth-child(2) {
+            width: 30%;
         }
         /* The date header ("31 JUL 2026") stays on one line like the reference. */
         .structure-table table th {
@@ -687,11 +693,12 @@
         }
 
         /* Change indicators — arrow coloured only; number inherits table colour.
-           Reference arrows are ~5pt Wingdings triangles, smaller than the digits. */
+           Reference arrows are 4.86pt Wingdings3 triangles with a 2.09mm glyph
+           box; our glyph is squatter, so 5.9pt lands the same printed height. */
         td.change-cell { color: #000; }
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            font-size: 5.1pt;
+            font-size: 5.9pt;
             /* Reference gap between triangle and value is ~8-9px at 150dpi;
                the bare word space only gave ~4px. */
             margin-right: 0.8mm;
@@ -752,6 +759,17 @@
             font-size: 3.9pt;
             line-height: 0;
             vertical-align: super;
+        }
+        /* The generic ".chart-wrapper > div" sizing rule above also matches
+           this caption, which made the rotated text land wherever the chart
+           block's width put the box centre (inside the plot on the 63%-wide
+           825 chart). Pin the box so the caption sits LEFT of the axis like
+           the reference (text centre x=67.1mm, y=181.4mm). */
+        .chart-wrapper > .chart-ytitle {
+            width: 22mm !important;
+            height: 4mm !important;
+            left: -7.9mm;
+            top: 12mm;
         }
 
         .chart-explanation {

@@ -616,8 +616,12 @@
         .tic-table table tbody tr td {
             background-color: var(--row-grey-2);
         }
+        /* Only the em-dashed sub-item rows are shaded: the TER row and the
+           Transaction costs row (the last row before the red total) are
+           white on the reference. The bond TIC has four rows, so target the
+           row before the total rather than a fixed nth-child. */
         .tic-table table tbody tr:nth-child(1) td,
-        .tic-table table tbody tr:nth-child(6) td {
+        .tic-table table tbody tr:nth-last-child(2) td {
             background-color: var(--white);
         }
         .tic-table table tr.total-row td {
@@ -1355,10 +1359,6 @@
                             <div class="credit-block">
                                 <h3 class="section-heading">{!! $renderHeading($credit['title'] ?? 'CREDIT EXPOSURE BREAKDOWN %') !!}</h3>
                                 @php
-                                    $creditTotal = fn (array $rows) => (string) round(array_sum(array_map(
-                                        fn ($r) => is_numeric($r['value'] ?? null) ? (float) $r['value'] : 0,
-                                        $rows
-                                    )));
                                     // The shorter table pads with empty (shaded) rows so both
                                     // TOTAL rows sit level, per the reference.
                                     $creditRatings = $credit['ratings'] ?? [];
@@ -1379,7 +1379,10 @@
                                                             <td><span x-data="editableField('mainContent.assetAllocation.creditExposure.{{ $creditKey }}.{{ $i }}.value', '{{ addslashes($creditRows[$i]['value'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $creditRows[$i]['value'] ?? '' }}</span></td>
                                                         </tr>
                                                     @endfor
-                                                    <tr class="total-row"><td>TOTAL</td><td>{{ $creditTotal($creditRows) }}</td></tr>
+                                                    {{-- The published TOTAL prints a fixed 100 (the feed's rounded
+                                                         effective exposures cast to 99/101 some months; the sheet's
+                                                         rounding note covers it) — same as the 824/825/827 sheets. --}}
+                                                    <tr class="total-row"><td>TOTAL</td><td>100</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -1664,6 +1667,16 @@
             const maturityData = @json($fund->data['mainContent']['charts']['maturityData']['categories'] ?? []);
             const portfolioData = @json($fund->data['mainContent']['charts']['portfolioData'] ?? []);
             const portfolioLabels = @json($fund->data['mainContent']['charts']['portfolioLabels'] ?? ['Fund', 'Benchmark']);
+            // The chart's end labels print the performance table's exact cash
+            // values (R 169,496 → "R 169"); the price-graph export is rounded
+            // to 2dp (169.50) and would round the wrong way.
+            const perfCashValues = @json(collect($fund->data['mainContent']['performanceTable']['rows'] ?? [])->mapWithKeys(fn ($r) => [strtolower((string) ($r['name'] ?? '')) => $r['cashValue'] ?? null])->all());
+            const cashValueFor = (name) => {
+                const raw = perfCashValues[name];
+                if (!raw) return null;
+                const n = parseFloat(String(raw).replace(/[^\d.]/g, ''));
+                return isNaN(n) ? null : n / 1000;
+            };
 
             const colors = {
                 naartjie: '#d25347',
@@ -1708,7 +1721,10 @@
                     const anchor = monthsSinceEpoch(dates[0]);
                     const positions = [];
                     dates.forEach((d, i) => {
-                        if ((monthsSinceEpoch(d) - anchor) % 6 === 0) positions.push(i);
+                        // Aug 2026 reference: Oct 22, Jul 23, Apr 24, Jan 25,
+                        // Oct 25, Jul 26 — a NINE-month pitch (the Mar 2026
+                        // sheet used six).
+                        if ((monthsSinceEpoch(d) - anchor) % 9 === 0) positions.push(i);
                     });
                     return positions;
                 })();
@@ -1716,6 +1732,32 @@
                 Highcharts.chart(containerId, {
                     chart: {
                         type: 'spline', backgroundColor: 'transparent', spacing: [4, 46, 4, 0], animation: false,
+                        events: {
+                            // The Fund and Benchmark curves finish within a few
+                            // rand of each other, so their end labels collide.
+                            // The reference keeps the labels 2.85mm (~11px)
+                            // apart: nudge colliding labels away from each
+                            // other, split evenly, and redraw once.
+                            load: function () {
+                                const minGap = 11;
+                                const ends = this.series
+                                    .map(s => ({ s, y: s.points.length ? s.points[s.points.length - 1].plotY : null }))
+                                    .filter(e => e.y !== null && e.y !== undefined)
+                                    .sort((a, b) => a.y - b.y);
+                                let moved = false;
+                                for (let i = 1; i < ends.length; i++) {
+                                    const gap = ends[i].y - ends[i - 1].y;
+                                    if (gap >= minGap) continue;
+                                    const shift = (minGap - gap) / 2;
+                                    [ends[i - 1], ends[i]].forEach((e, k) => {
+                                        const labels = (e.s.options.dataLabels || [{}]).map(dl => Object.assign({}, dl, { y: (dl.y || 0) + (k === 0 ? -shift : shift) }));
+                                        e.s.update({ dataLabels: labels }, false);
+                                    });
+                                    moved = true;
+                                }
+                                if (moved) this.redraw(false);
+                            },
+                        },
                     },
                     title: { text: null },
                     xAxis: {
@@ -1788,7 +1830,7 @@
                         dataLabels: [{
                             enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: 0,
                             style: { fontSize: '9px', fontWeight: '500', color: s.color, textOutline: 'none' },
-                            formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
+                            formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(s.endValue ?? this.y) : null; },
                             crop: false, overflow: 'allow', allowOverlap: true,
                         }],
                     })),
@@ -1801,7 +1843,9 @@
             // quarter-on-quarter change), centred square-marker legend below.
             if (maturityData.length > 0) {
                 const allValues = maturityData.flatMap(d => [d.fund ?? 0, d.benchmark ?? 0]);
-                const matMin = Math.min(0, Math.floor(Math.min(...allValues) / 10) * 10);
+                // The reference axis starts at 0% — a negative bucket (the
+                // 826 feed's short-dated -17%) is clipped, not drawn downward.
+                const matMin = 0;
                 const matMax = Math.ceil((Math.max(...allValues) + 5) / 10) * 10;
                 const matTicks = [];
                 for (let t = matMin; t <= matMax; t += 10) matTicks.push(t);
@@ -1848,7 +1892,10 @@
                     plotOptions: {
                         // borderRadius 0: Highcharts 11 rounds column tops by
                         // default; the reference bars are square.
-                        column: { pointPadding: 0.02, groupPadding: 0.18, borderWidth: 0, borderRadius: 0 },
+                        // Reference geometry (PyMuPDF): bars 6mm wide with a
+                        // 1.6mm gap between the Fund and Benchmark bars of a
+                        // group, groups spanning ~63% of the 21.5mm category.
+                        column: { pointPadding: 0.1, groupPadding: 0.15, borderWidth: 0, borderRadius: 0 },
                         series: { animation: false },
                     },
                     series: [
@@ -1860,8 +1907,8 @@
 
             // Portfolio Performance vs Benchmark
             renderCashChart('portfolioChart', portfolioData, [
-                { key: 'fund', name: portfolioLabels[0] ?? 'Fund', color: colors.naartjie },
-                { key: 'benchmark', name: portfolioLabels[1] ?? 'Benchmark', color: colors.darkNavy },
+                { key: 'fund', name: portfolioLabels[0] ?? 'Fund', color: colors.naartjie, endValue: cashValueFor('fund') },
+                { key: 'benchmark', name: portfolioLabels[1] ?? 'Benchmark', color: colors.darkNavy, endValue: cashValueFor('benchmark') },
             ], 49);
         });
     </script>

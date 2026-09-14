@@ -149,7 +149,10 @@
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
-            padding: 3.6mm 6mm 0 7.75mm;
+            /* Right inset 8mm: the reference wraps the objective after
+               "subject to" (line 2 ends at 189.8mm; "prudential" would end
+               past 202mm), our Merriweather is ~1.4% narrower. */
+            padding: 3.6mm 8mm 0 7.75mm;
             margin: 0;
             width: 100%;
         }
@@ -529,6 +532,12 @@
             width: 48.2%;
             padding-left: 1.6mm;
         }
+        /* Class B3 has three example columns of ~20.6mm each (measured
+           August 2026 reference), so its label column is wider. */
+        .pfe-table.pfe-cols-3 table th:first-child,
+        .pfe-table.pfe-cols-3 table td:first-child {
+            width: 55.2%;
+        }
         .pfe-table table th,
         .pfe-table table td {
             padding-right: 2.3mm;
@@ -591,11 +600,19 @@
         }
 
         /* Change indicators — arrow coloured only; number inherits table colour.
-           Reference arrows are ~5pt Wingdings triangles, smaller than the digits. */
+           Reference arrows are 5.18pt Wingdings3 triangles measuring
+           1.45 x 1.39mm of ink, sitting on the digit baseline with a 2.1mm gap
+           before the number (PyMuPDF, Class A August 2026). Drawn as inline
+           SVG so the size does not depend on the viewer's fallback font for
+           ▲/▼ (the staging preview rendered the glyph visibly smaller). */
         td.change-cell { color: #000; }
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            font-size: 5.1pt;
+            display: inline-block;
+            width: 1.45mm;
+            height: 1.39mm;
+            margin-right: 2.1mm;
+            vertical-align: baseline;
         }
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
@@ -1206,7 +1223,7 @@
                                                     }
                                                 @endphp
                                                 <td class="change-cell">
-                                                    @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span>@endif {{ $numPart }}
+                                                    @if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 10" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,10 5,0 10,10' : '0,0 10,0 5,10' }}"/></svg>@endif{{ $numPart }}
                                                 </td>
                                             @else
                                                 <td>{{ $fmt($row[$colKey] ?? '', 1) }}</td>
@@ -1472,7 +1489,7 @@
                     <div class="pfe-section">
                     <h3 class="section-heading">{{ $fund->data['fees']['performanceFeeExamples']['title'] ?? 'PERFORMANCE FEE EXAMPLES %' }}</h3>
 
-                    <div class="table-container pfe-table">
+                    <div class="table-container pfe-table pfe-cols-{{ max(0, count($fund->data['fees']['performanceFeeExamples']['headers'] ?? []) - 1) }}">
                         <table>
                             <thead>
                                 <tr>
@@ -1481,22 +1498,29 @@
                                     @endforeach
                                 </tr>
                             </thead>
+                            @php
+                                // Column letters come from the stored headers: Classes A
+                                // and B2 show four example columns (A–D), Class B3 three
+                                // (A–C, two-year rolling, 0.4% fee).
+                                $pfeCols = array_map(
+                                    fn ($h) => strtolower(trim($h)),
+                                    array_slice($fund->data['fees']['performanceFeeExamples']['headers'] ?? ['', 'A', 'B', 'C', 'D'], 1)
+                                );
+                            @endphp
                             <tbody>
                                 @foreach ($fund->data['fees']['performanceFeeExamples']['rows'] as $row)
                                     <tr>
                                         <td>{{ $row['name'] }}</td>
-                                        <td>{{ $fmt($row['a'] ?? '', 1) }}</td>
-                                        <td>{{ $fmt($row['b'] ?? '', 1) }}</td>
-                                        <td>{{ $fmt($row['c'] ?? '', 1) }}</td>
-                                        <td>{{ $fmt($row['d'] ?? '', 1) }}</td>
+                                        @foreach ($pfeCols as $col)
+                                            <td>{{ $fmt($row[$col] ?? '', 1) }}</td>
+                                        @endforeach
                                     </tr>
                                 @endforeach
                                 <tr class="total-row">
                                     <td>{{ $fund->data['fees']['performanceFeeExamples']['total']['name'] ?? 'Annual fee rate applied (excl. VAT)' }}</td>
-                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['a'] ?? '', 1) }}</td>
-                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['b'] ?? '', 1) }}</td>
-                                    <td>{{ $fmt($fund->data['fees']['performanceFeeExamples']['total']['c'] ?? '', 1) }}</td>
-                                    <td>{!! $fund->data['fees']['performanceFeeExamples']['total']['d'] ?? '' !!}</td>
+                                    @foreach ($pfeCols as $col)
+                                        <td>{{ is_numeric($fund->data['fees']['performanceFeeExamples']['total'][$col] ?? null) ? $fmt($fund->data['fees']['performanceFeeExamples']['total'][$col], 1) : ($fund->data['fees']['performanceFeeExamples']['total'][$col] ?? '') }}</td>
+                                    @endforeach
                                 </tr>
                             </tbody>
                         </table>
@@ -1657,8 +1681,10 @@
                         symbolWidth: 16,
                         symbolHeight: 1,
                         symbolRadius: 0,
-                        symbolPadding: 3,
-                        itemDistance: 12,
+                        // Reference: 0.5mm swatch-to-label gap, 2.5mm between items,
+                        // all four items on ONE row (measured Class A August 2026).
+                        symbolPadding: 2,
+                        itemDistance: 9,
                         margin: 6,
                         padding: 0,
                     },
@@ -1666,7 +1692,10 @@
                     plotOptions: {
                         area: { stacking: 'normal', marker: { enabled: false }, lineWidth: 1, fillOpacity: 1 },
                         spline: { marker: { enabled: false }, lineWidth: 2 },
-                        series: { animation: false, legendSymbol: 'rectangle' },
+                        // 'rectangle' collapses to a 2px dot at symbolHeight 1 under the
+                        // bundled Highcharts 11 build; lineMarker (markers disabled)
+                        // draws the reference's long thin rule.
+                        series: { animation: false, legendSymbol: 'lineMarker' },
                     },
                     // Identical series config to the on-screen fund page (show.blade.php): stacked areas with
                     // reversedStacks: false on the yAxis (Inflation at the bottom from 0%, then 5% Hurdle,
@@ -1773,6 +1802,7 @@
                         symbolWidth: 16,
                         symbolHeight: 1,
                         symbolRadius: 0,
+                        symbolPadding: 2,
                         itemDistance: 40,
                         margin: 6,
                         padding: 0,
@@ -1780,7 +1810,8 @@
                     tooltip: { enabled: false },
                     plotOptions: {
                         spline: { marker: { enabled: false }, lineWidth: 1.75 },
-                        series: { animation: false, legendSymbol: 'rectangle' },
+                        // See the inflation chart: 'rectangle' renders as a dot.
+                        series: { animation: false, legendSymbol: 'lineMarker' },
                     },
                     series: [
                         {

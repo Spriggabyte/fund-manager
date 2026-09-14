@@ -194,4 +194,55 @@ class ExcelImportPrescientGlobalEquityTest extends TestCase
         $this->assertSame(['date', 'fund', 'benchmark', 'peerGroup'], array_keys($performance[0]));
         $this->assertEquals(99.4, $performance[0]['peerGroup']);
     }
+
+    /**
+     * Regression (QC 2026-09-14): $chartData is seeded from the fund's saved
+     * chart_data, so a "not already set" guard on performanceData skipped
+     * every monthly re-import after the first and left the ILLUSTRATIVE
+     * PERFORMANCE line a month stale (R 137 drawn against a published R 139).
+     */
+    public function test_re_importing_a_newer_price_graph_refreshes_the_two_series_performance_data(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-prescient-global-equity']);
+
+        $july = $this->makeXlsx([
+            ['Start Date', 'Description', '823 A Class [iR]', '823 Fund Benchmark [MSCI AC ZAR3PM]', ''],
+            [44614, 'Feb 2022', 100.86617094, 101.3077843598, ''],
+            [44614, 'Jul 2026', 136.5307027, 187.5711200264, ''],
+        ], 'pge_price_graph_july');
+        (new PriceGraphImporter)->import($fund, $july);
+        $fund->save();
+
+        $august = $this->makeXlsx([
+            ['Start Date', 'Description', '823 A Class [iR]', '823 Fund Benchmark [MSCI AC ZAR3PM]', ''],
+            [44614, 'Feb 2022', 100.86617094, 101.3077843598, ''],
+            [44614, 'Jul 2026', 136.5307027, 187.5711200264, ''],
+            [44614, 'Aug 2026', 138.69499926, 187.6702017129, ''],
+        ], 'pge_price_graph_august');
+        $fund = $fund->fresh();
+        (new PriceGraphImporter)->import($fund, $august);
+        $fund->save();
+
+        $performance = $fund->fresh()->chart_data['performanceData'];
+        $this->assertCount(3, $performance);
+        $this->assertSame('2026-08', $performance[2]['date']);
+        $this->assertEquals(138.69, $performance[2]['fund']);
+        $this->assertEquals(187.67, $performance[2]['benchmark']);
+    }
+
+    /**
+     * The published PORTFOLIO STRUCTURE list reports its change against the
+     * last quarter end ("Change since 30 June 2026" on the August sheet),
+     * like the 821 feeder — not the prior month.
+     */
+    public function test_portfolio_structure_subtitle_uses_the_last_quarter_end(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-prescient-global-equity']);
+
+        $path = $this->makeXlsx($this->factsheetRows([['MONTH_END_DATE', '31 August 2026']]), 'pge_factsheet_subtitle');
+        (new FactsheetImporter)->import($fund, $path);
+        $fund->save();
+
+        $this->assertSame('Change since 30 June 2026', $fund->fresh()->sector_allocation['subtitle']);
+    }
 }

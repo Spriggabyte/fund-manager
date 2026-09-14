@@ -426,7 +426,9 @@
             margin: 0 0 6.5mm 0;
         }
         .stats-block { width: 47%; min-width: 0; }
-        .maturity-spread-block { flex: 1; min-width: 0; padding-right: 6mm; }
+        /* Reference: value column right edge at x≈192.6mm (11.4mm inside the
+           204mm content edge); the 39% bar runs 152.9→186mm. */
+        .maturity-spread-block { flex: 1; min-width: 0; padding-right: 11.5mm; }
 
         /* Portfolio statistics — label/value pairs, no header row. */
         .stats-table table th:first-child,
@@ -452,10 +454,13 @@
             margin-left: 0.4mm;
         }
         .stats-table table tr.stats-spacer-row td {
+            /* Reference: the blank row is a full 3.97mm row (grey-2 like the
+               Spread row above it). */
             padding: 0;
-            height: 2.6mm;
-            line-height: 2.6mm;
+            height: 3.6mm;
+            line-height: 3.6mm;
             font-size: 0;
+            background-color: var(--row-grey-2);
         }
 
         /* Maturity spread — CSS bar list (labels left, naartjie bars,
@@ -481,12 +486,13 @@
             min-width: 0;
         }
         .maturity-spread-bar {
-            height: 2.6mm;
+            /* Reference bars measure 4.2–4.4mm tall on a 5.3mm row pitch. */
+            height: 4.3mm;
             background-color: var(--naartjie);
         }
         .maturity-spread-value {
-            width: 8mm;
-            min-width: 8mm;
+            width: 6.5mm;
+            min-width: 6.5mm;
             text-align: right;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
@@ -599,16 +605,18 @@
            BOND PAGE 2 — monthly performance grid + footnotes
            ===================================================== */
         /* MONTHLY PERFORMANCE % — year label column + JAN..DEC + YTD. */
+        /* 824 reference: headers and cells both Avenir Next 7.56pt, header
+           row 4.2mm, data rows 4.15mm pitch, year column ~9.8mm. */
         .monthly-table table th {
-            font-size: 6.5pt;
-            padding: 0.6mm 0.7mm;
+            font-size: 7.5pt;
+            padding: 0.42mm 0.7mm;
         }
         .monthly-table table th:first-child {
             width: 7%;
         }
         .monthly-table table td {
-            font-size: 7pt;
-            padding: 0.7mm 0.7mm;
+            font-size: 7.5pt;
+            padding: 0.38mm 0.7mm;
         }
         .monthly-section {
             margin-bottom: 6mm;
@@ -620,17 +628,18 @@
             margin-top: 54mm;
         }
         .page2-footnotes .footnotes {
-            font-size: 6.5pt;
-            line-height: 8pt;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 7pt;
+            line-height: 8.6pt;
             color: #000;
             padding-left: 0;
         }
 
-        /* TIC table — reference (App 2): label 50.2% (value column starts at
-           x=134mm), two equal value columns with RIGHT-ALIGNED headers and
-           values (right edge inset ~2mm), 7pt text. First (TER) + last data
-           row (Transaction costs) white; middle sub-item rows grey. Total row
-           (.total-row) keeps red styling, Avenir Next Medium. */
+        /* TIC table — 824 August 2026 reference: label 50.2% (value column
+           starts at x=134mm), two equal value columns, 7.5pt headers and
+           labels, row pitch ~4.4mm. Only the em-dashed sub-item rows
+           (Manager's charge, VAT and sundry) are grey; TER and Transaction
+           costs are white. Total row is naartjie, Avenir Next Regular 8pt. */
         .tic-table table th:first-child,
         .tic-table table td:first-child {
             width: 50.2%;
@@ -649,27 +658,26 @@
             padding-right: 1mm;
         }
         .tic-table table th {
-            font-size: 6pt;
+            font-size: 7.5pt;
+            padding-top: 0.5mm;
+            padding-bottom: 0.5mm;
         }
         .tic-table table td {
-            /* Reference labels ~7% larger than 7pt ("Total expense ratio
-               (TER)" measures 174px at 150dpi). */
             font-size: 7.5pt;
-            padding-top: 0.92mm;
-            padding-bottom: 0.92mm;
+            padding-top: 0.5mm;
+            padding-bottom: 0.5mm;
         }
         .tic-table table tbody tr td {
-            background-color: var(--row-grey-2);
-        }
-        .tic-table table tbody tr:nth-child(1) td,
-        .tic-table table tbody tr:nth-child(6) td {
             background-color: var(--white);
         }
+        .tic-table table tbody tr.tic-sub-row td {
+            background-color: var(--row-grey-2);
+        }
         .tic-table table tr.total-row td {
-            font-size: 7.5pt;
-            font-weight: 500;
-            padding-top: 0.95mm;
-            padding-bottom: 0.95mm;
+            font-size: 8pt;
+            font-weight: 400;
+            padding-top: 0.65mm;
+            padding-bottom: 0.65mm;
         }
 
         /* Performance fee examples — label 48.2%, four 12.95% columns,
@@ -954,7 +962,8 @@
 
         .fee-rates-table td:last-child:not([colspan]) {
             text-align: left;
-            font-weight: 500;
+            /* 824 reference sets the values in Avenir Next Regular. */
+            font-weight: 400;
             padding-left: 1.6mm;
         }
 
@@ -1728,7 +1737,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $row)
-                                        <tr>
+                                        <tr class="{{ str_starts_with(trim((string) ($row['name'] ?? '')), '—') ? 'tic-sub-row' : 'tic-plain-row' }}">
                                             <td>{{ $row['name'] }}</td>
                                             <td>{{ $fmt($row['12m'] ?? '', 2) }}</td>
                                             <td>{{ $fmt($row['36m'] ?? '', 2) }}</td>
@@ -1810,10 +1819,13 @@
             };
 
             // The portfolio chart is a cash-value spline chart in the exact style of the
-            // signed-off Balanced portfolio chart (pdf.blade.php). The 826 reference
-            // ticks every SIX months from the first data point (Oct 22, Apr 23, …
-            // Oct 25 — the fund's short history quarters the balanced fund's 2-year
-            // pitch), LINEAR y-axis from the 100 baseline.
+            // signed-off Balanced portfolio chart (pdf.blade.php). The 824 August 2026
+            // reference ticks every NINE months from the first data point (Oct 22,
+            // Jul 23, Apr 24, Jan 25, Oct 25, Jul 26), LINEAR y-axis from the 100
+            // baseline. The plot top sits ~2.6% of the data range above the higher
+            // series' end value (measured: fund end 143.6 at 198.3mm, axis top
+            // 197.4mm, baseline 231.8mm) so the lines fill the plot corner-to-corner
+            // like the reference instead of stopping half-way up a rounded axis.
             const renderCashChart = (containerId, data, seriesDefs, legendItemDistance = 40) => {
                 if (!data.length) return;
                 const formatCashLabel = (v) => 'R ' + Math.round(v).toLocaleString('en-US');
@@ -1821,7 +1833,7 @@
                 const maxVal = Math.max(
                     ...data.map(d => Math.max(...seriesDefs.map(s => d[s.key] || 0)))
                 );
-                const yMax = Math.ceil(maxVal * 1.05 / 100) * 100;
+                const yMax = 100 + Math.max(maxVal - 100, 1) / 0.974;
 
                 const dates = data.map(d => d.date);
                 const tickPositions = (function () {
@@ -1829,7 +1841,7 @@
                     const anchor = monthsSinceEpoch(dates[0]);
                     const positions = [];
                     dates.forEach((d, i) => {
-                        if ((monthsSinceEpoch(d) - anchor) % 6 === 0) positions.push(i);
+                        if ((monthsSinceEpoch(d) - anchor) % 9 === 0) positions.push(i);
                     });
                     return positions;
                 })();
@@ -1847,7 +1859,7 @@
                         lineColor: '#000',
                         lineWidth: 1,
                         labels: {
-                            // Eight 6-monthly labels share the half-width plot —
+                            // Six 9-monthly labels share the half-width plot —
                             // slightly smaller than the balanced chart's 8px, and
                             // never ellipsized (the right spacing reserves room).
                             style: { fontSize: '7.5px', color: '#000', textOverflow: 'none' },

@@ -210,4 +210,200 @@ class ExcelImportBondTest extends TestCase
         $this->assertNotContains('— Performance charge', $names);
         $this->assertContains('— VAT and sundry costs', $names);
     }
+
+    /*
+     * QC 2026-09-14 regression cover: the 826 export carries the flex income
+     * STAT_SPREAD_TO_JIBAR key, which used to flip the bond fund onto the flex
+     * statistics layout and blank every published value; the July+ exports
+     * also dropped the SA_ prefix from the duration keys, and broken months
+     * export a bare "%" instead of ERR.
+     */
+
+    /** The seeded bond statistics table, as published on the reference sheet. */
+    private function seededBondStatistics(): array
+    {
+        return [
+            'title' => 'PORTFOLIO STATISTICS',
+            'headers' => ['', 'FUND', 'BENCHMARK', 'RELATIVE TO ALBI'],
+            'rows' => [
+                ['name' => 'Yield', 'sup' => '1', 'fund' => '9.89%', 'benchmark' => '9.10%', 'relative' => ''],
+                ['name' => 'Weighted average time to maturity', 'fund' => '11.60 years', 'benchmark' => '11.55 years', 'relative' => ''],
+                ['spacer' => true],
+                ['name' => 'Total duration', 'sup' => '2', 'fund' => '6.16', 'benchmark' => '6.33', 'relative' => '-0.17'],
+                ['name' => '— Fixed rate duration', 'fund' => '5.02', 'benchmark' => '6.33', 'relative' => '-1.31'],
+                ['name' => '— Inflation linked duration', 'fund' => '1.12', 'benchmark' => '-', 'relative' => '1.12'],
+                ['name' => '— Floating rate duration', 'fund' => '0.02', 'benchmark' => '-', 'relative' => '0.02'],
+            ],
+        ];
+    }
+
+    public function test_bond_statistics_keep_the_bond_layout_despite_the_spread_to_jibar_key(): void
+    {
+        $fund = Fund::factory()->create([
+            'template' => 'show-bond',
+            'asset_allocation' => ['portfolioStatistics' => $this->seededBondStatistics()],
+        ]);
+
+        // The August 2026 826 export: STAT_SPREAD_TO_JIBAR present, the
+        // number dropped from every statistic ("%", " years", blank).
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['MONTH_END_DATE', '31 August 2026'],
+            ['STAT_YIELD', '%'],
+            ['STAT_WEIGHTED_AVERAGE_TTM', ' years'],
+            ['STAT_SPREAD_TO_JIBAR', '%'],
+            ['STAT_DURATION', ''],
+            ['STAT_FIXED_RATE_DURATION', ''],
+            ['STAT_INFLATION_LINKED_DURATION', ''],
+            ['STAT_FLOATING_RATE_DURATION', ''],
+            ['BM_YIELD', '%'],
+            ['BM_WEIGHTED_AVERAGE_TTM', ' years'],
+            ['BM_DURATION', ''],
+            ['BM_FIXED_RATE_DURATION', ''],
+            ['BM_INFLATION_LINKED_DURATION', '-'],
+            ['BM_FLOATING_RATE_DURATION', '-'],
+            ['VAR_TO_BM_DURATION', ''],
+            ['VAR_TO_BM_FIXED_RATE_DURATION', ''],
+            ['VAR_TO_BM_INFLATION_LINKED_DURATION', ''],
+            ['VAR_TO_BM_FLOATING_RATE_DURATION', ''],
+        ], 'bond-stats-err');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $stats = $fund->asset_allocation['portfolioStatistics'];
+
+        $this->assertSame(['', 'FUND', 'BENCHMARK', 'RELATIVE TO ALBI'], $stats['headers']);
+        $this->assertSame(
+            ['Yield', 'Weighted average time to maturity', 'Total duration', '— Fixed rate duration', '— Inflation linked duration', '— Floating rate duration'],
+            array_values(array_filter(array_column($stats['rows'], 'name')))
+        );
+
+        $rows = collect($stats['rows'])->filter(fn ($row) => isset($row['name']))->keyBy('name');
+        // Every unusable cell keeps its seeded value.
+        $this->assertSame('9.89%', $rows['Yield']['fund']);
+        $this->assertSame('9.10%', $rows['Yield']['benchmark']);
+        $this->assertSame('11.60 years', $rows['Weighted average time to maturity']['fund']);
+        $this->assertSame('6.16', $rows['Total duration']['fund']);
+        $this->assertSame('-0.17', $rows['Total duration']['relative']);
+        $this->assertSame('0.02', $rows['— Floating rate duration']['relative']);
+        // The feed's explicit "-" (ALBI has no inflation linked / floating paper) is usable.
+        $this->assertSame('-', $rows['— Inflation linked duration']['benchmark']);
+        $this->assertSame('-', $rows['— Floating rate duration']['benchmark']);
+    }
+
+    public function test_bond_statistics_read_the_unprefixed_duration_keys(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-bond']);
+
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['STAT_YIELD', '9.89'],
+            ['STAT_WEIGHTED_AVERAGE_TTM', '11.6'],
+            ['STAT_SPREAD_TO_JIBAR', '%'],
+            ['STAT_DURATION', '6.16'],
+            ['STAT_FIXED_RATE_DURATION', '5.02'],
+            ['STAT_INFLATION_LINKED_DURATION', '1.12'],
+            ['STAT_FLOATING_RATE_DURATION', '0.02'],
+            ['BM_YIELD', '9.1'],
+            ['BM_WEIGHTED_AVERAGE_TTM', '11.55'],
+            ['BM_DURATION', '6.33'],
+            ['BM_FIXED_RATE_DURATION', '6.33'],
+            ['BM_INFLATION_LINKED_DURATION', '-'],
+            ['BM_FLOATING_RATE_DURATION', '-'],
+            ['VAR_TO_BM_DURATION', '-0.17'],
+            ['VAR_TO_BM_FIXED_RATE_DURATION', '-1.31'],
+            ['VAR_TO_BM_INFLATION_LINKED_DURATION', '1.12'],
+            ['VAR_TO_BM_FLOATING_RATE_DURATION', '0.02'],
+        ], 'bond-stats-values');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $rows = collect($fund->asset_allocation['portfolioStatistics']['rows'])
+            ->filter(fn ($row) => isset($row['name']))
+            ->keyBy('name');
+
+        $this->assertSame('9.89%', $rows['Yield']['fund']);
+        $this->assertSame('9.10%', $rows['Yield']['benchmark']);
+        $this->assertSame('11.60 years', $rows['Weighted average time to maturity']['fund']);
+        $this->assertSame('6.16', $rows['Total duration']['fund']);
+        $this->assertSame('6.33', $rows['Total duration']['benchmark']);
+        $this->assertSame('-0.17', $rows['Total duration']['relative']);
+        $this->assertSame('-1.31', $rows['— Fixed rate duration']['relative']);
+        $this->assertSame('-', $rows['— Inflation linked duration']['benchmark']);
+        $this->assertSame('0.02', $rows['— Floating rate duration']['relative']);
+    }
+
+    public function test_flex_income_statistics_still_take_the_flex_layout(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-flex-income']);
+
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['STAT_YIELD', '9.44'],
+            ['STAT_SPREAD_TO_JIBAR', '2.46'],
+            ['STAT_SA_DURATION', '0.77'],
+        ], 'flex-stats-guard');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $stats = $fund->asset_allocation['portfolioStatistics'];
+        $this->assertArrayNotHasKey('headers', $stats);
+        $rows = collect($stats['rows'])->filter(fn ($row) => isset($row['name']))->keyBy('name');
+        $this->assertSame('2.46%', $rows['Spread to JIBAR']['value']);
+        $this->assertSame('0.77', $rows['SA duration']['value']);
+        $this->assertArrayNotHasKey('Total duration', $rows->all());
+    }
+
+    public function test_maturity_change_labels_survive_a_bare_percent_export(): void
+    {
+        $fund = Fund::factory()->create([
+            'template' => 'show-bond',
+            'chart_data' => [
+                'maturityData' => [
+                    'title' => 'MATURITY BREAKDOWN',
+                    'categories' => [
+                        ['name' => '0-1 Year', 'fund' => -16, 'benchmark' => 0, 'change' => '(+0.0%)'],
+                        ['name' => '1-3 Years', 'fund' => 19, 'benchmark' => 3.2, 'change' => '(+0.0%)'],
+                        ['name' => '3-7 Years', 'fund' => 45, 'benchmark' => 28, 'change' => '(+13.5%)'],
+                        ['name' => '7-12 Years', 'fund' => 14, 'benchmark' => 27.6, 'change' => '(-12.3%)'],
+                        ['name' => '12-20 Years', 'fund' => 23, 'benchmark' => 23.3, 'change' => '(+0.3%)'],
+                        ['name' => '20+ Years', 'fund' => 16, 'benchmark' => 17.2, 'change' => '(-1.5%)'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['MONTH_END_DATE', '31 August 2026'],
+            ['LAST_QUARTER_END', '30 June 2026'],
+            ['MATURITY_0_TO_1_YEAR', '-17'],
+            ['MAT_CHANGE_0_TO_1_YEARS', '%'],
+            ['MATURITY_1_TO_3_YEARS', '20'],
+            ['MAT_CHANGE_1_TO_3_YEARS', '%'],
+            ['MATURITY_3_TO_7_YEARS', '42'],
+            ['MAT_CHANGE_3_TO_7_YEARS', 'ERR'],
+            ['MATURITY_7_TO_12_YEARS', '15'],
+            ['MAT_CHANGE_7_TO_12_YEARS', '-12.3'],
+            ['MATURITY_12_TO_20_YEARS', '24'],
+            ['MAT_CHANGE_12_TO_20_YEARS', '0.3'],
+            ['MATURITY_20_PLUS_YEARS', '16'],
+            ['MAT_CHANGE_20_PLUS_YEARS', '-1.5'],
+        ], 'bond-maturity-percent');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $categories = collect($fund->chart_data['maturityData']['categories'])->keyBy('name');
+
+        $this->assertSame('Change since 30 June 2026', $fund->chart_data['maturityData']['subtitle']);
+        // Fund bars come from the feed; the hand-maintained ALBI bars survive.
+        $this->assertSame(-17, $categories['0-1 Year']['fund']);
+        $this->assertSame(42, $categories['3-7 Years']['fund']);
+        $this->assertSame(28, $categories['3-7 Years']['benchmark']);
+        // A bare "%" or ERR keeps the stored label; numeric changes are formatted.
+        $this->assertSame('(+0.0%)', $categories['0-1 Year']['change']);
+        $this->assertSame('(+13.5%)', $categories['3-7 Years']['change']);
+        $this->assertSame('(-12.3%)', $categories['7-12 Years']['change']);
+        $this->assertSame('(+0.3%)', $categories['12-20 Years']['change']);
+    }
 }

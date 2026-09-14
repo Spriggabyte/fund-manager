@@ -49,7 +49,7 @@ class ExcelImportGlobalEquityFeederTest extends TestCase
     {
         return array_merge([
             ['Code', 'Value'],
-            ['MONTH_END_DATE', '31 July 2026'],
+            ['MONTH_END_DATE', '31 August 2026'],
             ['LAST_QUARTER_END', '30 June 2026'],
             ['PUBLISHED_DATE', '04 August 2026'],
             ['ESAOT_RANK_1_ITEM', 'Communication services'],

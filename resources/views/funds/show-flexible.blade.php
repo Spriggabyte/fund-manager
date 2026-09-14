@@ -612,7 +612,9 @@
         td.change-cell { color: #000; }
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            font-size: 5.1pt;
+            /* 5.9pt renders the Unicode triangle ~2.05mm tall — the reference's
+               Wingdings3 glyph measures 2.08mm (QC 2026-09-14). */
+            font-size: 5.9pt;
             /* Reference gap between triangle and value is ~8-9px at 150dpi;
                the bare word space only gave ~4px. */
             margin-right: 0.8mm;
@@ -1300,7 +1302,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($fund->data['mainContent']['topInvestments']['rows'] as $idx => $row)
-                                    <tr class="{{ ($row['highlight'] ?? false) || $idx < 2 ? 'highlight-row' : '' }}">
+                                    <tr class="{{ ($row['highlight'] ?? false) ? 'highlight-row' : '' }}">
                                         <td><span x-data="editableField('mainContent.topInvestments.rows.{{ $idx }}.security', '{{ addslashes($row['security']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['security'] }}</span></td>
                                         <td>{{ $row['assetClass'] }}</td>
                                         <td>{{ $row['market'] }}</td>
@@ -1651,11 +1653,16 @@
                 return months[parseInt(m[2], 10) - 1] + ' ' + m[1].slice(-2);
             };
 
-            // Both flexible-fund charts are cash-value spline charts in the exact style of the
-            // signed-off Balanced portfolio chart (pdf.blade.php). Keep the config identical —
-            // calendar-aligned ticks every 4 years anchored on the first FULL month (the
-            // reference labels Apr 08, Apr 12, … — the 100 baseline point sits one month
-            // earlier and carries no tick), LINEAR y-axis from the 100 baseline.
+            // Both flexible-fund charts are cash-value spline charts in the style of the
+            // signed-off Balanced portfolio chart (pdf.blade.php): calendar-aligned ticks
+            // every 4 years anchored on the first FULL month (the reference labels
+            // Apr 08, Apr 12, … — the 100 baseline point sits one month earlier and
+            // carries no tick). Unlike the balanced chart the published flexible charts
+            // use a LOGARITHMIC y-axis (measured 2026-09-14 by fitting the reference
+            // curve paths to the feed series: log rms 0.1–0.26mm vs linear 2–2.8mm;
+            // the CPI+5% benchmark is a straight line). The x-axis line sits at the
+            // 100 level, ticks hang below it, and the y-axis extends down to a floor
+            // just under the data minimum so the 2008 dip is visible.
             const renderCashChart = (containerId, data, seriesDefs, legendItemDistance = 40) => {
                 if (!data.length) return;
                 const formatCashLabel = (v) => 'R ' + Math.round(v).toLocaleString('en-US');
@@ -1663,7 +1670,13 @@
                 const maxVal = Math.max(
                     ...data.map(d => Math.max(...seriesDefs.map(s => d[s.key] || 0)))
                 );
-                const yMax = Math.ceil(maxVal * 1.05 / 100) * 100;
+                // Reference: the top curve touches the top of the plot (no headroom)
+                // and the floor sits ~1% under the lowest point.
+                const minVal = Math.min(
+                    ...data.map(d => Math.min(...seriesDefs.map(s => d[s.key] || Infinity)))
+                );
+                const yMax = maxVal;
+                const yMin = Math.min(100, minVal) * 0.99;
 
                 const dates = data.map(d => d.date);
                 const tickPositions = (function () {
@@ -1700,24 +1713,26 @@
                             autoRotation: false,
                         },
                         tickPositions: tickPositions,
+                        // Draw the x-axis line (and its ticks) at the 100 level, not at
+                        // the axis floor — the curves dip below it like the reference.
+                        crossing: 100,
                     },
                     yAxis: {
                         title: { text: null },
-                        // LINEAR axis from 0 — measured from the published reference
-                        // chart (see note above). Only the 100 baseline is labelled.
+                        // LOG axis (see note above). Only the 100 baseline is labelled.
+                        type: 'logarithmic',
                         gridLineWidth: 0,
                         lineColor: '#000',
                         lineWidth: 1,
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
-                        // Axis crosses at the 100 baseline like the reference (the
-                        // curve's first point sits ON the x-axis line).
-                        min: 100,
+                        min: yMin,
                         max: yMax,
                         endOnTick: false,
                         startOnTick: false,
-                        tickPositions: [100],
+                        // Log-axis tick positions are given in log10 space (10^2 = 100).
+                        tickPositions: [2],
                         labels: {
                             distance: 2,
                             y: 8,
@@ -1741,9 +1756,6 @@
                     },
                     tooltip: { enabled: false },
                     plotOptions: {
-                        // clip:false lets the 2008 dip draw BELOW the 100 baseline /
-                        // x-axis line exactly like the reference (the axis stays at
-                        // 100; the series is simply not clipped to the plot area).
                         spline: { marker: { enabled: false }, lineWidth: 1.75, clip: false },
                         series: { animation: false, clip: false },
                     },
