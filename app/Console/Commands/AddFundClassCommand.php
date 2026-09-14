@@ -106,6 +106,9 @@ class AddFundClassCommand extends Command
         if ($result['otherClasses']) {
             $this->line('  Ignored (other share classes): '.implode(', ', $result['otherClasses']));
         }
+        foreach ($result['superseded'] as $loser => $winner) {
+            $this->line("  Superseded re-export: {$loser} → {$winner}");
+        }
 
         if (! $result['imported']) {
             $this->error("No recognised class {$fund->class_code} exports found in the {$month} download.");

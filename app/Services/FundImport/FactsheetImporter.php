@@ -19,6 +19,15 @@ class FactsheetImporter extends AbstractExcelImporter
     private const PRESCIENT_TEMPLATES = ['show-prescient-feeder', 'show-prescient-global-equity'];
 
     /**
+     * Sheets whose DISTRIBUTIONS row is static prose ("… does not distribute
+     * its income") although the export emits zero-value distribution rows:
+     * the Prescient feeders above plus the Foord global equity feeder (821).
+     *
+     * @var list<string>
+     */
+    private const STATIC_DISTRIBUTION_TEMPLATES = ['show-prescient-feeder', 'show-prescient-global-equity', Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE];
+
+    /**
      * Sheets whose published line carries no full stop (877, 878). The 879
      * reference prints one, so it is deliberately absent here.
      *
@@ -79,7 +88,7 @@ class FactsheetImporter extends AbstractExcelImporter
      *
      * @var list<string>
      */
-    private const PORTFOLIO_STRUCTURE_TEMPLATES = ['show-global-equity', 'show-hassen-shariah', 'show-prescient-global-equity', 'show-australian-feeder'];
+    private const PORTFOLIO_STRUCTURE_TEMPLATES = ['show-global-equity', 'show-hassen-shariah', 'show-prescient-global-equity', 'show-australian-feeder', Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE];
 
     public function supports(string $filename): bool
     {
@@ -107,34 +116,6 @@ class FactsheetImporter extends AbstractExcelImporter
         $this->mapPerformanceTable($fund, $data);
         $this->mapTotalInvestmentCharge($fund, $data);
         $this->updateChartDescription($fund, $data);
-    }
-
-    /**
-     * A feed cell that can't be used this month: absent, the export's ERR
-     * marker, or empty. The bond fund's stats arrive as ERR some months, so
-     * unusable cells preserve whatever was stored previously.
-     */
-    private function isUsable(mixed $value): bool
-    {
-        return $value !== null && $value !== '' && $value !== 'ERR';
-    }
-
-    /**
-     * Statistic cells additionally have to carry a digit — or be the feed's
-     * explicit "-" no-exposure marker. A broken STAT_ export does not always
-     * read "ERR": the 841 feed exports a bare "%" for STAT_YIELD and
-     * STAT_SPREAD_TO_JIBAR (the number dropped, the suffix survived), which
-     * would otherwise overwrite the seeded value.
-     */
-    private function isUsableStat(mixed $value): bool
-    {
-        if (! $this->isUsable($value)) {
-            return false;
-        }
-
-        $value = (string) $value;
-
-        return trim($value) === '-' || preg_match('/\d/', $value) === 1;
     }
 
     private function mapScalarFields(Fund $fund, array $data): void
@@ -214,12 +195,13 @@ class FactsheetImporter extends AbstractExcelImporter
         // Distributions. The equity design omits the colon between date and
         // amount; the other signed-off designs include it.
         //
-        // The Prescient feeder sheets (822, 823) are the exception: both feed
-        // roll-up funds that never distribute, so their DISTRIBUTIONS row
-        // carries static prose while the export still emits zero-value
-        // distribution rows. Importing those would clobber the seeded
-        // sentence, so the feed's distribution keys are ignored for them.
-        if (! in_array($fund->template ?? '', self::PRESCIENT_TEMPLATES, true)
+        // The Prescient feeder sheets (822, 823) and the Foord global equity
+        // feeder (821) are the exception: all feed roll-up funds that never
+        // distribute, so their DISTRIBUTIONS row carries static prose while
+        // the export still emits zero-value distribution rows. Importing
+        // those would clobber the seeded sentence, so the feed's
+        // distribution keys are ignored for them.
+        if (! in_array($fund->template ?? '', self::STATIC_DISTRIBUTION_TEMPLATES, true)
             && isset($data['LAST_DISTRIBUTION_DATE']) && isset($data['LAST_DISTRIBUTION_AMOUNT'])) {
             $separator = $fund->template === 'show-equity' ? ' ' : ': ';
             $dist = $data['LAST_DISTRIBUTION_DATE'].$separator.$data['LAST_DISTRIBUTION_AMOUNT'];

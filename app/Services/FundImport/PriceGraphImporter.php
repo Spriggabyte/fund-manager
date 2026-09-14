@@ -110,17 +110,20 @@ class PriceGraphImporter extends AbstractExcelImporter
         // The global equity (Lux) exports carry three series — fund, the
         // MSCI benchmark and the Morningstar peer-group average. The peer
         // column is named "Fund Benchmark (2nd)" on 877/879, "Fund Misc
-        // (3rd)" on 878 and "Fund Benchmark (4th)" on 880; 821's column E is
-        // "Misc (1st)" and must not match.
+        // (3rd)" on 878, "Fund Benchmark (4th)" on 880 and "Fund Misc (1st)
+        // [MRN GLB LCAP CCY ZAR]" on the 821 feeder — the MRN bracket is
+        // what distinguishes it from 809's "Misc (1st) [US CPI ZAR]", which
+        // the four-series branch above has already claimed.
         // Identified by its own headers (an MSCI benchmark in column D plus
         // the peer column in E, no CPI/WGBI columns); re-emitted under
         // semantic keys for the three-series PORTFOLIO PERFORMANCE VS
-        // BENCHMARK chart.
+        // BENCHMARK chart (the 821 sheet draws only fund and benchmark).
         if (! isset($chartData['performanceData']) && $fundCol !== null && $msciCol === 3) {
             $peerHeader = (string) ($headers[4] ?? '');
             $isPeerColumn = str_contains($peerHeader, 'Benchmark (2nd)')
                 || str_contains($peerHeader, 'Misc (3rd)')
-                || str_contains($peerHeader, 'Benchmark (4th)');
+                || str_contains($peerHeader, 'Benchmark (4th)')
+                || str_contains($peerHeader, 'Misc (1st) [MRN');
             if ($isPeerColumn && $cpiCol === null && $wgbiCol === null) {
                 $performanceData = [];
                 foreach ($portfolioData as $entry) {
@@ -146,7 +149,7 @@ class PriceGraphImporter extends AbstractExcelImporter
         // two-line ILLUSTRATIVE PERFORMANCE chart. Identified by an MSCI
         // benchmark in column D with NOTHING in column E: 821/878/879/880
         // also lead with an MSCI benchmark but carry a peer or second
-        // benchmark alongside it, and must not fall into this branch.
+        // benchmark alongside it, and take the three-series branch above.
         if (! isset($chartData['performanceData'])
             && $fundCol !== null
             && $msciCol === 3

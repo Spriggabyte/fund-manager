@@ -32,7 +32,9 @@ class PuppeteerPdfService
      */
     public function generatePdf(Fund $fund): string
     {
-        $filename = 'fund-'.$fund->id.'-'.now()->format('Y-m-d-His').'.pdf';
+        // Published-document name plus a timestamp so concurrent renders of
+        // the same sheet (queue workers, CLI) never share a temp file.
+        $filename = preg_replace('/\.pdf$/', '', $fund->exportFilename()).' ('.now()->format('Y-m-d-His').').pdf';
         $tempDir = storage_path('app/temp');
         $tempPdfPath = $tempDir.'/'.$filename;
 
@@ -174,7 +176,10 @@ class PuppeteerPdfService
                 return document.querySelector('#inflationChart') !== null ||
                        document.querySelector('#strategyChart') !== null ||
                        document.querySelector('#portfolioChart') !== null ||
-                       document.querySelector('#performanceChart') !== null;
+                       document.querySelector('#performanceChart') !== null ||
+                       document.querySelector('#maturityChart') !== null ||
+                       document.querySelector('#sectorChart') !== null ||
+                       document.querySelector('#geoPieCharts') !== null;
             });
 
             if (hasCharts) {

@@ -22,8 +22,9 @@ class FundDataSyncService
      * Downloaded months that contain data for a fund code, newest first,
      * as month => xlsx file count. Drives the edit page's import card.
      *
-     * The count is class-aware so the card advertises what would actually be
-     * imported, not every class's exports sitting in the same folder.
+     * The count is class-aware and re-export-aware so the card advertises
+     * what would actually be imported, not every class's exports sitting in
+     * the same folder nor every suffixed re-export of the same file.
      *
      * @return array<string, int>
      */
@@ -43,7 +44,14 @@ class FundDataSyncService
             ->mapWithKeys(function (string $month) use ($local, $manager, $fundCode, $classCode): array {
                 $xlsx = preg_grep('/\.xlsx$/i', $local->files(self::LOCAL_ROOT."/{$month}/{$fundCode}")) ?: [];
 
-                return [$month => count($manager->filesForClass(array_values($xlsx), $fundCode, $classCode))];
+                $files = array_map(
+                    fn (string $file): string => $local->path($file),
+                    $manager->filesForClass(array_values($xlsx), $fundCode, $classCode)
+                );
+
+                // Suffixed re-exports collapse to one file, so the card
+                // advertises what would actually be imported.
+                return [$month => count($manager->dedupeReExports($files)['kept'])];
             })
             ->filter()
             ->all();

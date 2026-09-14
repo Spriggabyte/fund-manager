@@ -46,7 +46,7 @@ class FundController extends Controller
             ->with('success', 'Fund created successfully.');
     }
 
-    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-conservative', 'show-bond', 'show-flex-income', 'show-income', 'show-inflation-income', 'show-domestic', 'show-absolute', 'show-shariah', 'show-shariah-income', 'show-international', 'show-international-trust', 'show-global-equity', 'show-feeder', 'show-prescient-feeder', 'show-prescient-global-equity', 'show-hassen-shariah', 'show-australian-feeder', 'show-asia-ex-japan'];
+    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-conservative', 'show-bond', 'show-flex-income', 'show-income', 'show-inflation-income', 'show-domestic', 'show-absolute', 'show-shariah', 'show-shariah-income', 'show-international', 'show-international-trust', 'show-global-equity', 'show-feeder', 'show-prescient-feeder', 'show-prescient-global-equity', 'show-global-equity-feeder', 'show-hassen-shariah', 'show-australian-feeder', 'show-asia-ex-japan', 'show-local-overview', 'show-global-overview'];
 
     public function show(Fund $fund): View
     {
@@ -209,6 +209,13 @@ class FundController extends Controller
         if ($result['skipped']) {
             $summary .= ' Skipped (no importer): '.implode(', ', $result['skipped']).'.';
         }
+        if ($result['superseded']) {
+            $superseded = [];
+            foreach ($result['superseded'] as $loser => $winner) {
+                $superseded[] = "{$loser} → {$winner}";
+            }
+            $summary .= ' Superseded re-exports: '.implode(', ', $superseded).'.';
+        }
 
         return redirect()->route('funds.edit', $fund)->with('success', $summary);
     }
@@ -313,7 +320,8 @@ class FundController extends Controller
 
         abort_unless($export->isDone() && $export->path, 404);
 
-        $filename = 'fund-'.$export->fund_id.'-'.$export->created_at->format('Y-m-d').'.pdf';
+        // Published-document naming: "Foord … Fund Class A at 2026-08-31.pdf".
+        $filename = $export->fund->exportFilename($export->created_at);
 
         return Storage::disk($export->disk)->download($export->path, $filename);
     }

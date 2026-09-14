@@ -157,4 +157,38 @@ class FundImportMonthTest extends TestCase
             ->assertSee('Class Code')
             ->assertDontSee('Import 2026-06');
     }
+
+    /**
+     * The multi-fund overview sheets have no share class: their feed folder
+     * (LOC) holds one LOCAL_OVERVIEW.xlsx, so the card lists months without
+     * asking for a class code.
+     */
+    public function test_edit_page_lists_months_for_overview_fund_without_class_code(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create([
+            'user_id' => $user->id,
+            'template' => 'show-local-overview',
+            'fund_code' => 'LOC',
+            'class_code' => null,
+        ]);
+
+        $spreadsheet = new Spreadsheet;
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Set');
+        $sheet->fromArray([
+            ['Code', 'Value'],
+            ['MONTH_END_DATE', '30 June 2026'],
+            ['818_FOORD_1Y_TO_D', '7.7'],
+        ], null, 'A1', true);
+
+        $target = FundDataSyncService::LOCAL_ROOT.'/2026-06/LOC/LOCAL_OVERVIEW.xlsx';
+        Storage::disk('local')->makeDirectory(dirname($target));
+        (new Xlsx($spreadsheet))->save(Storage::disk('local')->path($target));
+
+        $this->actingAs($user)
+            ->get(route('funds.edit', $fund))
+            ->assertOk()
+            ->assertSee('Import 2026-06');
+    }
 }

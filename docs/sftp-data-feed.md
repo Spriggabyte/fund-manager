@@ -76,6 +76,13 @@ Uniqueness is on the **pair** `(fund_code, class_code)` — several funds share 
 prompt instead of the import card, because importing a multi-class folder without
 one would pull in whichever class sorted last.
 
+The exception is the multi-fund overview sheets. Their feed folders are not fund
+codes but `LOC` (`LOCAL_OVERVIEW.xlsx`, FUND OVERVIEW: SOUTH AFRICA) and `GLB`
+(`GLOBAL_OVERVIEW.xlsx`, not yet onboarded); each maps to one **class-less** fund
+record (`fund_code = 'LOC'`, `class_code = null`, template in
+`Fund::OVERVIEW_TEMPLATES`), and the import card lists months for those without
+asking for a class.
+
 ---
 
 ## 3. Configuration
@@ -270,9 +277,23 @@ filename**, case-insensitive:
 | `INFLATION_GRAPH` | `InflationGraphImporter` | inflation chart series |
 | `ALSI_GRAPH` | `AlsiGraphImporter` | `chart_data['monthlyData']` (equity) |
 | `COST_REG28_GRAPH` | `CostReg28GraphImporter` | `chart_data['strategyData']` (flexible) |
+| `LOCAL_OVERVIEW` (basename starts with) | `LocalOverviewImporter` | `performance_table`, `asset_allocation`, `sector_allocation`, `chart_data['maturityData']`, `page2_content`, `fund_date` (overview sheet) |
+| `GLOBAL_OVERVIEW` (basename starts with) | `GlobalOverviewImporter` | `performance_table`, `asset_allocation`, `sector_allocation`, `chart_data['geographicExposure']`, `page2_content`, `fund_date` (global overview sheet; pie/sector figures are kept from the record until the feed carries `_CURRENT` cells) |
 
 Registry order is deliberate: the factsheet rewrites tables and scalars, the
 graph importers only touch `chart_data`, so the factsheet must run first.
+
+**Re-exports.** The export tool re-exports an existing file under a random
+numeric suffix and the feed keeps every copy (`LOCAL_OVERVIEW.xlsx`,
+`LOCAL_OVERVIEW_2049089080.xlsx`, `LOCAL_OVERVIEW_1617171697.xlsx`). Before
+routing, `FundImportManager::dedupeReExports()` groups files by stem (suffix
+stripped) and keeps only the newest by the Details sheet's "Time Stamp [ZA]"
+cell (B7), falling back to the file's modification time when there is no
+Details sheet. The losers are reported as *superseded* (`loser → winner`) by
+`fund:import`, `fund:add-class` and the edit-page flash, and the feed card's
+file count only counts the kept files. Files without a suffixed twin are
+untouched — `810A_FACTSHEET` and `810A_PRICE_GRAPH` have different stems and
+are never grouped.
 
 Unrecognised `.xlsx` files are **reported and skipped, never silently ignored** —
 that report is the signal to add an importer. See `FUND-ONBOARDING.md` §4 for

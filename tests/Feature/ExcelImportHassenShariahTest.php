@@ -172,11 +172,12 @@ class ExcelImportHassenShariahTest extends TestCase
     }
 
     /**
-     * Regression guard for the widened peer-column match: 821 carries a
-     * "Fund Misc (1st)" column in the same position and must still be left
-     * for its own branch.
+     * Regression guard for the widened peer-column match: a "Misc (1st)"
+     * column only counts as the peer series when it carries a Morningstar
+     * (MRN) bracket, as on 821 — 809's "Misc (1st) [US CPI ZAR]" is claimed
+     * by the four-series branch, and any other Misc (1st) is left alone.
      */
-    public function test_misc_first_column_is_not_read_as_a_peer_series(): void
+    public function test_misc_first_column_is_read_as_a_peer_series_only_with_an_mrn_bracket(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-hassen-shariah']);
 
@@ -188,6 +189,16 @@ class ExcelImportHassenShariahTest extends TestCase
         (new PriceGraphImporter)->import($fund, $path);
         $fund->save();
 
-        $this->assertArrayNotHasKey('performanceData', $fund->fresh()->chart_data);
+        $this->assertEquals(99.4, $fund->fresh()->chart_data['performanceData'][0]['peerGroup']);
+
+        $other = Fund::factory()->create(['template' => 'show-hassen-shariah']);
+        $path = $this->makeXlsx([
+            ['Start Date', 'Description', '821 A Class [iR]', '821 Fund Benchmark [MSCI AC ZAR3PM]', '821 Fund Misc (1st) [SOMETHING ELSE]'],
+            [44614, 'Feb 2022', 100.86, 101.31, 99.4],
+        ], 'misc_first_other_price_graph');
+        (new PriceGraphImporter)->import($other, $path);
+        $other->save();
+
+        $this->assertArrayNotHasKey('performanceData', $other->fresh()->chart_data);
     }
 }

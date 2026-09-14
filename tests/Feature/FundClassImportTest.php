@@ -250,6 +250,141 @@ class FundClassImportTest extends TestCase
         $this->assertSame('ZAE000164893', Fund::where('class_code', 'B3')->firstOrFail()->isin_number);
     }
 
+    // ── Re-export dedupe ─────────────────────────────────────────────────
+
+    public function test_class_selection_keeps_every_overview_re_export(): void
+    {
+        $files = ['LOCAL_OVERVIEW.xlsx', 'LOCAL_OVERVIEW_2049089080.xlsx', 'LOCAL_OVERVIEW_1617171697.xlsx'];
+
+        $this->assertSame($files, $this->names($this->manager()->filesForClass($files, 'LOC', null)));
+    }
+
+    /**
+     * The export tool re-exports under a random numeric suffix and glob order
+     * puts the suffixed copy last, so without dedupe an older re-export could
+     * overwrite the current one. The Details sheet's time stamp decides.
+     */
+    public function test_dedupe_keeps_the_newest_details_timestamp_even_when_suffixed(): void
+    {
+        $plain = $this->seedOverview('2026-07', 'LOCAL_OVERVIEW.xlsx', '01 September 2026 14:58:30');
+        $suffixed = $this->seedOverview('2026-07', 'LOCAL_OVERVIEW_96329052.xlsx', '01 September 2026 16:06:33');
+
+        $result = $this->manager()->dedupeReExports([$plain, $suffixed]);
+
+        $this->assertSame(['LOCAL_OVERVIEW_96329052.xlsx'], $this->names($result['kept']));
+        $this->assertSame(['LOCAL_OVERVIEW.xlsx' => 'LOCAL_OVERVIEW_96329052.xlsx'], $result['superseded']);
+    }
+
+    public function test_dedupe_prefers_the_plain_file_when_its_timestamp_is_newest(): void
+    {
+        $plain = $this->seedOverview('2026-07', 'LOCAL_OVERVIEW.xlsx', '07 September 2026 14:06:14');
+        $older = $this->seedOverview('2026-07', 'LOCAL_OVERVIEW_1617171697.xlsx', '19 August 2026 16:29:40');
+        $oldest = $this->seedOverview('2026-07', 'LOCAL_OVERVIEW_2049089080.xlsx', '03 September 2026 16:02:25');
+
+        $result = $this->manager()->dedupeReExports([$plain, $older, $oldest]);
+
+        $this->assertSame(['LOCAL_OVERVIEW.xlsx'], $this->names($result['kept']));
+        $this->assertSame([
+            'LOCAL_OVERVIEW_1617171697.xlsx' => 'LOCAL_OVERVIEW.xlsx',
+            'LOCAL_OVERVIEW_2049089080.xlsx' => 'LOCAL_OVERVIEW.xlsx',
+        ], $result['superseded']);
+    }
+
+    public function test_dedupe_falls_back_to_file_mtime_without_a_details_sheet(): void
+    {
+        $plain = $this->seedOverview('2026-07', 'LOCAL_OVERVIEW.xlsx', null);
+        $suffixed = $this->seedOverview('2026-07', 'LOCAL_OVERVIEW_12345.xlsx', null);
+        touch($plain, strtotime('2026-09-01 10:00:00'));
+        touch($suffixed, strtotime('2026-09-02 10:00:00'));
+
+        $result = $this->manager()->dedupeReExports([$plain, $suffixed]);
+
+        $this->assertSame(['LOCAL_OVERVIEW_12345.xlsx'], $this->names($result['kept']));
+        $this->assertSame(['LOCAL_OVERVIEW.xlsx' => 'LOCAL_OVERVIEW_12345.xlsx'], $result['superseded']);
+    }
+
+    /**
+     * Files without a suffixed twin pass through untouched, in their original
+     * order — FACTSHEET and PRICE_GRAPH have different stems and must never be
+     * grouped together.
+     */
+    public function test_dedupe_leaves_unrelated_files_alone(): void
+    {
+        $files = ['/feed/810A_FACTSHEET.xlsx', '/feed/810A_PRICE_GRAPH.xlsx', '/feed/810_SA_INFLATION_GRAPH.xlsx'];
+
+        $result = $this->manager()->dedupeReExports($files);
+
+        $this->assertSame($files, $result['kept']);
+        $this->assertSame([], $result['superseded']);
+    }
+
+    public function test_import_directory_imports_only_the_winning_re_export(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create([
+            'user_id' => $user->id, 'template' => 'show-local-overview', 'fund_code' => 'LOC', 'class_code' => null,
+        ]);
+
+        $this->seedOverview('2026-07', 'LOCAL_OVERVIEW.xlsx', '01 September 2026 14:58:30', '30 June 2026');
+        $this->seedOverview('2026-07', 'LOCAL_OVERVIEW_96329052.xlsx', '01 September 2026 16:06:33', '31 July 2026');
+
+        $result = $this->manager()->importDirectory(
+            $fund,
+            Storage::disk('local')->path(FundDataSyncService::LOCAL_ROOT.'/2026-07/LOC')
+        );
+
+        $this->assertSame(['LOCAL_OVERVIEW_96329052.xlsx'], array_keys($result['imported']));
+        $this->assertSame(['LOCAL_OVERVIEW.xlsx' => 'LOCAL_OVERVIEW_96329052.xlsx'], $result['superseded']);
+        $this->assertSame([], $result['skipped']);
+        $this->assertSame('31 July 2026', $fund->fund_date);
+    }
+
+    public function test_available_months_counts_only_the_kept_re_exports(): void
+    {
+        $this->seedOverview('2026-07', 'LOCAL_OVERVIEW.xlsx', '01 September 2026 14:58:30');
+        $this->seedOverview('2026-07', 'LOCAL_OVERVIEW_96329052.xlsx', '01 September 2026 16:06:33');
+
+        $this->assertSame(['2026-07' => 1], app(FundDataSyncService::class)->availableMonths('LOC', null));
+    }
+
+    /**
+     * Minimal LOCAL_OVERVIEW export with the feed's Details envelope (B7 is
+     * the "Time Stamp [ZA]" cell). A null timestamp writes no Details sheet.
+     * Returns the absolute path.
+     */
+    private function seedOverview(string $month, string $name, ?string $timestamp, string $monthEnd = '31 July 2026'): string
+    {
+        $spreadsheet = new Spreadsheet;
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Set');
+        $sheet->fromArray([
+            ['Code', 'Value', 'System Comment'],
+            ['MONTH_END_DATE', $monthEnd],
+            ['818_FOORD_1Y_TO_D', '7.7'],
+        ], null, 'A1', true);
+
+        if ($timestamp !== null) {
+            $details = $spreadsheet->createSheet();
+            $details->setTitle('Details');
+            $details->fromArray([
+                ['Foord Asset Management'],
+                [null],
+                ['Report', 'Template Values [571]'],
+                ['Data Set', 'Template Values [2739]'],
+                ['Description', 'Report to see template values'],
+                ['Export by', 'someone@foord.co.za'],
+                ['Time Stamp [ZA]', $timestamp],
+            ], null, 'A1', true);
+        }
+
+        $target = FundDataSyncService::LOCAL_ROOT."/{$month}/LOC/{$name}";
+        Storage::disk('local')->makeDirectory(dirname($target));
+        $path = Storage::disk('local')->path($target);
+        (new Xlsx($spreadsheet))->save($path);
+
+        return $path;
+    }
+
     /**
      * Minimal factsheet for one class, written into the downloaded month folder.
      */

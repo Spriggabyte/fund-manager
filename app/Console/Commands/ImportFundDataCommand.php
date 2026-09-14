@@ -61,6 +61,9 @@ class ImportFundDataCommand extends Command
         if ($result['otherClasses']) {
             $this->line('  Ignored (other share classes): '.implode(', ', $result['otherClasses']));
         }
+        foreach ($result['superseded'] as $loser => $winner) {
+            $this->line("  Superseded re-export: {$loser} → {$winner}");
+        }
 
         $this->line('Changed fields: '.($result['changed'] ? implode(', ', $result['changed']) : '(none)'));
 

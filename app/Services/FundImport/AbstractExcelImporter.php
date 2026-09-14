@@ -63,6 +63,34 @@ abstract class AbstractExcelImporter
         return $data;
     }
 
+    /**
+     * A feed cell that can't be used this month: absent, the export's ERR
+     * marker, or empty. The bond fund's stats arrive as ERR some months, so
+     * unusable cells preserve whatever was stored previously.
+     */
+    protected function isUsable(mixed $value): bool
+    {
+        return $value !== null && $value !== '' && $value !== 'ERR';
+    }
+
+    /**
+     * Statistic cells additionally have to carry a digit — or be the feed's
+     * explicit "-" no-exposure marker. A broken STAT_ export does not always
+     * read "ERR": the 841 feed exports a bare "%" for STAT_YIELD and
+     * STAT_SPREAD_TO_JIBAR (the number dropped, the suffix survived), which
+     * would otherwise overwrite the seeded value.
+     */
+    protected function isUsableStat(mixed $value): bool
+    {
+        if (! $this->isUsable($value)) {
+            return false;
+        }
+
+        $value = (string) $value;
+
+        return trim($value) === '-' || preg_match('/\d/', $value) === 1;
+    }
+
     protected function excelSerialToMonth(int|float|string $serial): string
     {
         // Excel serial 1 = 1900-01-01 (with the legacy 1900 leap-year bug).

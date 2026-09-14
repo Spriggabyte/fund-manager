@@ -173,9 +173,9 @@ class ExcelImportPrescientGlobalEquityTest extends TestCase
 
     /**
      * Regression guard: 821/878/879/880 also lead with an MSCI benchmark in
-     * column D but carry a peer or second benchmark in column E, and must be
-     * left for their own (not yet written) branch rather than silently
-     * flattened to two series.
+     * column D but carry a peer or second benchmark in column E, and take
+     * the three-series branch rather than being silently flattened to two
+     * series (the 821 branch keeps the peer group under `peerGroup`).
      */
     public function test_an_export_with_a_third_series_is_not_claimed_by_the_two_series_branch(): void
     {
@@ -189,6 +189,9 @@ class ExcelImportPrescientGlobalEquityTest extends TestCase
         (new PriceGraphImporter)->import($fund, $path);
         $fund->save();
 
-        $this->assertArrayNotHasKey('performanceData', $fund->fresh()->chart_data);
+        $performance = $fund->fresh()->chart_data['performanceData'];
+        $this->assertCount(2, $performance);
+        $this->assertSame(['date', 'fund', 'benchmark', 'peerGroup'], array_keys($performance[0]));
+        $this->assertEquals(99.4, $performance[0]['peerGroup']);
     }
 }

@@ -84,12 +84,18 @@ class FundPdfExportTest extends TestCase
     {
         Storage::fake('local');
         $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create([
+            'name' => 'FOORD GLOBAL EQUITY FEEDER FUND — CLASS A',
+            'class_code' => 'A',
+            'fund_date' => '31 August 2026',
+        ]);
         Storage::disk('local')->put('pdfs/example.pdf', "%PDF-1.4\nx\n%%EOF");
-        $export = FundPdfExport::factory()->for($user)->done('pdfs/example.pdf')->create();
+        $export = FundPdfExport::factory()->for($user)->for($fund)->done('pdfs/example.pdf')->create();
 
+        // Downloads carry the published-document name, not the internal path.
         $this->actingAs($user)->get(route('funds.pdf.download', $export))
             ->assertOk()
-            ->assertDownload();
+            ->assertDownload('Foord Global Equity Feeder Fund Class A at 2026-08-31.pdf');
     }
 
     public function test_download_is_not_found_when_export_not_done(): void
@@ -114,7 +120,12 @@ class FundPdfExportTest extends TestCase
     public function test_job_generates_and_stores_pdf_and_marks_export_done(): void
     {
         Storage::fake('local');
-        $export = FundPdfExport::factory()->create(['status' => FundPdfExport::STATUS_PENDING]);
+        $fund = Fund::factory()->create([
+            'name' => 'FOORD BOND FUND — CLASS B2',
+            'class_code' => 'B2',
+            'fund_date' => '31 July 2026',
+        ]);
+        $export = FundPdfExport::factory()->for($fund)->create(['status' => FundPdfExport::STATUS_PENDING]);
 
         $fakeService = new class extends PuppeteerPdfService
         {
@@ -132,6 +143,8 @@ class FundPdfExportTest extends TestCase
         $export->refresh();
         $this->assertTrue($export->isDone());
         $this->assertNotNull($export->path);
+        // Stored under the published name, one folder per export.
+        $this->assertSame("pdfs/{$export->id}/Foord Bond Fund Class B2 at 2026-07-31.pdf", $export->path);
         Storage::disk('local')->assertExists($export->path);
     }
 

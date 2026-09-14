@@ -56,7 +56,9 @@ class GenerateFundPdfJob implements ShouldQueue
 
         $disk = config('puppeteer.output_disk');
         $dir = trim((string) config('puppeteer.output_dir'), '/');
-        $name = "fund-{$this->export->fund_id}-{$this->export->id}.pdf";
+        // Stored under the published-document name, in a folder per export
+        // so re-exports of the same sheet never overwrite each other.
+        $name = "{$this->export->id}/".$this->export->fund->exportFilename($this->export->created_at);
         $path = $dir === '' ? $name : "{$dir}/{$name}";
 
         // The local disk is configured with 'throw' => false, so a failed write

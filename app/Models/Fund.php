@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,11 +19,20 @@ class Fund extends Model
     public const GLOBAL_EQUITY_TEMPLATES = ['show-global-equity', 'show-hassen-shariah', 'show-australian-feeder', 'show-asia-ex-japan'];
 
     /**
+     * Multi-fund overview sheets (the "FUND OVERVIEW: SOUTH AFRICA" summary,
+     * fund code LOC). One record covers several funds, so it has no share
+     * class and its feed folder holds a single export.
+     */
+    public const OVERVIEW_TEMPLATES = ['show-local-overview', 'show-global-overview'];
+
+    /**
      * The Australian feeder sheet (880). It shares the Global Equity sidebar
      * aliases above but labels the price and unit rows for a unit trust, and
      * carries its own responsible-entity / custodian / APIR rows.
      */
     public const AUSTRALIAN_FEEDER_TEMPLATE = 'show-australian-feeder';
+
+    public const GLOBAL_EQUITY_FEEDER_TEMPLATE = 'show-global-equity-feeder';
 
     use HasFactory;
 
@@ -322,6 +333,49 @@ class Fund extends Model
     public function revisions(): HasMany
     {
         return $this->hasMany(FundRevision::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * The file name a fact-sheet PDF is exported under, following the
+     * structure of Foord's published documents:
+     *
+     *     Foord Global Equity Feeder Fund Class A at 2026-08-31.pdf
+     *
+     * The fund name is title-cased from the stored "FOORD … — CLASS A" form
+     * (small words stay lower case: "Fund of Funds", "Asia ex-Japan"), the
+     * class comes from `class_code` (omitted for the class-less overview
+     * sheets) and the date is the sheet's month end (`fund_date`), falling
+     * back to $fallbackDate — normally the export's creation date — when the
+     * stored date is missing or unparseable. Characters that are illegal in
+     * file names become spaces; the overview sheets' colon becomes " -".
+     */
+    public function exportFilename(?CarbonInterface $fallbackDate = null): string
+    {
+        $name = trim((string) ($this->attributes['name'] ?? ''));
+        $name = preg_replace('/\s*[—–-]\s*CLASS\s+[A-Z][0-9]*\s*$/iu', '', $name) ?? $name;
+        $name = mb_convert_case(mb_strtolower($name), MB_CASE_TITLE, 'UTF-8');
+        $name = preg_replace_callback(
+            '/(?<=\S)\s(Of|Ex|And|The|In|For)(?=[\s-])/u',
+            fn (array $m) => ' '.mb_strtolower($m[1]),
+            $name
+        ) ?? $name;
+        $name = str_replace(':', ' -', $name);
+        $name = preg_replace('~[\\\\/*?"<>|]~', ' ', $name) ?? $name;
+        $name = trim(preg_replace('/\s+/', ' ', $name) ?? $name);
+
+        $class = trim((string) ($this->class_code ?? ''));
+
+        $date = null;
+        if (! empty($this->fund_date)) {
+            try {
+                $date = Carbon::parse((string) $this->fund_date);
+            } catch (\Throwable) {
+                $date = null;
+            }
+        }
+        $date ??= $fallbackDate ?? now();
+
+        return trim($name.($class !== '' ? " Class {$class}" : '').' at '.$date->format('Y-m-d')).'.pdf';
     }
 
     public function createRevision(?string $changedField = null, $oldValue = null, $newValue = null, ?string $changeSummary = null): FundRevision

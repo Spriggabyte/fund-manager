@@ -195,6 +195,25 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-prescient-global-equity');
     }
 
+    public function test_internal_pdf_view_uses_global_equity_feeder_page_template(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-global-equity-feeder']);
+
+        $view = (new FundController)->internalPdfView($fund);
+
+        $this->assertSame('funds.show-global-equity-feeder', $view->name());
+    }
+
+    public function test_show_renders_global_equity_feeder_template(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create(['template' => 'show-global-equity-feeder']);
+
+        $this->actingAs($user)->get(route('funds.show', $fund))
+            ->assertOk()
+            ->assertViewIs('funds.show-global-equity-feeder');
+    }
+
     public function test_internal_pdf_view_uses_absolute_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-absolute']);
@@ -312,5 +331,45 @@ class FundTemplateSelectionTest extends TestCase
         $this->actingAs($user)->get(route('funds.show', $fund))
             ->assertOk()
             ->assertViewIs('funds.show-asia-ex-japan');
+    }
+
+    public function test_internal_pdf_view_uses_local_overview_page_template(): void
+    {
+        // The multi-fund overview sheet is its own print layout, like the
+        // Luxembourg family: no separate pdf-* twin.
+        $fund = Fund::factory()->create(['template' => 'show-local-overview']);
+
+        $view = (new FundController)->internalPdfView($fund);
+
+        $this->assertSame('funds.show-local-overview', $view->name());
+    }
+
+    public function test_show_renders_local_overview_template(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create(['template' => 'show-local-overview']);
+
+        $this->actingAs($user)->get(route('funds.show', $fund))
+            ->assertOk()
+            ->assertViewIs('funds.show-local-overview');
+    }
+
+    public function test_internal_pdf_view_uses_global_overview_page_template(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-global-overview']);
+
+        $view = (new FundController)->internalPdfView($fund);
+
+        $this->assertSame('funds.show-global-overview', $view->name());
+    }
+
+    public function test_show_renders_global_overview_template(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create(['template' => 'show-global-overview']);
+
+        $this->actingAs($user)->get(route('funds.show', $fund))
+            ->assertOk()
+            ->assertViewIs('funds.show-global-overview');
     }
 }
