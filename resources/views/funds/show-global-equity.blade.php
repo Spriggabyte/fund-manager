@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD GLOBAL EQUITY FUND (LUXEMBOURG) FACT SHEET
@@ -1089,7 +1090,12 @@
                                 // DEPOSITORY).
                                 'depository' => 'DEPOSITARY',
                                 'isinNumber' => 'ISIN NUMBER',
-                                'fees' => 'FEES (CLASS '.$classCode.')',
+                                // The Class B reference literally prints "FEES
+                                // (CLASS A)" — a legacy label carried over
+                                // from before the share class was renamed
+                                // B, kept verbatim per the signed-off design
+                                // (QC 2026-09-14/15).
+                                'fees' => 'FEES (CLASS '.($classCode === 'B' ? 'A' : $classCode).')',
                             ];
 
                             // Display order per the 877 reference sidebar

@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            PRESCIENT FOORD INTERNATIONAL FEEDER FUND (822)
@@ -153,7 +154,9 @@
            text inset 7.75mm, same as the signed-off navy banner.
            ===================================================== */
         .fund-banner {
-            background-color: var(--naartjie);
+            /* Reference: the title banner is dark navy (like 809), not
+               naartjie — only the date badge carries the naartjie colour. */
+            background-color: var(--dark-navy);
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
@@ -361,17 +364,29 @@
 
         .alloc-change {
             width: 9mm;
-            text-align: right;
             flex-shrink: 0;
             font-size: 7.5pt;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
         }
+
+        /* Reference: the arrow sits centred in the gap between the % value
+           and the change number, not jammed against the number — a fixed,
+           centred slot achieves that regardless of the number's width. */
+        .alloc-arrow {
+            display: inline-block;
+            width: 4mm;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .alloc-change-num { text-align: right; }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
            stays black. Zero changes carry no arrow. */
-        .change-up { color: #000; }
-        .change-down { color: #000; }
-        .change-up::before { content: '▲ '; font-size: 5.1pt; color: #000; }
-        .change-down::before { content: '▼ '; font-size: 5.1pt; color: var(--light-blue); }
+        .alloc-arrow.change-up::before { content: '▲'; font-size: 6.8pt; color: #000; }
+        .alloc-arrow.change-down::before { content: '▼'; font-size: 6.8pt; color: var(--light-blue); }
 
         /* === Equity sector bars === */
         .sector-row {
@@ -680,6 +695,16 @@
             display: flex;
             align-items: center;
             gap: 1mm;
+        }
+
+        /* Four-entry legend as two aligned columns (reference), not a
+           centred wrap whose second row drifts out of square with the first. */
+        .chart-legend.legend-grid {
+            display: grid;
+            grid-template-columns: repeat(2, max-content);
+            column-gap: 4.2mm;
+            row-gap: 0.4mm;
+            justify-content: center;
         }
 
         .legend-line {
@@ -1307,7 +1332,9 @@
                                                     $isZeroChange = is_numeric($changeNumber) && (float) $changeNumber == 0.0;
                                                     $changeClass = $isZeroChange ? '' : ((($row['changeDirection'] ?? '') === 'up') ? 'change-up' : ((($row['changeDirection'] ?? '') === 'down') ? 'change-down' : ''));
                                                 @endphp
-                                                <span class="alloc-change {{ $changeClass }}">{{ $changeNumber }}</span>
+                                                <span class="alloc-change">
+                                                    <span class="alloc-arrow {{ $changeClass }}"></span><span class="alloc-change-num">{{ $changeNumber }}</span>
+                                                </span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -1424,7 +1451,7 @@
                                     </div>
                                     {{-- Legend colours per the 875 reference: Fund red, US inflation
                                          dark navy, World equities steel blue, World bonds light grey --}}
-                                    <div class="chart-legend" style="max-width: 52mm; margin-left: auto; margin-right: auto;">
+                                    <div class="chart-legend legend-grid" style="max-width: 52mm; margin-left: auto; margin-right: auto;">
                                         <span><span class="legend-line" style="background: var(--naartjie);"></span> Fund</span>
                                         <span><span class="legend-line" style="background: var(--dark-navy);"></span> US inflation</span>
                                         <span><span class="legend-line" style="background: var(--light-blue);"></span> World equities</span>
@@ -1991,7 +2018,29 @@
             }
         };
 
-        Chart.register(endValuePlugin);
+        // Reference: the horizontal axis line sits at the 100 baseline (not
+        // at the chart's floor, which is 85 so the world-bonds dip to 88.8
+        // isn't clipped) so dips below 100 visibly cross beneath it, while
+        // the date labels stay put at the bottom. Chart.js ties an axis's
+        // border and its ticks/labels to the same position, so this is drawn
+        // as an extra line rather than repositioning the x scale.
+        const baselineAxisPlugin = {
+            id: 'baselineAxis',
+            afterDraw(chart) {
+                const { ctx, chartArea, scales } = chart;
+                const y = scales.y.getPixelForValue(100);
+                ctx.save();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(chartArea.left, y);
+                ctx.lineTo(chartArea.right, y);
+                ctx.stroke();
+                ctx.restore();
+            }
+        };
+
+        Chart.register(endValuePlugin, baselineAxisPlugin);
 
         const ctx = document.getElementById('performanceChart').getContext('2d');
         new Chart(ctx, {
@@ -2048,12 +2097,17 @@
                     x: {
                         display: true,
                         grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
-                        border: { color: '#000' },
+                        // The default x-axis border draws at the scale's own
+                        // position (the chart floor, y=85) — hidden here since
+                        // the baselineAxisPlugin above draws the real 100-line
+                        // instead; the date labels are unaffected, they stay
+                        // anchored to the (unmoved) bottom position.
+                        border: { display: false },
                         // Tick marks only under the labelled dates (Chart.js draws a
                         // mark per tick, so unlabelled months are dropped here).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 9 === 0); },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
+                            font: { size: 6.8, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#535353',
                             maxRotation: 0,
                             autoSkip: false,

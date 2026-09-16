@@ -201,4 +201,57 @@ class ExcelImportHassenShariahTest extends TestCase
 
         $this->assertArrayNotHasKey('performanceData', $other->fresh()->chart_data);
     }
+
+    /**
+     * The 878 export started naming its two zero-weight sectors
+     * (ESAOT_RANK_11/12) instead of leaving the ITEM cell blank, but still
+     * sends a CURRENT of 0 and a placeholder "+0.0" VAR_TO_BM. The importer
+     * must not add them to sector_allocation['sectors'] — the blade already
+     * renders them, with a hand-maintained variance, from
+     * sector_allocation['zeroWeightSectors'] — or the sheet would show each
+     * twice (QC 2026-09-14).
+     */
+    public function test_named_zero_weight_sectors_are_not_duplicated(): void
+    {
+        $fund = Fund::factory()->create([
+            'template' => 'show-hassen-shariah',
+            'sector_allocation' => [
+                'zeroWeightSectors' => [
+                    ['name' => 'Communication services', 'variance' => '-0.2'],
+                    ['name' => 'Utilities', 'variance' => '-1.0'],
+                ],
+            ],
+        ]);
+
+        $rows = [['Code', 'Value']];
+        $items = ['Consumer discretionary', 'Information technology', 'Energy', 'Healthcare',
+            'Industrials', 'Cash', 'Materials', 'Financials', 'Consumer staples', 'Real estate'];
+        foreach ($items as $i => $item) {
+            $n = $i + 1;
+            $rows[] = ["ESAOT_RANK_{$n}_ITEM", $item];
+            $rows[] = ["ESAOT_RANK_{$n}_CURRENT", (string) (20 - $n)];
+            $rows[] = ["ESAOT_RANK_{$n}_CHANGE_SIGN", '+'];
+            $rows[] = ["ESAOT_RANK_{$n}_CHANGE", '0.1'];
+            $rows[] = ["ESAOT_RANK_{$n}_VAR_TO_BM", '+ 1.0'];
+        }
+        $rows[] = ['ESAOT_RANK_11_ITEM', 'Communication services'];
+        $rows[] = ['ESAOT_RANK_11_CURRENT', '0'];
+        $rows[] = ['ESAOT_RANK_11_CHANGE_SIGN', '+'];
+        $rows[] = ['ESAOT_RANK_11_CHANGE', '0.0'];
+        $rows[] = ['ESAOT_RANK_11_VAR_TO_BM', '+ 0.0'];
+        $rows[] = ['ESAOT_RANK_12_ITEM', 'Utilities'];
+        $rows[] = ['ESAOT_RANK_12_CURRENT', '0'];
+        $rows[] = ['ESAOT_RANK_12_CHANGE_SIGN', '+'];
+        $rows[] = ['ESAOT_RANK_12_CHANGE', '0.0'];
+        $rows[] = ['ESAOT_RANK_12_VAR_TO_BM', '+ 0.0'];
+
+        $path = $this->makeXlsx($rows, 'hassen_zero_weight');
+        (new FactsheetImporter)->import($fund, $path);
+        $fund->save();
+
+        $names = array_column($fund->fresh()->sector_allocation['sectors'], 'name');
+        $this->assertNotContains('Communication services', $names);
+        $this->assertNotContains('Utilities', $names);
+        $this->assertCount(10, $names);
+    }
 }

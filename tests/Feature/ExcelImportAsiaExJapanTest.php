@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Fund;
 use App\Services\FundImport\FactsheetImporter;
+use App\Services\FundImport\FundImportManager;
 use App\Services\FundImport\PriceGraphImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -343,7 +344,7 @@ class ExcelImportAsiaExJapanTest extends TestCase
             '/feed/879R1_PRICE_GRAPH.xlsx',
         ];
 
-        $manager = new \App\Services\FundImport\FundImportManager;
+        $manager = new FundImportManager;
 
         $this->assertSame(
             ['/feed/879R_FACTSHEET.xlsx', '/feed/879R_PRICE_GRAPH.xlsx'],

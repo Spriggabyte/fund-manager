@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD ABSOLUTE RETURN FUND FACT SHEET - PDF TEMPLATE
@@ -1902,6 +1903,15 @@
                             // textOverflow 'none' stops Highcharts ellipsising the
                             // last tick ("A…") when its slot runs to the plot edge.
                             style: { fontSize: '8px', color: '#000', textOverflow: 'none', whiteSpace: 'nowrap' },
+                            // Highcharts' default label.overflow ('justify') shifts
+                            // edge labels inward to keep them inside the plot box,
+                            // which crushed the last two ticks together as more
+                            // months pushed the series past the "Apr 26" tick
+                            // (QC 2026-09-15: 0.15mm gap vs ~1.5mm for every other
+                            // pair). 'allow' lets it overflow into the chart's own
+                            // right-hand spacing instead, evenly spaced like the
+                            // reference.
+                            overflow: 'allow',
                             formatter: function () { return formatXTickPortfolio(this.value); },
                             rotation: 0,
                             autoRotation: false,

@@ -187,8 +187,13 @@ class FactsheetImporter extends AbstractExcelImporter
                 $data['PUBLISHED_DATE']
             );
             // The 876 reference prints the published line with no full stop;
-            // the other signed-off designs end it with one.
-            $suffix = in_array($fund->template ?? '', self::PUBLISHED_LINE_NO_STOP_TEMPLATES, true) ? '' : '.';
+            // the other signed-off designs end it with one. Within 877 this
+            // is per CLASS, not per template: R/R1 print no stop but B's
+            // reference keeps it ("Published on 03 September 2026.") — the
+            // template-level exemption over-applied to B (QC 2026-09-14).
+            $noStopTemplate = in_array($fund->template ?? '', self::PUBLISHED_LINE_NO_STOP_TEMPLATES, true);
+            $isGlobalEquityClassB = ($fund->template ?? '') === 'show-global-equity' && ($fund->class_code ?? '') === 'B';
+            $suffix = ($noStopTemplate && ! $isGlobalEquityClassB) ? '' : '.';
             // The Prescient-branded sheets (822, 823) label it "Issue date"
             // rather than "Published on".
             $prefix = in_array($fund->template ?? '', self::PRESCIENT_TEMPLATES, true)
@@ -304,6 +309,15 @@ class FactsheetImporter extends AbstractExcelImporter
         } elseif (isset($data['PS_SA_EQUITY']) && ($fund->template ?? '') !== 'show-shariah-income') {
             $this->mapShariahAssetAllocation($fund, $data);
         } elseif (isset($data['PS_SA_TOTAL'])) {
+            $this->mapPortfolioStructure($fund, $data);
+        } elseif (isset($data['PS_ITEM_NAME_1']) && ($fund->template ?? '') === 'show-inflation-income') {
+            // The 827 export switched from the PS_SA_*/PS_TOTAL_* schema
+            // (still current on the June 2026 export) to a numbered
+            // PS_ITEM_NAME_n/PS_ITEM_WEIGHT_n list from July 2026 onward.
+            // mapPortfolioStructure's inflation-income branch ignores the
+            // PS_ITEM_* values (still placeholders, not the published
+            // buckets — see its docblock) but needs to run for the
+            // "Change since <quarter end>" subtitle fix.
             $this->mapPortfolioStructure($fund, $data);
         }
     }
@@ -648,13 +662,18 @@ class FactsheetImporter extends AbstractExcelImporter
             $assetAllocation = $fund->asset_allocation ?? [];
             $assetAllocation['rows'] = $rows;
             $assetAllocation['title'] = $assetAllocation['title'] ?? ($isUnconstrained ? 'ASSET ALLOCATION %' : 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)');
-            // The comparison date must follow the feed's LAST_QUARTER_END every
-            // month; preserving the stored subtitle left the 810 sheets on
-            // "Change since 31 December 2025" for two quarters.
-            if ($this->formatChangeDate($data) !== '') {
+            if ($isUnconstrained && $this->formatChangeDate($data) !== '') {
+                // Flexible fund (817) only, scoped via $isUnconstrained so this
+                // doesn't touch the shared 810 balanced branch: the comparison
+                // date must follow the feed's LAST_QUARTER_END every month.
+                // Class B2 was stuck on "Change since 31 December 2025" because
+                // the old `?? $assetAllocation['subtitle']` fallback preserved
+                // whatever was seeded at clone time — the B2 record never gets
+                // its own COST_REG28 import to refresh it another way
+                // (QC 2026-09-14, "changes since december" Trello card).
                 $assetAllocation['subtitle'] = 'Change since '.$this->formatChangeDate($data);
             } else {
-                $assetAllocation['subtitle'] = $assetAllocation['subtitle'] ?? '';
+                $assetAllocation['subtitle'] = $assetAllocation['subtitle'] ?? 'Change since '.$this->formatChangeDate($data);
             }
             $assetAllocation['headers'] = $isUnconstrained
                 ? ['', 'SA', 'FOREIGN', 'TOTAL', 'CHANGE']
@@ -926,10 +945,29 @@ class FactsheetImporter extends AbstractExcelImporter
             }
         }
 
+        // The 878 export started naming its two zero-weight sectors
+        // (ESAOT_RANK_11/12 ITEM used to come through blank — see
+        // FUND-ONBOARDING.md §5q) but still sends a CURRENT of 0 and a
+        // placeholder "+0.0" VAR_TO_BM rather than the real figure. The
+        // reference prints them as a dash-value, dash-change row with a
+        // hand-maintained variance, which the blade already seeds from
+        // sector_allocation['zeroWeightSectors'] — skip the feed's own
+        // placeholder row for these two names so the blade's seed is the
+        // only entry, rather than the two duplicating (QC 2026-09-14).
+        $zeroWeightNames = ($fund->template ?? '') === 'show-hassen-shariah'
+            ? collect($fund->sector_allocation['zeroWeightSectors'] ?? [])->pluck('name')->all()
+            : [];
+
         $sectors = [];
         for ($i = 1; $i <= 13; $i++) {
             $item = $data["ESAOT_RANK_{$i}_ITEM"] ?? null;
             if (! $item) {
+                continue;
+            }
+
+            if (in_array($item, $zeroWeightNames, true)
+                && $this->toNumber($data["ESAOT_RANK_{$i}_CURRENT"] ?? 0) == 0.0
+                && preg_match('/^[+-]?0\.0$/', str_replace(' ', '', (string) ($data["ESAOT_RANK_{$i}_VAR_TO_BM"] ?? '')))) {
                 continue;
             }
 
@@ -1010,13 +1048,19 @@ class FactsheetImporter extends AbstractExcelImporter
         $sectorAllocation['title'] = $sectorAllocation['title'] ?? 'EQUITY SECTOR ALLOCATION %';
 
         $monthEnd = $this->parseMonthEnd($data);
-        if (in_array($fund->template ?? '', [Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE, 'show-prescient-global-equity', 'show-asia-ex-japan', Fund::AUSTRALIAN_FEEDER_TEMPLATE], true)
+        if (in_array($fund->template ?? '', [Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE, 'show-prescient-global-equity', 'show-asia-ex-japan', Fund::AUSTRALIAN_FEEDER_TEMPLATE, 'show-global-equity', 'show-hassen-shariah', 'show-equity'], true)
             && $this->isUsable($data['LAST_QUARTER_END'] ?? null)) {
-            // The published 821, 823, 879 and 880 PORTFOLIO STRUCTURE lists
-            // report their change against the last quarter end ("Change since
-            // 30 June 2026" on the August sheets — the ESAOT_* deltas are
-            // quarter-on-quarter: 879's August +2.4 on Consumer discretionary
-            // is 28.8 less June's 26.4), not the prior month like the equity fund.
+            // The published 811, 821, 823, 877, 878, 879 and 880 PORTFOLIO
+            // STRUCTURE / EQUITY SECTOR ALLOCATION lists all report their
+            // change against the last quarter end ("Change since 30 June
+            // 2026" on the August sheets — the ESAOT_* deltas are
+            // quarter-on-quarter: 879's August +2.4 on Consumer
+            // discretionary is 28.8 less June's 26.4). 811 (the equity
+            // fund) was previously excluded here on the assumption its
+            // ESAOT change was month-on-month, but the reference and the
+            // feed's own CHANGE/CHANGE_SIGN columns confirm it is quarterly
+            // too — the July and August sheets both print the delta since
+            // 30 June (QC 2026-09-14/15).
             $sectorAllocation['subtitle'] = 'Change since '.$this->formatChangeDate($data);
         } elseif ($monthEnd) {
             $sectorAllocation['subtitle'] = 'Change since '
@@ -1223,14 +1267,18 @@ class FactsheetImporter extends AbstractExcelImporter
             'MATURITY_7_TO_12_YEARS' => '7—12 years',
         ];
 
+        // A bucket occasionally exports negative (e.g. an overdraft-style
+        // cash adjustment bleeding into the shortest bucket) — the published
+        // sheets never draw or label a negative bar, so it prints "-" like
+        // an empty bucket (827 August: MATURITY_0_TO_1_YEAR -3 → "-").
+        $bucket = function (float|int $value): array {
+            return ['value' => max($value, 0), 'label' => $value > 0 ? (string) $value : '-'];
+        };
+
         $categories = [];
         foreach ($buckets as $key => $label) {
             $value = $this->dashToZero((string) ($data[$key] ?? '-'));
-            $categories[] = [
-                'name' => $label,
-                'value' => $value,
-                'label' => $value == 0 ? '-' : (string) $value,
-            ];
+            $categories[] = ['name' => $label] + $bucket($value);
         }
 
         if (($fund->template ?? '') === 'show-income') {
@@ -1238,19 +1286,11 @@ class FactsheetImporter extends AbstractExcelImporter
             // into the "> 12 years" bucket.
             $value = $this->dashToZero((string) ($data['MATURITY_12_PLUS_YEARS'] ?? '-'))
                 + $this->dashToZero((string) ($data['MATURITY_PERPETUAL'] ?? '-'));
-            $categories[] = [
-                'name' => '> 12 years',
-                'value' => $value,
-                'label' => $value == 0 ? '-' : (string) $value,
-            ];
+            $categories[] = ['name' => '> 12 years'] + $bucket($value);
         } else {
             foreach (['MATURITY_12_PLUS_YEARS' => '> 12 years', 'MATURITY_PERPETUAL' => 'Perpetual'] as $key => $label) {
                 $value = $this->dashToZero((string) ($data[$key] ?? '-'));
-                $categories[] = [
-                    'name' => $label,
-                    'value' => $value,
-                    'label' => $value == 0 ? '-' : (string) $value,
-                ];
+                $categories[] = ['name' => $label] + $bucket($value);
             }
         }
 
@@ -1426,12 +1466,13 @@ class FactsheetImporter extends AbstractExcelImporter
                 ['name' => '— Inflation linked duration', 'key' => 'STAT_SA_INFLATION_LINKED_DURATION'],
             ];
         } else {
-            // JIBAR was retired in 2026; the 824 August 2026 reference labels
-            // the row "Spread to Zaronia" (the feed key is still
-            // STAT_SPREAD_TO_JIBAR). Other templates on this branch keep the
-            // old label; `previousName` lets an ERR month still find the value
-            // stored under the retired label.
-            $spreadLabel = ($fund->template ?? '') === 'show-flex-income' ? 'Spread to Zaronia' : 'Spread to JIBAR';
+            // JIBAR was retired in 2026; the 824 and 841 August 2026
+            // references both label the row "Spread to Zaronia" (the feed
+            // key is still STAT_SPREAD_TO_JIBAR). Other templates on this
+            // branch keep the old label; `previousName` lets an ERR month
+            // still find the value stored under the retired label.
+            $spreadLabel = in_array($fund->template ?? '', ['show-flex-income', 'show-shariah-income'], true)
+                ? 'Spread to Zaronia' : 'Spread to JIBAR';
             $rowDefs = [
                 ['name' => 'Yield', 'sup' => '1', 'key' => 'STAT_YIELD', 'format' => 'percent'],
                 ['name' => $spreadLabel, 'previousName' => 'Spread to JIBAR', 'key' => 'STAT_SPREAD_TO_JIBAR', 'format' => 'percent'],
@@ -1688,8 +1729,18 @@ class FactsheetImporter extends AbstractExcelImporter
             $compRow = ['name' => "Comparator {$c}"];
             foreach ($periods as $excelKey => $jsonKey) {
                 $val = $data["FOORD_COMP_{$c}_{$excelKey}"] ?? null;
-                if ($val !== null && $val !== '' && $val !== '0.0') {
-                    $compRow[$jsonKey] = $this->toNumber($val);
+                if ($val === null || $val === '') {
+                    continue;
+                }
+                // A literal '0.0' export is this comparator slot's placeholder
+                // for "unused" (some funds export every unused COMP_n column
+                // as all-zero rather than blank) — it must not by itself mark
+                // the row as present, or an unused comparator would render as
+                // an all-"0.0" row. But once another period proves the row is
+                // real, a genuine 0.0 in one period (e.g. a flat this-month
+                // return) must still be stored and displayed, not dropped.
+                $compRow[$jsonKey] = $this->toNumber($val);
+                if ($val !== '0.0') {
                     $hasData = true;
                 }
             }
@@ -1890,12 +1941,27 @@ class FactsheetImporter extends AbstractExcelImporter
                 : self::COST_TABLE_LABELS_DEFAULT);
 
         $performance12 = $cell($data['GLOBAL_TER_PERFORMANCE_12_MONTH'] ?? null);
-        if (in_array($template, self::PERFORMANCE_COMPONENT_ROW_TEMPLATES, true) && $performance12 !== null) {
-            $rows[] = [
-                'name' => '— Performance',
-                '12m' => $performance12,
-                '36m' => $cell($data['GLOBAL_TER_PERFORMANCE_36_MONTH'] ?? null),
-            ];
+        if (in_array($template, self::PERFORMANCE_COMPONENT_ROW_TEMPLATES, true)) {
+            if ($performance12 !== null) {
+                $rows[] = [
+                    'name' => '— Performance',
+                    '12m' => $performance12,
+                    '36m' => $cell($data['GLOBAL_TER_PERFORMANCE_36_MONTH'] ?? null),
+                ];
+            } else {
+                // 877 R1 exports blank GLOBAL_TER_PERFORMANCE cells every
+                // month even though it carries a performance fee and the
+                // reference prints "— Performance 0.00 / 0.00" (877 Class B
+                // has no performance fee and correctly has no stored row to
+                // fall back to). Feed blank/ERR preserves the stored value
+                // per the QC source-of-truth rules — keep a previously
+                // seeded/hand-set row rather than dropping it (QC 2026-09-14).
+                $storedRow = collect($acr['rows'] ?? [])
+                    ->first(fn ($row) => trim((string) ($row['name'] ?? '')) === '— Performance');
+                if ($storedRow !== null) {
+                    $rows[] = $storedRow;
+                }
+            }
         }
         $rows[] = [
             'name' => $labels['transactionCosts'],

@@ -51,7 +51,7 @@ class ExcelImportGlobalEquityFeederTest extends TestCase
             ['Code', 'Value'],
             ['MONTH_END_DATE', '31 August 2026'],
             ['LAST_QUARTER_END', '30 June 2026'],
-            ['PUBLISHED_DATE', '04 August 2026'],
+            ['PUBLISHED_DATE', '04 September 2026'],
             ['ESAOT_RANK_1_ITEM', 'Communication services'],
             ['ESAOT_RANK_1_CURRENT', '19'],
             ['ESAOT_RANK_1_CHANGE_SIGN', '-'],
@@ -112,7 +112,7 @@ class ExcelImportGlobalEquityFeederTest extends TestCase
         $fund->save();
 
         $this->assertSame($sentence, $fund->fresh()->last_distributions);
-        $this->assertSame('Published on 04 August 2026.', $fund->fresh()->important_info_published_date);
+        $this->assertSame('Published on 04 September 2026.', $fund->fresh()->important_info_published_date);
     }
 
     /**

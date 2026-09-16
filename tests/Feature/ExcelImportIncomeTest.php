@@ -138,16 +138,17 @@ class ExcelImportIncomeTest extends TestCase
             ->filter(fn ($row) => isset($row['name']))
             ->keyBy('name');
 
-        // The published 825 layout: Yield, Spread to JIBAR, then the SA
-        // duration group with bare sub-row labels (no "SA" prefix).
+        // The published 825 layout: Yield, Spread to Zaronia, then the SA
+        // duration group with bare sub-row labels (no "SA" prefix). JIBAR was
+        // retired in 2026; the feed key stays STAT_SPREAD_TO_JIBAR.
         $this->assertSame(
-            ['Yield', 'Spread to JIBAR', 'SA duration', '— Fixed rate duration', '— Floating rate duration', '— Inflation linked duration'],
+            ['Yield', 'Spread to Zaronia', 'SA duration', '— Fixed rate duration', '— Floating rate duration', '— Inflation linked duration'],
             $rows->keys()->all()
         );
 
         // ERR keeps the seeded value; usable cells are formatted per row type.
         $this->assertSame('9.44%', $rows['Yield']['value']);
-        $this->assertSame('2.46%', $rows['Spread to JIBAR']['value']);
+        $this->assertSame('2.46%', $rows['Spread to Zaronia']['value']);
         $this->assertSame('0.77', $rows['SA duration']['value']);
         $this->assertSame('0.10', $rows['— Fixed rate duration']['value']);
         $this->assertSame('', $rows['— Floating rate duration']['value']);

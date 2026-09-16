@@ -73,6 +73,8 @@ class Fund extends Model
         'number_of_units',
         'portfolio_size',
         'equity_indicator_description',
+        'equity_indicator_filled',
+        'equity_indicator_total',
         'last_distributions',
         'management_company',
         'shariah_supervisory_board',
@@ -158,6 +160,8 @@ class Fund extends Model
         'sidebar.numberOfUnits' => 'number_of_units',
         'sidebar.portfolioSize' => 'portfolio_size',
         'sidebar.equityIndicator.description' => 'equity_indicator_description',
+        'sidebar.equityIndicator.filled' => 'equity_indicator_filled',
+        'sidebar.equityIndicator.total' => 'equity_indicator_total',
         'sidebar.lastDistributions' => 'last_distributions',
         'sidebar.managementCompany' => 'management_company',
         'sidebar.shariahSupervisoryBoard' => 'shariah_supervisory_board',
@@ -230,9 +234,11 @@ class Fund extends Model
                 'template' => $this->template ?? 'show',
             ],
             'sidebar' => array_filter([
-                'equityIndicator' => $this->equity_indicator_description ? [
+                'equityIndicator' => $this->equity_indicator_description ? array_filter([
                     'description' => $this->equity_indicator_description,
-                ] : null,
+                    'filled' => $this->equity_indicator_filled,
+                    'total' => $this->equity_indicator_total,
+                ], fn ($v) => $v !== null) : null,
                 'category' => $this->category,
                 'domicile' => $this->domicile,
                 'minimums' => $this->minimums,
@@ -289,6 +295,13 @@ class Fund extends Model
                 'newInvestments' => ($this->template === 'show-domestic') ? $this->minimums : null,
                 'morningstarCategory' => in_array($this->template, array_merge(['show-international', 'show-international-trust'], self::GLOBAL_EQUITY_TEMPLATES), true) ? $this->category : null,
                 'initialInvestmentAmount' => ($this->template === 'show-international') ? $this->minimums : null,
+                // 875 Class B reference: a SUBSEQUENT INVESTMENT AMOUNT row
+                // beneath INITIAL INVESTMENT AMOUNT (Class R has none — a
+                // single lump-sum minimum). Reuses the same
+                // subsequent_subscription_amount column as the Global Equity
+                // (Luxembourg) sheets' SUBSEQUENT SUBSCRIPTION AMOUNT, under
+                // its own sidebar key so the two templates' labels stay independent.
+                'subsequentInvestmentAmount' => ($this->template === 'show-international') ? $this->subsequent_subscription_amount : null,
                 'totalFundSize' => in_array($this->template, array_merge(['show-international', 'show-international-trust'], self::GLOBAL_EQUITY_TEMPLATES), true) ? $this->portfolio_size : null,
                 'monthEndSharePrice' => in_array($this->template, array_merge(['show-international'], self::GLOBAL_EQUITY_TEMPLATES), true) ? $this->unit_price : null,
                 'numberOfShares' => in_array($this->template, array_merge(['show-international'], self::GLOBAL_EQUITY_TEMPLATES), true) ? $this->number_of_units : null,

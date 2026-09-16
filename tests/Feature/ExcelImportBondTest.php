@@ -349,7 +349,9 @@ class ExcelImportBondTest extends TestCase
         $stats = $fund->asset_allocation['portfolioStatistics'];
         $this->assertArrayNotHasKey('headers', $stats);
         $rows = collect($stats['rows'])->filter(fn ($row) => isset($row['name']))->keyBy('name');
-        $this->assertSame('2.46%', $rows['Spread to JIBAR']['value']);
+        // JIBAR was retired in 2026; the 824 sheet now labels this row
+        // "Spread to Zaronia" while the feed key stays STAT_SPREAD_TO_JIBAR.
+        $this->assertSame('2.46%', $rows['Spread to Zaronia']['value']);
         $this->assertSame('0.77', $rows['SA duration']['value']);
         $this->assertArrayNotHasKey('Total duration', $rows->all());
     }

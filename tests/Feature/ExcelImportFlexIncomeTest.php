@@ -123,8 +123,10 @@ class ExcelImportFlexIncomeTest extends TestCase
             ->keyBy('name');
 
         // ERR keeps the seeded value; usable cells are formatted per row type.
+        // JIBAR was retired in 2026; the 824 sheet now labels this row
+        // "Spread to Zaronia" while the feed key stays STAT_SPREAD_TO_JIBAR.
         $this->assertSame('8.75%', $rows['Yield']['value']);
-        $this->assertSame('2.04%', $rows['Spread to JIBAR']['value']);
+        $this->assertSame('2.04%', $rows['Spread to Zaronia']['value']);
         $this->assertSame('0.93', $rows['SA duration']['value']);
         $this->assertSame('0.21', $rows['Offshore duration']['value']);
         // Nothing stored + no feed value renders empty.

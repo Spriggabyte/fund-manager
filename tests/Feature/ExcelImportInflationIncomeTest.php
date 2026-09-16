@@ -79,8 +79,12 @@ class ExcelImportInflationIncomeTest extends TestCase
 
         $structure = $fund->asset_allocation;
 
+        // The bucket rows stay hand-maintained (the feed's placeholder
+        // buckets don't match the published sheet), but the "Change since"
+        // subtitle now tracks LAST_QUARTER_END from the feed — the fix for
+        // the wrong comparison quarter previously shown on the reference.
         $this->assertSame($seededRows, $structure['rows']);
-        $this->assertSame('Change since 31 March 2026', $structure['subtitle']);
+        $this->assertSame('Change since 30 June 2026', $structure['subtitle']);
         $this->assertSame(['', 'TOTAL', 'CHANGE'], $structure['headers']);
         $this->assertSame('100.0', $structure['total']['value']);
     }

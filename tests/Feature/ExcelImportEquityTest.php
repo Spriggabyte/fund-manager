@@ -136,6 +136,63 @@ class ExcelImportEquityTest extends TestCase
         $this->assertSame('up', $sectors[2]['direction']);
     }
 
+    /**
+     * The 811 equity sheet compares ASSET ALLOCATION and EQUITY SECTOR
+     * ALLOCATION against the last QUARTER end, not the prior month (Helena
+     * comparison spreadsheet finding #7/#8, QC 2026-09-14/15). The feed's
+     * own AA_*_PRIOR / ESAOT_*_CHANGE columns are only quarter-end-accurate
+     * on the first month of a quarter, so the importer must carry a
+     * baseline forward across a quarter for the second and third monthly
+     * imports to compare correctly.
+     */
+    public function test_factsheet_import_compares_equity_allocations_to_last_quarter_end(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-equity']);
+
+        // June 2026: a quarter-end sheet. Its CURRENT column becomes the
+        // baseline the next two monthly sheets compare against.
+        (new FactsheetImporter)->import($fund, $this->makeXlsx([
+            ['MONTH_END_DATE', '30 June 2026'],
+            ['LAST_QUARTER_END', '31 March 2026'],
+            ['AA_SHARE_CURRENT', '87'], ['AA_SHARE_PRIOR', '87'],
+            ['AA_PROPERTY_CURRENT', '2'], ['AA_PROPERTY_PRIOR', '2'],
+            ['AA_CASH_CURRENT', '11'], ['AA_CASH_PRIOR', '11'],
+            ['ESAOT_RANK_1_ITEM', 'Consumer/services'], ['ESAOT_RANK_1_CURRENT', '29'], ['ESAOT_RANK_1_CHANGE', '29.0'],
+        ], 'equity-q-june'));
+
+        // July 2026: first month of the new quarter. The feed's PRIOR
+        // column genuinely is the June quarter-end snapshot.
+        (new FactsheetImporter)->import($fund, $this->makeXlsx([
+            ['MONTH_END_DATE', '31 July 2026'],
+            ['LAST_QUARTER_END', '30 June 2026'],
+            ['AA_SHARE_CURRENT', '86'], ['AA_SHARE_PRIOR', '87'],
+            ['AA_PROPERTY_CURRENT', '3'], ['AA_PROPERTY_PRIOR', '2'],
+            ['AA_CASH_CURRENT', '11'], ['AA_CASH_PRIOR', '11'],
+            ['ESAOT_RANK_1_ITEM', 'Consumer/services'], ['ESAOT_RANK_1_CURRENT', '30'],
+            ['ESAOT_RANK_1_CHANGE_SIGN', '+'], ['ESAOT_RANK_1_CHANGE', '0.8'],
+        ], 'equity-q-july'));
+
+        // August 2026: second month of the quarter. The feed's own PRIOR
+        // column is now July (month-over-month), so the importer must use
+        // the carried-forward June baseline instead.
+        (new FactsheetImporter)->import($fund, $this->makeXlsx([
+            ['MONTH_END_DATE', '31 August 2026'],
+            ['LAST_QUARTER_END', '30 June 2026'],
+            ['AA_SHARE_CURRENT', '89'], ['AA_SHARE_PRIOR', '86'],
+            ['AA_PROPERTY_CURRENT', '3'], ['AA_PROPERTY_PRIOR', '3'],
+            ['AA_CASH_CURRENT', '7'], ['AA_CASH_PRIOR', '11'],
+            ['ESAOT_RANK_1_ITEM', 'Consumer/services'], ['ESAOT_RANK_1_CURRENT', '29'],
+            ['ESAOT_RANK_1_CHANGE_SIGN', '-'], ['ESAOT_RANK_1_CHANGE', '0.1'],
+        ], 'equity-q-august'));
+
+        $aa = $fund->asset_allocation;
+        $this->assertSame(['', '31 AUG 2026', '30 JUN 2026'], $aa['headers']);
+        $this->assertSame('87', $aa['rows'][0]['previous']); // JSE equity securities vs June, not July's 86
+        $this->assertSame('2', $aa['rows'][1]['previous']); // JSE property vs June, not July's 3
+
+        $this->assertSame('Change since 30 June 2026', $fund->sector_allocation['subtitle']);
+    }
+
     public function test_factsheet_import_refreshes_chart_description_and_scalars(): void
     {
         $fund = Fund::factory()->create([

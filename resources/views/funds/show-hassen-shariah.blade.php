@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD-HASSEN SHARIAH GLOBAL EQUITY FUND (878) FACT SHEET
@@ -423,8 +424,13 @@
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
            stays black. Zero changes carry no arrow. */
         .change-up, .change-down { color: #000; }
-        .change-up::before { content: '▲'; font-size: 5.75pt; color: #000; }
-        .change-down::before { content: '▼'; font-size: 5.75pt; color: var(--light-blue); }
+        /* The Unicode ▲/▼ glyph is flatter than the reference's Wingdings
+           triangle (measured 2.03 × 2.55mm at its own font size); a plain
+           font-size bump would overshoot the width to match the height, so
+           the vertical stretch is done with scaleY instead (QC 2026-09-14,
+           Trello "triangles need to be made bigger"). */
+        .change-up::before { content: '▲'; font-size: 5.75pt; color: #000; display: inline-block; transform: scaleY(1.57); }
+        .change-down::before { content: '▼'; font-size: 5.75pt; color: var(--light-blue); display: inline-block; transform: scaleY(1.57); }
 
         /* =====================================================
            TABLES — signed-off styling: 1.1pt white separators,

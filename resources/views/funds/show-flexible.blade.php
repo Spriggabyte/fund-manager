@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD FUND FACT SHEET - PDF TEMPLATE
@@ -481,10 +482,17 @@
             text-align: center;
             padding-left: 0.6mm;
         }
-        .top10-table table tbody tr:nth-child(1) td,
-        .top10-table table tbody tr:nth-child(2) td { background-color: var(--naartjie-20); }
+        /* Reference (measured 2026-09-14 from the PDF's own vector fills,
+           both classes): unlike the balanced/domestic templates, the
+           flexible fund's Top 10 holds ordinary securities, not Foord
+           funds, so row 1 is never pink — the fade is grey throughout,
+           1/1/4/2/2 rows per tier (not the even pairs the CSS used to
+           assume, which put rows 1-2 in naartjie/pink to match a Foord-
+           fund highlight class that this table never has). */
+        .top10-table table tbody tr:nth-child(1) td { background-color: var(--pfe-grey); }
+        .top10-table table tbody tr:nth-child(2) td { background-color: var(--row-grey-1); }
         .top10-table table tbody tr:nth-child(3) td,
-        .top10-table table tbody tr:nth-child(4) td { background-color: var(--row-grey-1); }
+        .top10-table table tbody tr:nth-child(4) td,
         .top10-table table tbody tr:nth-child(5) td,
         .top10-table table tbody tr:nth-child(6) td { background-color: var(--row-grey-2); }
         .top10-table table tbody tr:nth-child(7) td,

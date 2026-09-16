@@ -188,7 +188,7 @@ class ExcelImportShariahIncomeTest extends TestCase
                 'portfolioStatistics' => [
                     'rows' => [
                         ['name' => 'Yield', 'sup' => '1', 'value' => '8.60%'],
-                        ['name' => 'Spread to JIBAR', 'value' => '1.79%'],
+                        ['name' => 'Spread to Zaronia', 'value' => '1.79%'],
                         ['name' => 'SA duration', 'sup' => '2', 'bold' => true, 'value' => '5.01'],
                     ],
                 ],
@@ -205,7 +205,11 @@ class ExcelImportShariahIncomeTest extends TestCase
         $stats = collect($fund->asset_allocation['portfolioStatistics']['rows'])->keyBy('name');
 
         $this->assertSame('8.60%', $stats['Yield']['value']);
-        $this->assertSame('1.79%', $stats['Spread to JIBAR']['value']);
+        // JIBAR was retired in 2026; the row is relabelled "Spread to
+        // Zaronia" on every import (the 841 August reference confirms this),
+        // but the value stored under the old label must still carry over.
+        $this->assertArrayNotHasKey('Spread to JIBAR', $stats);
+        $this->assertSame('1.79%', $stats['Spread to Zaronia']['value']);
         $this->assertSame('5.01', $stats['SA duration']['value']);
     }
 

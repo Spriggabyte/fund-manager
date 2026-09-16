@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD INTERNATIONAL TRUST FACT SHEET (874)
@@ -321,7 +322,12 @@
         /* Reference: 11mm more air between the allocation row and the
            EQUITY SECTOR / PERFORMANCE row. */
         .two-col.alloc-row { margin-bottom: 1mm; }
-        .two-col .col-left { flex: 1; min-width: 0; }
+        /* Reference: the asset-allocation/sector values (with their change
+           triangles) sit clear of the geo table and the chart's rotated
+           y-axis title on the right — give col-left's own content a right
+           margin so its bar shrinks rather than the value/triangle columns
+           crowding (or overflowing into) col-right. */
+        .two-col .col-left { flex: 1; min-width: 0; padding-right: 4mm; }
         .two-col .col-right { flex: 1; min-width: 0; }
 
         /* === Asset allocation bars === */
@@ -371,11 +377,13 @@
         }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
-           stays black. Zero changes carry no arrow. */
+           stays black. Zero changes carry no arrow. Reference triangles are a
+           full glyph (not a small accent) and sit vertically centred on the
+           row — bump the size up from the number's font-size and centre it. */
         .change-up { color: #000; }
         .change-down { color: #000; }
-        .change-up::before { content: '▲ '; font-size: 5.1pt; color: #000; }
-        .change-down::before { content: '▼ '; font-size: 5.1pt; color: var(--light-blue); }
+        .change-up::before { content: '▲ '; font-size: 7.5pt; color: #000; vertical-align: middle; }
+        .change-down::before { content: '▼ '; font-size: 7.5pt; color: var(--light-blue); vertical-align: middle; }
 
         /* === Equity sector bars === */
         .sector-row {
@@ -646,10 +654,13 @@
         }
 
         /* 875 reference: hairline swatches (~1px at 150 dpi) and lighter
-           slate legend text. */
+           slate legend text. Reference lays the four keys out as a fixed
+           2-column grid (Fund / US inflation over World equities / World
+           bonds) so both rows' swatches line up — flex-wrap centred each
+           wrapped row independently and drifted them out of alignment. */
         .chart-legend {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: auto auto;
             justify-content: center;
             gap: 0.4mm 4.2mm;
             margin-top: 0.2mm;

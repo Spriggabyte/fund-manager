@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD INTERNATIONAL FEEDER FUND FACT SHEET (809)
@@ -296,7 +297,12 @@
         .two-col {
             display: flex;
             gap: 9mm;
-            margin-bottom: 7.7mm;
+            /* Was tuned against the pre-"graphs inline fix" geometry, where
+               the right column (chart) ended noticeably higher than it does
+               now that it's aligned with the left column's sector list —
+               re-tuned so TOP 10 INVESTMENTS sits the reference's ~2mm below
+               the legend instead of drifting down and overflowing page 1. */
+            margin-bottom: 2mm;
         }
 
         .two-col .col-left { flex: 1; min-width: 0; }
@@ -342,17 +348,29 @@
 
         .alloc-change {
             width: 9mm;
-            text-align: right;
             flex-shrink: 0;
             font-size: 7.5pt;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
         }
+
+        /* Reference: the arrow sits centred in the gap between the % value
+           and the change number, not jammed against the number — a fixed,
+           centred slot achieves that regardless of the number's width. */
+        .alloc-arrow {
+            display: inline-block;
+            width: 4mm;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .alloc-change-num { text-align: right; }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
            stays black. Zero changes carry no arrow. */
-        .change-up { color: #000; }
-        .change-down { color: #000; }
-        .change-up::before { content: '▲ '; font-size: 5.1pt; color: #000; }
-        .change-down::before { content: '▼ '; font-size: 5.1pt; color: var(--light-blue); }
+        .alloc-arrow.change-up::before { content: '▲'; font-size: 6.8pt; color: #000; }
+        .alloc-arrow.change-down::before { content: '▼'; font-size: 6.8pt; color: var(--light-blue); }
 
         /* === Equity sector bars === */
         .sector-row {
@@ -1208,7 +1226,9 @@
                                                     $isZeroChange = is_numeric($changeNumber) && (float) $changeNumber == 0.0;
                                                     $changeClass = $isZeroChange ? '' : ((($row['changeDirection'] ?? '') === 'up') ? 'change-up' : ((($row['changeDirection'] ?? '') === 'down') ? 'change-down' : ''));
                                                 @endphp
-                                                <span class="alloc-change {{ $changeClass }}">{{ $changeNumber }}</span>
+                                                <span class="alloc-change">
+                                                    <span class="alloc-arrow {{ $changeClass }}"></span><span class="alloc-change-num">{{ $changeNumber }}</span>
+                                                </span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -1268,7 +1288,12 @@
                                     $geoTotals = $fund->data['mainContent']['assetAllocation']['geographicTotals'] ?? [];
                                     $geoFmt = fn ($v) => (is_numeric($v) && (float) $v == 0.0) ? '-' : $v;
                                 @endphp
-                                <div class="geo-table" style="margin-bottom: 2mm;">
+                                {{-- Reference: the geo table's bottom margin is tuned so the
+                                     PORTFOLIO PERFORMANCE heading in the right column lands at
+                                     the same y as EQUITY SECTOR ALLOCATION in the left column
+                                     (the "graphs inline" card) — the two blocks otherwise float
+                                     independently since they're in separate flex columns. --}}
+                                <div class="geo-table" style="margin-bottom: 7.85mm;">
                                     <h3 class="section-heading">GEOGRAPHIC EXPOSURE %</h3>
                                     <p class="section-subtitle">(Gross exposure)</p>
                                     <div class="table-wrapper">
@@ -1602,7 +1627,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <p class="page2-body" style="margin-top: 0;">
+                            <p class="page2-body" style="margin-top: 2.2mm;">
                                 <span x-data="editableField('fees.totalInvestmentCharge.description', '{{ addslashes($fund->data['fees']['totalInvestmentCharge']['description'] ?? '') }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"

@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD FUND FACT SHEET - PDF TEMPLATE
@@ -442,8 +443,13 @@
         }
 
         /* Top 10 Investments — SECURITY 40.1%, ASSET CLASS 28.3% (left),
-           MARKET and % OF FUND 15.8% each (centred). Row backgrounds fade
-           from pink (Foord funds) through progressively lighter greys. */
+           MARKET and % OF FUND 15.8% each (centred). Row shading is by
+           ASSET CLASS, not row position: rows whose asset class starts with
+           "Foreign" (foreign assets / foreign sukuk) shade pink, every other
+           row shades a single flat grey — measured off both class
+           references (840 B and B3), which shade every "Foreign …" row
+           pink and every domestic row the same flat grey, not a graduated
+           fade down the table. */
         .top10-table table td,
         .top10-table table th {
             padding-top: 0.45mm;
@@ -467,16 +473,8 @@
             text-align: center;
             padding-left: 0.6mm;
         }
-        .top10-table table tbody tr:nth-child(1) td,
-        .top10-table table tbody tr:nth-child(2) td { background-color: var(--naartjie-20); }
-        .top10-table table tbody tr:nth-child(3) td,
-        .top10-table table tbody tr:nth-child(4) td { background-color: var(--row-grey-1); }
-        .top10-table table tbody tr:nth-child(5) td,
-        .top10-table table tbody tr:nth-child(6) td { background-color: var(--row-grey-2); }
-        .top10-table table tbody tr:nth-child(7) td,
-        .top10-table table tbody tr:nth-child(8) td { background-color: var(--row-grey-3); }
-        .top10-table table tbody tr:nth-child(9) td,
-        .top10-table table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
+        .top10-table table tbody tr td { background-color: var(--row-grey-1); }
+        .top10-table table tbody tr.top10-foreign td { background-color: var(--naartjie-20); }
 
         /* TIC table — reference (re-measured against the signed-off design):
            label column break at x≈135.5mm (51%), two equal value columns with
@@ -794,6 +792,22 @@
             color: var(--dark-navy);
             font-weight: 500;
             text-align: left;
+        }
+
+        /* B3's "Foreign assets" fee-rate row (Foord-Hassen Shariah Global
+           Equity Fund charges) shades pink like the TOP 10's foreign rows,
+           separated from the rows above by a blank spacer row — measured
+           4.21mm on the June B3 reference. B has no such row. */
+        .fee-rates-table tr.fee-rate-foreign td {
+            background-color: var(--naartjie-20) !important;
+            color: #000;
+        }
+        .fee-rates-table tr.fee-rate-spacer td {
+            padding: 0;
+            height: 4.21mm;
+            line-height: 4.21mm;
+            font-size: 0;
+            background-color: var(--white) !important;
         }
 
         .fee-rates-table tr.sub-item td {
@@ -1478,7 +1492,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($fund->data['mainContent']['topInvestments']['rows'] as $idx => $row)
-                                    <tr class="{{ ($row['highlight'] ?? false) || $idx < 2 ? 'highlight-row' : '' }}">
+                                    <tr class="{{ str_starts_with($row['assetClass'] ?? '', 'Foreign') ? 'top10-foreign' : '' }}">
                                         <td><span x-data="editableField('mainContent.topInvestments.rows.{{ $idx }}.security', '{{ addslashes($row['security']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['security'] }}</span></td>
                                         <td>{{ $row['assetClass'] }}</td>
                                         <td>{{ $row['market'] }}</td>
@@ -1621,7 +1635,10 @@
                         <table>
                             <tbody>
                                 @foreach ($fund->data['fees']['feeRates']['rates'] as $rate)
-                                    <tr>
+                                    @if (($rate['name'] ?? '') === 'Foreign assets')
+                                        <tr class="fee-rate-spacer"><td colspan="2">&nbsp;</td></tr>
+                                    @endif
+                                    <tr class="{{ ($rate['name'] ?? '') === 'Foreign assets' ? 'fee-rate-foreign' : '' }}">
                                         <td>{{ $rate['name'] }}</td>
                                         <td>{{ $rate['value'] }}</td>
                                     </tr>

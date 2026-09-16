@@ -242,6 +242,8 @@ class FundImportManager
             }
         }
 
+        $this->synthesizeMissingReg28Comparison($fund, $imported, $directory);
+
         return [
             'imported' => $imported,
             'skipped' => $skipped,
@@ -268,5 +270,30 @@ class FundImportManager
         }
 
         return $result;
+    }
+
+    /**
+     * The flexible fund of funds (817) is the only template with an
+     * "Investment Strategy vs Reg 28 Portfolios" chart, and Foord only ever
+     * exports the combined COST_REG28_GRAPH file (fund + comparator columns
+     * together) for its A class. Other classes need the comparator series
+     * built from the sibling Balanced fund (810)'s own PRICE_GRAPH export
+     * for the matching class — see CostReg28GraphImporter::synthesizeForClass.
+     * Tightly scoped to fund_code 817 so no other fund's import is touched.
+     */
+    private function synthesizeMissingReg28Comparison(Fund $fund, array $imported, string $directory): void
+    {
+        if (($fund->fund_code ?? null) !== '817' || in_array('Reg 28 comparison graph', $imported, true)) {
+            return;
+        }
+
+        $classCode = $fund->class_code;
+        if (! $classCode) {
+            return;
+        }
+
+        $comparatorFile = dirname(rtrim($directory, '/')).'/810/810'.$classCode.'_PRICE_GRAPH.xlsx';
+
+        (new CostReg28GraphImporter)->synthesizeForClass($fund, $comparatorFile);
     }
 }

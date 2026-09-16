@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD INTERNATIONAL FUND FACT SHEET
@@ -367,11 +368,13 @@
         }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
-           stays black. Zero changes carry no arrow. */
+           stays black. Zero changes carry no arrow. Reference triangles are a
+           full glyph (not a small accent) and sit vertically centred on the
+           row — bump the size up from the number's font-size and centre it. */
         .change-up { color: #000; }
         .change-down { color: #000; }
-        .change-up::before { content: '▲ '; font-size: 5.1pt; color: #000; }
-        .change-down::before { content: '▼ '; font-size: 5.1pt; color: var(--light-blue); }
+        .change-up::before { content: '▲ '; font-size: 7.5pt; color: #000; vertical-align: middle; }
+        .change-down::before { content: '▼ '; font-size: 7.5pt; color: var(--light-blue); vertical-align: middle; }
 
         /* === Equity sector bars === */
         .sector-row {
@@ -636,10 +639,13 @@
         }
 
         /* 875 reference: hairline swatches (~1px at 150 dpi) and lighter
-           slate legend text. */
+           slate legend text. Reference lays the four keys out as a fixed
+           2-column grid (Fund / US inflation over World equities / World
+           bonds) so both rows' swatches line up — flex-wrap centred each
+           wrapped row independently and drifted them out of alignment. */
         .chart-legend {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: auto auto;
             justify-content: center;
             gap: 0.4mm 4.2mm;
             margin-top: 1mm;
@@ -1053,6 +1059,10 @@
                                 'monthEndSharePrice' => 'MONTH END SHARE PRICE',
                                 'morningstarCategory' => 'MORNINGSTAR CATEGORY',
                                 'initialInvestmentAmount' => 'INITIAL INVESTMENT AMOUNT',
+                                // Class B reference: a second sidebar row between
+                                // INITIAL INVESTMENT AMOUNT and TOTAL FUND SIZE (Class
+                                // R's minimum is a single lump sum with no subsequent row).
+                                'subsequentInvestmentAmount' => 'SUBSEQUENT INVESTMENT AMOUNT',
                                 'totalFundSize' => 'TOTAL FUND SIZE',
                                 'numberOfShares' => 'NUMBER OF SHARES',
                                 'investmentManager' => 'INVESTMENT MANAGER',
@@ -1076,6 +1086,7 @@
                                 'investmentManager', 'subInvestmentManager', 'fundManagers',
                                 'inceptionDate', 'baseCurrency', 'equityIndicator',
                                 'morningstarCategory', 'typeOfShares', 'initialInvestmentAmount',
+                                'subsequentInvestmentAmount',
                                 'totalFundSize', 'monthEndSharePrice', 'numberOfShares',
                                 'timeHorizon', 'fees', 'isinNumber', 'lipperAward'
                             ];
@@ -1103,7 +1114,8 @@
                                 @elseif ($key === 'equityIndicator' && is_array($value))
                                     <div class="sidebar-section">
                                         @php
-                                            $filledDots = $value['filled'] ?? 7;
+                                            // 875 reference (both R and B classes): 6 of 10 dots filled.
+                                            $filledDots = $value['filled'] ?? 6;
                                             $totalDots = $value['total'] ?? 10;
                                         @endphp
                                         {{-- Heading + dots share one line; SVG circles stay
@@ -1262,7 +1274,9 @@
                                     $geoTotals = $fund->data['mainContent']['assetAllocation']['geographicTotals'] ?? [];
                                     $geoFmt = fn ($v) => (is_numeric($v) && (float) $v == 0.0) ? '-' : $v;
                                 @endphp
-                                <div class="geo-table" style="margin-bottom: 2mm;">
+                                {{-- Reference: the performance chart sits noticeably lower,
+                                     clear of the geo table above it. --}}
+                                <div class="geo-table" style="margin-bottom: 8mm;">
                                     <h3 class="section-heading">GEOGRAPHIC EXPOSURE %</h3>
                                     <p class="section-subtitle">(Gross exposure)</p>
                                     <div class="table-wrapper">

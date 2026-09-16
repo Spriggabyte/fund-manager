@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <script>
         // Tailwind is only used by the screen chrome (toolbar + notifications);
         // the fact-sheet itself is styled by the PDF template CSS below.
@@ -236,7 +237,7 @@
         /* ── Main Content ── */
         .main-content {
             flex: 1;
-            padding: 3.7mm 6.6mm 0 4.5mm;
+            padding: 4.1mm 6.6mm 0 4.5mm;
             min-width: 0;
             overflow: hidden;
         }
@@ -458,10 +459,6 @@
             position: relative;
             top: -0.8mm;
         }
-
-        /* ── Low Carbon Badge (cropped from the signed-off design) ── */
-        .low-carbon-badge { margin-top: 3.5mm; }
-        .low-carbon-badge img { width: 35mm; height: auto; display: block; margin-left: 3.5mm; }
 
         /* ============================
            PAGE 2 STYLES
@@ -817,10 +814,6 @@
                             </div>
                         @endif
                     @endforeach
-
-                    <div class="low-carbon-badge">
-                        <img src="{{ asset('images/low-carbon.png') }}" alt="Achieved the Morningstar® Low Carbon designation">
-                    </div>
                 @endif
             </div>
 
@@ -980,7 +973,7 @@
                         <div>
                             <h3 class="section-heading">PORTFOLIO PERFORMANCE VS BENCHMARK</h3>
                             <div class="chart-wrapper">
-                                <canvas id="portfolioChart" style="height: 45mm;"></canvas>
+                                <canvas id="portfolioChart" style="height: 48mm;"></canvas>
                             </div>
                         </div>
                     @endif
@@ -1310,6 +1303,11 @@
                                   :class="editMode ? 'editable' : ''"
                                   x-text="value"></span>
                         </h3>
+                        @php
+                            // Column count follows the headers row: the 811 A/B2
+                            // sheets carry 4 scenarios (A–D), B3 only 3 (A–C).
+                            $pfeCols = array_slice(['a', 'b', 'c', 'd'], 0, count($fund->data['fees']['performanceFeeExamples']['headers']) - 1);
+                        @endphp
                         <div class="examples-table table-container">
                             <table>
                                 <thead>
@@ -1333,7 +1331,7 @@
                                                       :class="editMode ? 'editable' : ''"
                                                       x-text="value"></span>
                                             </td>
-                                            @foreach (['a', 'b', 'c', 'd'] as $col)
+                                            @foreach ($pfeCols as $col)
                                                 <td>
                                                     <span x-data="editableField('fees.performanceFeeExamples.rows.{{ $rowIndex }}.{{ $col }}', '{{ $row[$col] }}')"
                                                           @click="editMode && startEdit()"
@@ -1350,20 +1348,14 @@
                                                   :class="editMode ? 'editable' : ''"
                                                   x-text="value"></span>
                                         </td>
-                                        @foreach (['a', 'b', 'c'] as $col)
+                                        @foreach ($pfeCols as $col)
                                             <td>
-                                                <span x-data="editableField('fees.performanceFeeExamples.total.{{ $col }}', '{{ $fund->data['fees']['performanceFeeExamples']['total'][$col] }}')"
+                                                <span x-data="editableField('fees.performanceFeeExamples.total.{{ $col }}', '{!! addslashes($fund->data['fees']['performanceFeeExamples']['total'][$col]) !!}')"
                                                       @click="editMode && startEdit()"
                                                       :class="editMode ? 'editable' : ''"
-                                                      x-text="value"></span>
+                                                      x-html="value"></span>
                                             </td>
                                         @endforeach
-                                        <td>
-                                            <span x-data="editableField('fees.performanceFeeExamples.total.d', '{!! addslashes($fund->data['fees']['performanceFeeExamples']['total']['d']) !!}')"
-                                                  @click="editMode && startEdit()"
-                                                  :class="editMode ? 'editable' : ''"
-                                                  x-html="value"></span>
-                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1634,8 +1626,8 @@
                         },
                         scales: {
                             x: {
-                                // No gridlines, but black axis line + tick marks at the labels
-                                border: { display: false }, // reference: no bottom rule under the monthly bars
+                                // Reference: black axis line + tick marks at the labels
+                                border: { display: true, color: '#000', width: 1 },
                                 grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                                 afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => keepTicks.has(t.value)); },
                                 ticks: {
@@ -1700,8 +1692,10 @@
                         },
                         scales: {
                             x: {
-                                border: { display: true, color: '#000', width: 1 },
-                                grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                                // Reference: no bottom rule and no tick marks under the
+                                // monthly bars — just the floating date labels.
+                                border: { display: false },
+                                grid: { drawOnChartArea: false, drawTicks: false },
                                 afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => keepTicks.has(t.value)); },
                                 ticks: {
                                     font: { size: 8 },

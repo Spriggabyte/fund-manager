@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    @include('funds.partials.avenir-fonts')
     <style>
         /* =====================================================
            FOORD FUND FACT SHEET - PDF TEMPLATE
@@ -586,11 +587,13 @@
         }
 
         /* Change indicators — arrow coloured only; number inherits table colour.
-           Reference arrows are ~5pt Wingdings triangles, smaller than the digits. */
+           Reference arrows are Wingdings triangles measuring ~2.3x2.7mm on the
+           printed page (Trello: "the triangles need to be a bit bigger" —
+           5.1pt rendered at ~1.8x1.8mm, visibly smaller than the reference). */
         td.change-cell { color: #000; }
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            font-size: 5.1pt;
+            font-size: 7pt;
         }
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
@@ -1274,6 +1277,22 @@
                     </div>
                 @endif
 
+                @php
+                    // Footnote numbering shifts per class: B2 has a fifth
+                    // footnote ("Before 2 June 2025 nil fees") that B3 never
+                    // carries (B3's fee rate never changed), so the chart
+                    // title / Fund row / Fund highest-lowest row superscripts
+                    // must be derived from whether that footnote is present
+                    // rather than hardcoded to the B2 numbering. Computed here
+                    // (ahead of both the chart and performance-table blocks)
+                    // so it doesn't depend on the chart block also rendering.
+                    $hasNilFeeFootnote = collect($fund->data['mainContent']['performanceTable']['footnotes'] ?? [])
+                        ->contains(fn ($fn) => stripos($fn, 'nil fee') !== false);
+                    $chartTitleSup = $hasNilFeeFootnote ? '3,4,5' : '3,4';
+                    $fundRowSup = $hasNilFeeFootnote ? '3,5' : '3';
+                    $highLowRowSup = $hasNilFeeFootnote ? '3,6' : '3,5';
+                @endphp
+
                 <!-- Chart — the 820 reference has a single Fund-vs-Benchmark cash
                      chart on the left of the content column (plot ≈52×33mm,
                      measured from the March 2026 reference); there is no
@@ -1281,7 +1300,7 @@
                 @if(isset($fund->data['mainContent']['charts']['portfolioData']))
                     <div class="charts-row">
                         <div class="chart-container">
-                            <h4 class="chart-title">PORTFOLIO PERFORMANCE VS BENCHMARK<sup>3,4,5</sup></h4>
+                            <h4 class="chart-title">PORTFOLIO PERFORMANCE VS BENCHMARK<sup>{{ $chartTitleSup }}</sup></h4>
                             <div class="chart-wrapper">
                                 <div class="chart-ytitle">Cash Value<sup>2</sup> (R&rsquo;000)</div>
                                 <div id="portfolioChart"></div>
@@ -1334,15 +1353,16 @@
                                         $isTopFundRow = $idx === 0;
                                         $displayName = $row['name'];
                                         $lowerName = strtolower($nameStr);
-                                        // 820 reference markers: "Fund ³,⁵", "Benchmark ³,⁴",
-                                        // "Fund highest/lowest ³,⁶" (⁵ = nil fees before
-                                        // 2 June 2025, ⁴ = the benchmark-change footnote).
+                                        // 820 reference markers: "Fund ³,⁵"/"Fund ³", "Benchmark ³,⁴",
+                                        // "Fund highest/lowest ³,⁶"/"³,⁵" — the exact superscripts
+                                        // depend on whether this class carries the nil-fee footnote
+                                        // (see $fundRowSup/$highLowRowSup above).
                                         if (preg_match('/^fund\s+(highest|lowest)/i', $nameStr)) {
-                                            if (strpos($displayName, '3,6') === false && strpos($displayName, '³,⁶') === false) {
-                                                $displayName .= ' <sup>3,6</sup>';
+                                            if (strpos($displayName, $highLowRowSup) === false) {
+                                                $displayName .= ' <sup>'.$highLowRowSup.'</sup>';
                                             }
-                                        } elseif (stripos($nameStr, 'fund') === 0 && strpos($displayName, '3,5') === false && strpos($displayName, '³,⁵') === false) {
-                                            $displayName .= ' <sup>3,5</sup>';
+                                        } elseif (stripos($nameStr, 'fund') === 0 && strpos($displayName, $fundRowSup) === false) {
+                                            $displayName .= ' <sup>'.$fundRowSup.'</sup>';
                                         } elseif (stripos($nameStr, 'benchmark') === 0 && strpos($displayName, '³,⁴') === false && strpos($displayName, '3,4') === false) {
                                             $displayName .= ' <sup>3,4</sup>';
                                         }
@@ -1443,17 +1463,17 @@
                                 <thead>
                                     <tr>
                                         @foreach ($fund->data['fees']['totalInvestmentCharge']['headers'] as $header)
-                                            <th>{{ $header }}</th>
+                                            {{-- The B2 reference stars the "36 MONTHS*" column header
+                                                 (the footnote applies to the whole estimated 36-month
+                                                 column, not just the TER row) — not the TER row label. --}}
+                                            <th>{{ $header }}@if(isset($fund->data['fees']['totalInvestmentCharge']['footnote']) && str_contains($header, '36'))*@endif</th>
                                         @endforeach
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $row)
                                         <tr>
-                                            {{-- The B2 reference stars the TER row ("Total expense
-                                                 ratio (TER)*") to point at the estimated-fee
-                                                 footnote below the table. --}}
-                                            <td>{{ $row['name'] }}@if(isset($fund->data['fees']['totalInvestmentCharge']['footnote']) && str_contains($row['name'], '(TER)'))*@endif</td>
+                                            <td>{{ $row['name'] }}</td>
                                             <td>{{ $fmt($row['12m'] ?? '', 2) }}</td>
                                             <td>{{ $fmt($row['36m'] ?? '', 2) }}</td>
                                         </tr>
@@ -1606,6 +1626,22 @@
                 );
                 const portfolioYMax = Math.ceil(portfolioMaxVal * 1.05 / 100) * 100;
 
+                // The cash-value series can dip below the 100 baseline (drawdowns
+                // sink the indexed value under its starting point) — the reference
+                // chart extends the axis below 100 to give the trough headroom
+                // instead of clipping it flush against the axis (Trello: "extend
+                // the y-axis down a bit"). Only drop below 100 when the data
+                // actually requires it.
+                const portfolioMinVal = Math.min(
+                    ...portfolioData.map(d => Math.min(
+                        d.fund ?? Infinity,
+                        d.benchmark ?? Infinity
+                    ))
+                );
+                const portfolioYMin = portfolioMinVal < 100
+                    ? Math.floor(portfolioMinVal * 0.95 / 10) * 10
+                    : 100;
+
                 // Calendar-aligned ticks every TWO years anchored on the first FULL
                 // month (the 820 reference labels Jan 14, Jan 16, … Jan 26 — the
                 // shorter history halves the balanced fund's 4-year pitch; the 100
@@ -1656,9 +1692,10 @@
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
-                        // Axis crosses at the 100 baseline like the reference (the
-                        // curve's first point sits ON the x-axis line).
-                        min: 100,
+                        // Axis min is normally 100 (the curve's first point sits ON
+                        // the x-axis line) but drops lower when the series dips
+                        // below 100, so the trough doesn't clip against the axis.
+                        min: portfolioYMin,
                         max: portfolioYMax,
                         endOnTick: false,
                         startOnTick: false,
