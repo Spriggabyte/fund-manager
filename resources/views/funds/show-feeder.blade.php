@@ -268,7 +268,10 @@
             line-height: 9pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--dark-navy);
+            /* Reference prints the section headings black, not navy — the
+               navy read noticeably lighter next to the published sheet
+               (review-2 card: "headings should be bolder"). */
+            color: #000;
             margin: 0 0 0.8mm 0;
         }
 
@@ -278,7 +281,7 @@
         .section-heading .title-suffix {
             font-size: inherit;
             font-weight: 500;
-            color: var(--dark-navy);
+            color: #000;
             text-transform: none;
             letter-spacing: 0.01em;
         }
@@ -289,24 +292,58 @@
             font-size: 7.5pt;
             line-height: 9pt;
             letter-spacing: 0.01em;
-            color: var(--dark-navy);
+            color: #000;
             margin: -0.5mm 0 0.9mm 0;
         }
 
         /* === Two-column layout === */
+        /* Two rows × two columns. Row 1 holds ASSET ALLOCATION | GEOGRAPHIC
+           EXPOSURE, row 2 EQUITY SECTOR ALLOCATION | PORTFOLIO PERFORMANCE.
+           A grid (rather than two independent flex columns with hand-tuned
+           margins) keeps the row-2 headings level whatever the row-1 blocks
+           measure — the "graphs inline" / review-2 cards. The 809 reference
+           puts EQUITY SECTOR ALLOCATION 45.9mm below ASSET ALLOCATION. */
         .two-col {
-            display: flex;
-            gap: 9mm;
-            /* Was tuned against the pre-"graphs inline fix" geometry, where
-               the right column (chart) ended noticeably higher than it does
-               now that it's aligned with the left column's sector list —
-               re-tuned so TOP 10 INVESTMENTS sits the reference's ~2mm below
-               the legend instead of drifting down and overflowing page 1. */
-            margin-bottom: 2mm;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            column-gap: 9mm;
+            row-gap: 4.6mm;
+            /* Clears the hanging legend; TOP 10 INVESTMENTS then heads up
+               ~169mm down the page as on the reference. */
+            margin-bottom: 8.5mm;
         }
 
-        .two-col .col-left { flex: 1; min-width: 0; }
-        .two-col .col-right { flex: 1; min-width: 0; }
+        .two-col .col-left,
+        .two-col .col-right { display: contents; }
+        .two-col .col-left > :nth-child(1) { grid-column: 1; grid-row: 1; }
+        .two-col .col-left > :nth-child(2) { grid-column: 1; grid-row: 2; }
+        .two-col .col-right > :nth-child(1) { grid-column: 2; grid-row: 1; }
+        .two-col .col-right > :nth-child(2) { grid-column: 2; grid-row: 2; }
+        /* The chart block fills its grid row (a column flexbox whose chart
+           flexes to the leftover height). --chart-overhang shifts the canvas
+           edge relative to the row bottom so the x-axis line lands on the
+           bottom of the Industrials bar (second-last sector row) with the
+           date labels level with Communication services, as on the
+           published sheet: the axis sits ~4mm above the canvas edge (the
+           tick-label zone), one 4.5mm row up gives about -1mm. The legend hangs
+           below the row, outside it, so it never pushes the chart up. */
+        .two-col {
+            --chart-overhang: -0.95mm;
+        }
+        .two-col .col-right > :nth-child(2) {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            position: relative;
+        }
+        .two-col .col-right > :nth-child(2) .chart-legend {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 100%;
+            margin-top: calc(var(--chart-overhang) + 0.7mm);
+        }
 
         /* === Asset allocation bars === */
         .alloc-row {
@@ -346,26 +383,31 @@
             font-weight: 400;
         }
 
+        /* Reference (Equities row): value ends x=121.3mm, arrow centred at
+           124.2mm, change number 127.2→131.6mm — the arrow sits centred in
+           the gap between the % value and the change number. The arrow
+           slot flexes to fill whatever the number leaves, so it stays
+           centred for "3.9" and "13.9" alike. */
         .alloc-change {
-            width: 9mm;
+            width: 9.3mm;
             flex-shrink: 0;
             font-size: 7.5pt;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
         }
 
-        /* Reference: the arrow sits centred in the gap between the % value
-           and the change number, not jammed against the number — a fixed,
-           centred slot achieves that regardless of the number's width. */
         .alloc-arrow {
             display: inline-block;
-            width: 4mm;
-            flex-shrink: 0;
+            flex: 1 1 auto;
+            min-width: 0;
             text-align: center;
         }
 
-        .alloc-change-num { text-align: right; }
+        .alloc-change-num {
+            flex: 0 0 auto;
+            min-width: 4.4mm;
+            text-align: right;
+        }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
            stays black. Zero changes carry no arrow. */
@@ -379,7 +421,9 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 3.6mm;
+            /* Reference row pitch (Consumer staples → Communication services
+               spans 40.5mm over nine intervals). */
+            line-height: 4.5mm;
             color: #000;
         }
 
@@ -582,14 +626,19 @@
            the underlying Foord global fund row renders pink. */
         .fee-rates-table .foord-table th:first-child,
         .fee-rates-table .foord-table td:first-child { width: 50%; }
+        /* Reference: 8.04pt Avenir Next on a 4.2mm row pitch (review-2 card:
+           the 7.5pt rows left too much empty space under the text). */
         .fee-rates-table .foord-table td {
             text-align: left;
-            padding-top: 0.92mm;
-            padding-bottom: 0.92mm;
+            font-size: 8pt;
+            line-height: 9.6pt;
+            padding-top: 0.32mm;
+            padding-bottom: 0.32mm;
         }
+        /* "Foord global funds:" keeps the shared cell inset so it lines up
+           with the row labels above it (card 253). */
         .fee-rates-table .foord-table tr.global-funds-header td {
             background-color: var(--white);
-            padding-left: 0;
         }
         .fee-rates-table .foord-table tr.sub-item td {
             background-color: var(--naartjie-20);
@@ -603,9 +652,14 @@
         }
         .tic-table .foord-table th:not(:first-child),
         .tic-table .foord-table td:not(:first-child) { text-align: center; }
+        .tic-table .foord-table th {
+            padding-top: 0.35mm;
+            padding-bottom: 0.35mm;
+        }
+        /* Reference: every TIC row on a uniform 4.5mm pitch. */
         .tic-table .foord-table td {
-            padding-top: 0.72mm;
-            padding-bottom: 0.72mm;
+            padding-top: 0.63mm;
+            padding-bottom: 0.63mm;
         }
         /* Reference: the TER row and the Transaction costs row are unshaded;
            only the indented "–" component rows carry the grey. */
@@ -613,13 +667,20 @@
         .tic-table .foord-table tbody tr:nth-last-child(2) td { background-color: var(--white); }
         .tic-table .foord-table tr.total-row td {
             font-weight: 500;
-            padding-top: 0.95mm;
-            padding-bottom: 0.95mm;
+            font-size: 8pt;
+            line-height: 9pt;
+            padding-top: 0.47mm;
+            padding-bottom: 0.47mm;
         }
 
         /* === Chart === */
         .chart-wrapper {
-            height: 43.5mm;
+            /* Sized by the grid row (see .two-col), not a fixed height;
+               the negative margin is the overhang below the row. */
+            flex: 1 1 0;
+            min-height: 0;
+            height: auto;
+            margin-bottom: calc(-1 * var(--chart-overhang));
             position: relative;
         }
 
@@ -631,7 +692,9 @@
         .chart-ytitle {
             position: absolute;
             left: -9mm;
-            top: 18mm;
+            /* Reference: "Cash Value² (R'000)" is centred ~13mm below the
+               chart's top edge (card 251: "move cash value higher"). */
+            top: 12mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
@@ -774,8 +837,11 @@
         }
 
         .page2-section { margin-bottom: 5.6mm; }
-        /* Reference: the TER paragraph sits close under the TIC table. */
-        .page2-section.tic-table { margin-bottom: 11.7mm; }
+        /* Reference: TOTAL INVESTMENT CHARGE heads up 11.9mm below the last
+           FEE RATES row (review-2 card: more margin above the heading). */
+        .page2-section.fee-rates-table { margin-bottom: 8.8mm; }
+        /* Reference: INVESTING OFFSHORE sits 14mm under the TER paragraph. */
+        .page2-section.tic-table { margin-bottom: 13.6mm; }
         .page2-section.tic-table .table-wrapper { margin-bottom: 0.4mm; }
 
         .page2-heading {
@@ -785,15 +851,16 @@
             line-height: 11.4pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--dark-navy);
+            color: #000;
             margin: 0 0 1.5mm 0;
         }
 
         .page2-body {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 8.2pt;
-            line-height: 10.1pt;
+            /* Reference: 7.56pt on a 3.25mm (9.2pt) leading — card 254. */
+            font-size: 7.5pt;
+            line-height: 9.2pt;
             letter-spacing: 0.01em;
             color: #000;
         }
@@ -1125,8 +1192,21 @@
                                 @if ($key === 'equityIndicator' && is_array($value))
                                     <div class="sidebar-section">
                                         @php
-                                            $filledDots = $value['filled'] ?? 7;
-                                            $totalDots = $value['total'] ?? 10;
+                                            /* Card 250: the filled dots track the Equities
+                                               allocation (59% → 6 of 10). Derived from the
+                                               asset-allocation table when it carries an
+                                               Equities row; the stored count is the fallback. */
+                                            $totalDots = (int) ($value['total'] ?? 10);
+                                            $filledDots = (int) ($value['filled'] ?? 7);
+                                            foreach ($fund->data['mainContent']['assetAllocation']['rows'] ?? [] as $aaRow) {
+                                                if (strcasecmp(trim((string) ($aaRow['name'] ?? '')), 'Equities') === 0) {
+                                                    $eq = $aaRow['value'] ?? $aaRow['total'] ?? null;
+                                                    if (is_numeric($eq)) {
+                                                        $filledDots = max(0, min($totalDots, (int) round((float) $eq / 100 * $totalDots)));
+                                                    }
+                                                    break;
+                                                }
+                                            }
                                         @endphp
                                         {{-- Heading + dots share one line; SVG circles stay
                                              round in Chromium's print engine. --}}
@@ -1178,8 +1258,9 @@
                         <!-- Left: Asset Allocation -->
                         <div class="col-left">
                             @if(isset($fund->data['mainContent']['assetAllocation']))
-                                {{-- Reference: EQUITY SECTOR ALLOCATION starts 111mm down the page. --}}
-                                <div style="margin-bottom: 13.1mm;">
+                                {{-- Grid row 1 (see .two-col): EQUITY SECTOR ALLOCATION starts
+                                     111mm down the page on the reference. --}}
+                                <div>
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.assetAllocation.title', '{{ addslashes($fund->data['mainContent']['assetAllocation']['title']) }}', 'headingSuffix')"
                                               @click="editMode && startEdit()"
@@ -1239,7 +1320,7 @@
                                  sector_allocation JSON; bars only, no change
                                  arrows on the published feeder sheet) -->
                             @if(!empty($fund->data['mainContent']['sectorAllocation']['sectors']))
-                                <div style="margin-bottom: 2mm;">
+                                <div>
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.sectorAllocation.title', '{{ addslashes($fund->data['mainContent']['sectorAllocation']['title'] ?? 'EQUITY SECTOR ALLOCATION %') }}')"
                                               @click="editMode && startEdit()"
@@ -1288,12 +1369,10 @@
                                     $geoTotals = $fund->data['mainContent']['assetAllocation']['geographicTotals'] ?? [];
                                     $geoFmt = fn ($v) => (is_numeric($v) && (float) $v == 0.0) ? '-' : $v;
                                 @endphp
-                                {{-- Reference: the geo table's bottom margin is tuned so the
-                                     PORTFOLIO PERFORMANCE heading in the right column lands at
-                                     the same y as EQUITY SECTOR ALLOCATION in the left column
-                                     (the "graphs inline" card) — the two blocks otherwise float
-                                     independently since they're in separate flex columns. --}}
-                                <div class="geo-table" style="margin-bottom: 7.85mm;">
+                                {{-- Grid row 1 (see .two-col): the PORTFOLIO PERFORMANCE heading
+                                     below shares grid row 2 with EQUITY SECTOR ALLOCATION, so
+                                     the two headings stay level (the "graphs inline" card). --}}
+                                <div class="geo-table">
                                     <h3 class="section-heading">GEOGRAPHIC EXPOSURE %</h3>
                                     <p class="section-subtitle">(Gross exposure)</p>
                                     <div class="table-wrapper">
@@ -1627,7 +1706,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <p class="page2-body" style="margin-top: 2.2mm;">
+                            <p class="page2-body" style="margin-top: 3.2mm;">
                                 <span x-data="editableField('fees.totalInvestmentCharge.description', '{{ addslashes($fund->data['fees']['totalInvestmentCharge']['description'] ?? '') }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
@@ -1833,20 +1912,40 @@
             id: 'endValueAnnotation',
             afterDraw(chart) {
                 const { ctx } = chart;
+                // Reference prints the end-of-line cash values at body size
+                // (~7.5pt) — card 251. At that size neighbouring series
+                // (US inflation / World bonds) would collide, so the labels
+                // are spread apart top-to-bottom, keeping their order.
+                const fontPx = 10;
+                const minGap = fontPx + 1;
+                const labels = [];
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
                     if (meta.hidden) return;
                     const lastPoint = meta.data[meta.data.length - 1];
                     if (!lastPoint) return;
                     const lastValue = dataset.data[dataset.data.length - 1];
-                    const label = 'R ' + Math.round(lastValue).toLocaleString();
-                    ctx.save();
-                    ctx.font = 'bold 7px Avenir Next, Lato, sans-serif';
-                    ctx.fillStyle = dataset.borderColor;
-                    ctx.textAlign = 'left';
-                    ctx.fillText(label, lastPoint.x + 4, lastPoint.y - 3);
-                    ctx.restore();
+                    labels.push({
+                        text: 'R ' + Math.round(lastValue).toLocaleString(),
+                        color: dataset.borderColor,
+                        x: lastPoint.x + 4,
+                        y: lastPoint.y - 3,
+                    });
                 });
+                labels.sort((a, b) => a.y - b.y);
+                for (let i = 1; i < labels.length; i++) {
+                    if (labels[i].y - labels[i - 1].y < minGap) {
+                        labels[i].y = labels[i - 1].y + minGap;
+                    }
+                }
+                ctx.save();
+                ctx.font = `500 ${fontPx}px Avenir Next, Lato, sans-serif`;
+                ctx.textAlign = 'left';
+                labels.forEach(l => {
+                    ctx.fillStyle = l.color;
+                    ctx.fillText(l.text, l.x, l.y);
+                });
+                ctx.restore();
             }
         };
 
@@ -1912,8 +2011,8 @@
                         // mark per tick, so unlabelled months are dropped here).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 48 === 1); },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
                             maxRotation: 0,
                             autoSkip: false,
                             // Feeder reference ticks: Mar 06, Mar 10, … — every
@@ -1932,8 +2031,8 @@
                         grid: { display: false },
                         border: { color: '#000' },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
                             callback: (value) => value === 100 ? '100' : null
                         },
                         min: 100,
@@ -1941,7 +2040,8 @@
                     }
                 },
                 layout: {
-                    padding: { right: 40, top: 10 }
+                    /* Right padding clears the 10px "R 1,434" end label. */
+                    padding: { right: 46, top: 10 }
                 }
             }
         });
