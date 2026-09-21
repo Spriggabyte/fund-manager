@@ -34,10 +34,10 @@
     <style>
         /* =============================================================
            FOORD EQUITY FUND — FACT SHEET VIEW
-           The fact-sheet styles below are copied verbatim from
-           pdf-equity.blade.php (the signed-off PDF template) so the
-           on-screen page renders identically to the PDF export. Keep
-           the two files' CSS and markup in sync when either changes.
+           This blade IS the print layout: FundController::internalPdfView
+           renders it for the PDF export too (the former pdf-equity twin was
+           folded in, Sept 2026), so the web preview and PDF cannot drift.
+           Geometry is measured off the signed-off design PDF.
            ============================================================= */
 
         :root {
@@ -232,7 +232,8 @@
         .equity-indicator { display: flex; gap: 0.5mm; }
         .equity-dot { width: 1.4mm; height: 1.4mm; display: inline-block; flex: 0 0 1.4mm; overflow: visible; }
         .equity-dot.filled circle { fill: var(--naartjie); }
-        .equity-dot.empty circle { fill: none; stroke: var(--medium-grey); stroke-width: 0.9; }
+        /* Reference: the unfilled dots are SOLID grey, not outlined */
+        .equity-dot.empty circle { fill: var(--medium-grey); }
 
         /* ── Main Content ── */
         .main-content {
@@ -266,10 +267,10 @@
         .two-col {
             display: flex;
             gap: 4mm;
-            margin-bottom: 7.8mm;
+            margin-bottom: 6.6mm;
         }
         .two-col > * { flex: 1; min-width: 0; }
-        .two-col.row-2 { margin-bottom: 2.5mm; }
+        .two-col.row-2 { margin-bottom: 4.3mm; }
 
         /* ── Tables ── */
         .table-container {
@@ -374,14 +375,16 @@
         .sector-change.down .arrow { color: var(--steel-blue); }
 
         /* ── Asset Allocation Table ── */
-        .asset-table { margin-bottom: 0; }
+        /* Reference: the table's top edge lines up with the first sector
+           bar row (the heading sits alone above a 4.2mm gap). */
+        .asset-table { margin: 5.4mm 0 0 0; }
         .asset-table table tbody td { background-color: var(--cell-standard); }
         .asset-table table th {
             font-size: 6.5pt;
-            padding: 0.9mm 1.5mm;
+            padding: 0.7mm 1.5mm;
         }
         .asset-table table td {
-            padding: 0.75mm 1.5mm;
+            padding: 0.65mm 1.5mm;
         }
         .asset-table .indent td:first-child {
             padding-left: 3.5mm;
@@ -407,10 +410,10 @@
 
         /* ── Chart Description ── */
         .chart-description {
-            font-size: 6.3pt;
-            line-height: 2.34mm;
+            font-size: 7pt;
+            line-height: 2.7mm;
             color: var(--body-grey);
-            margin: 2.4mm 0 3mm 0;
+            margin: 2.4mm 0 2.4mm 0;
         }
 
         /* ── Performance Table ── */
@@ -510,7 +513,7 @@
 
         .fee-table table td {
             text-align: left;
-            font-size: 7pt;
+            font-size: 7.5pt;
             line-height: 2.85mm;
             padding: 0.65mm 2mm;
             background-color: var(--cell-standard);
@@ -520,7 +523,7 @@
         }
 
         /* TIC table: main rows white, the "—" sub-rows shaded. */
-        .tic-table table td { padding: 0.85mm 2mm; }
+        .tic-table table td { padding: 0.85mm 2mm; font-size: 7.5pt; }
         .tic-table tbody td { background-color: var(--white); }
         .tic-table tbody .row-sub td { background-color: var(--cell-standard); }
 
@@ -528,7 +531,7 @@
            grey, remaining rows standard grey (mirrors the page-1 table). */
         .examples-table table th { text-align: right; padding-right: 2mm; }
         .examples-table table th:first-child { text-align: left; }
-        .examples-table table td { padding: 0.8mm 2mm; background-color: var(--cell-standard); }
+        .examples-table table td { padding: 0.8mm 2mm; font-size: 7.5pt; background-color: var(--cell-standard); }
         .examples-table .row-foord td { background-color: var(--naartjie-20); }
         .examples-table .row-bench td { background-color: var(--cell-benchmark-2); }
 
@@ -723,7 +726,7 @@
                 $parts = preg_split('/(\s[–—\-]\s(?:CLASS\s))/iu', $fullName, 2, PREG_SPLIT_DELIM_CAPTURE);
             @endphp
             <h1 class="fund-name">
-                <span x-data="editableField('fund.name', '{{ $fullName }}')"
+                <span x-data="editableField('fund.name', '{{ addslashes($fullName) }}', 'fundName')"
                       @click="editMode && startEdit()"
                       :class="editMode ? 'editable' : ''">
                     @if(count($parts) >= 3)
@@ -784,7 +787,7 @@
                                         <p class="sidebar-heading">{{ $label }}</p>
                                         <div class="equity-indicator">
                                             @for ($i = 0; $i < $total; $i++)
-                                                <svg class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="{{ $i < $filled ? '5' : '4.55' }}"/></svg>
+                                                <svg class="equity-dot {{ $i < $filled ? 'filled' : 'empty' }}" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5"/></svg>
                                             @endfor
                                         </div>
                                     </div>
@@ -984,7 +987,7 @@
                     <div>
                         <h3 class="section-heading">MONTHLY PORTFOLIO PERFORMANCE VS BENCHMARK</h3>
                         <div class="chart-wrapper">
-                            <canvas id="monthlyChart" style="height: 43mm;"></canvas>
+                            <canvas id="monthlyChart" style="height: 33.5mm;"></canvas>
                         </div>
                         <div class="monthly-legend">
                             <div class="monthly-legend-item">
@@ -1426,11 +1429,22 @@
                 }
             }
         }
-        function editableField(fieldPath, initialValue) {
+        // Display formatters: the editable span re-renders its plain value
+        // after Alpine mounts, so markup inside it (the small class suffix)
+        // has to be re-applied here or it is lost on both web and PDF.
+        const editableFormatters = {
+            fundName(value) {
+                const m = String(value).match(/^(.+?)\s*[\u2014\u2013-]\s*(CLASS\s+[A-Z][0-9]*)$/i);
+                if (!m) return String(value);
+                return m[1] + ' <span class="class-suffix">&mdash; ' + m[2].toUpperCase() + '</span>';
+            }
+        };
+        function editableField(fieldPath, initialValue, formatter) {
             return {
                 fieldPath: fieldPath,
                 value: initialValue,
                 originalValue: initialValue,
+                formatter: formatter || null,
                 editing: false,
                 saving: false,
                 get editMode() { return globalFundEditor?.editMode || false; },
@@ -1490,7 +1504,11 @@
                     this.editing = false;
                     this.updateDisplay();
                 },
-                updateDisplay() { if (!this.editing) { this.$el.innerHTML = this.value; } },
+                updateDisplay() {
+                    if (this.editing) return;
+                    const fmt = this.formatter && editableFormatters[this.formatter];
+                    this.$el.innerHTML = fmt ? fmt(this.value) : this.value;
+                },
                 init() { this.updateDisplay(); }
             }
         }
@@ -1528,6 +1546,62 @@
             if (anchor >= 0) for (let i = anchor; i < dates.length; i += 48) idx.push(i);
             return idx;
         }
+
+        // Explicit horizontal axis rule. Chart.js's scale border is not
+        // reliably rasterised in the PDF, so draw the line ourselves: along
+        // the chart-area bottom for the line chart, and along y = 0 for the
+        // monthly bar chart (the reference's "x-axis" is the zero line).
+        const axisLinePlugin = {
+            id: 'axisLine',
+            afterDatasetsDraw(chart, args, opts) {
+                const { ctx: c, chartArea: a, scales } = chart;
+                const y = opts.atZero ? scales.y.getPixelForValue(0) : a.bottom;
+                c.save();
+                c.strokeStyle = '#000';
+                c.lineWidth = opts.width || 1;
+                c.beginPath();
+                c.moveTo(a.left, Math.round(y) + 0.5);
+                c.lineTo(a.right, Math.round(y) + 0.5);
+                c.stroke();
+                c.restore();
+            }
+        };
+
+        // Legend drawn by hand: the reference key is two hairline samples
+        // (~8mm) with 6pt labels and a wide gap between the entries, which
+        // Chart.js's built-in legend cannot produce (its padding is shared
+        // between the horizontal gap and the row height).
+        const lineLegendPlugin = {
+            id: 'lineLegend',
+            afterDraw(chart, args, opts) {
+                const { ctx: c, chartArea: a, data } = chart;
+                const sample = opts.sampleWidth || 30;   // px  (~8mm)
+                const gapText = opts.gapText || 5;       // sample → label
+                const gapItem = opts.gapItem || 29;      // label → next sample
+                const lineWidth = opts.lineWidth || 0.75;
+                c.save();
+                c.font = "400 8px 'Avenir Next', Lato, sans-serif";
+                c.textBaseline = 'middle';
+                c.textAlign = 'left';
+                const items = data.datasets.map(ds => ({ text: ds.label, color: ds.borderColor, w: c.measureText(ds.label).width }));
+                const total = items.reduce((n, it) => n + sample + gapText + it.w, 0) + gapItem * (items.length - 1);
+                let x = (a.left + a.right) / 2 - total / 2;
+                const y = chart.height - (opts.bottom || 8);
+                items.forEach(it => {
+                    c.strokeStyle = it.color;
+                    c.lineWidth = lineWidth;
+                    c.beginPath();
+                    c.moveTo(x, Math.round(y) + 0.5);
+                    c.lineTo(x + sample, Math.round(y) + 0.5);
+                    c.stroke();
+                    x += sample + gapText;
+                    c.fillStyle = C.darkNavy;
+                    c.fillText(it.text, x, y);
+                    x += it.w + gapItem;
+                });
+                c.restore();
+            }
+        };
 
         // Annotation plugin for end-of-line labels. Labels are nudged apart
         // when the series converge (the log scale squeezes them together).
@@ -1603,26 +1677,20 @@
                             }
                         ]
                     },
-                    plugins: [endLabelPlugin],
+                    plugins: [endLabelPlugin, axisLinePlugin, lineLegendPlugin],
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: false,
-                        layout: { padding: { right: 48 } },
+                        // Reference plot is 49 x 35mm: only the end labels sit
+                        // to the right of it; the bottom padding reserves the
+                        // row for the hand-drawn legend.
+                        layout: { padding: { right: 40, top: 6, bottom: 18 } },
                         plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    // Reference legend samples are long thin rules
-                                    usePointStyle: true,
-                                    pointStyleWidth: 30,
-                                    boxHeight: 8,
-                                    padding: 8,
-                                    color: C.darkNavy,
-                                    font: { size: 8 }
-                                }
-                            },
-                            tooltip: { enabled: false }
+                            legend: { display: false },
+                            tooltip: { enabled: false },
+                            axisLine: { width: 1 },
+                            lineLegend: { sampleWidth: 18, gapText: 5, gapItem: 41, lineWidth: 0.75, bottom: 8 }
                         },
                         scales: {
                             x: {
@@ -1641,16 +1709,17 @@
                             y: {
                                 type: 'logarithmic',
                                 min: 100,
-                                title: { display: true, text: 'Cash Value² (R\'000)', font: { size: 9 }, color: C.darkGrey },
+                                title: { display: true, text: 'Cash Value² (R\'000)', font: { size: 8 }, color: C.darkGrey, padding: 0 },
                                 border: { display: true, color: '#000', width: 1 },
                                 ticks: {
                                     font: { size: 8 },
                                     color: '#000',
+                                    padding: 1,
                                     // Per the reference design only the "100" label shows.
                                     callback: v => v === 100 ? '100' : ''
                                 },
                                 // Reference has NO horizontal gridlines — plain plot
-                                grid: { display: false }
+                                grid: { display: false, drawTicks: false }
                             }
                         }
                     }
@@ -1680,15 +1749,17 @@
                             categoryPercentage: 0.95
                         }]
                     },
+                    plugins: [axisLinePlugin],
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: false,
                         // Pull the plot's edges in to the reference width
-                        layout: { padding: { left: 6, right: 12 } },
+                        layout: { padding: { left: 7, right: 12, top: 6, bottom: 4 } },
                         plugins: {
                             legend: { display: false },
-                            tooltip: { enabled: false }
+                            tooltip: { enabled: false },
+                            axisLine: { atZero: true, width: 1 }
                         },
                         scales: {
                             x: {

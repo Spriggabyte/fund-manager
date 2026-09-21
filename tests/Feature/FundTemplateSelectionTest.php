@@ -22,13 +22,13 @@ class FundTemplateSelectionTest extends TestCase
         $this->assertSame('funds.show', $view->name());
     }
 
-    public function test_internal_pdf_view_uses_equity_pdf_template(): void
+    public function test_internal_pdf_view_uses_equity_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-equity']);
 
         $view = (new FundController)->internalPdfView($fund);
 
-        $this->assertSame('funds.pdf-equity', $view->name());
+        $this->assertSame('funds.show-equity', $view->name());
     }
 
     public function test_internal_pdf_view_uses_conservative_page_template(): void

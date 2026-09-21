@@ -385,18 +385,13 @@ class FundController extends Controller
     {
         // Every page template is itself the print layout (A4 pages,
         // @media print rules, .no-print edit chrome), so the PDF renders the
-        // same blade the browser shows. The equity sheet is the one remaining
-        // template with a separate print twin.
+        // same blade the browser shows.
         $template = $fund->template ?? 'show';
         if (! in_array($template, self::ALLOWED_TEMPLATES)) {
             $template = 'show';
         }
-        $pdfTemplate = match ($template) {
-            'show-equity' => 'pdf-equity',
-            default => $template,
-        };
 
-        return view('funds.'.$pdfTemplate, compact('fund'));
+        return view('funds.'.$template, compact('fund'));
     }
 
     /**
