@@ -629,7 +629,7 @@
 
         .chart-ytitle {
             position: absolute;
-            left: -10mm;
+            left: -7.3mm; /* QC card 291: caption ~0.9mm off the axis */
             top: 16mm;
             width: 22mm;
             text-align: center;
@@ -927,6 +927,7 @@
         .btn-muted { background: var(--medium-grey); color: white; }
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->
@@ -1922,9 +1923,30 @@
         // navy, the Morningstar peer group steel blue. The end-value plugin
         // attaches to this chart only (a global register would annotate the
         // geographic bar chart too).
+        // QC card 291: the "100" baseline label sits just above the x-axis,
+        // to the left of the y-axis, instead of straddling the axis line.
+        // The scale's own tick label is kept but transparent so the axis
+        // keeps its width; this plugin draws the visible one.
+        const hundredLabelPlugin = {
+            id: 'hundredLabel',
+            afterDraw(chart) {
+                const { ctx, scales } = chart;
+                if (!scales.y || !scales.x) return;
+                const t = scales.y.options.ticks || {};
+                const f = t.font || {};
+                ctx.save();
+                ctx.font = (f.size || 6) + 'px ' + (f.family || 'Avenir Next, Lato, sans-serif');
+                ctx.fillStyle = '#535353';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText('100', scales.y.right - (t.padding === undefined ? 3 : t.padding), scales.y.getPixelForValue(100) - 1.5);
+                ctx.restore();
+            }
+        };
+
         new Chart(document.getElementById('performanceChart').getContext('2d'), {
             type: 'line',
-            plugins: [endValuePlugin],
+            plugins: [endValuePlugin, hundredLabelPlugin],
             data: {
                 labels: chartData.map(d => d.date),
                 datasets: [
@@ -1993,8 +2015,8 @@
                         border: { color: '#000' },
                         ticks: {
                             font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
-                            callback: (value) => value === 100 ? '100' : null
+                            color: 'rgba(0,0,0,0)',
+                            callback: (value) => value === 100 ? '100' : null // QC card 291: visible \"100\" drawn by hundredLabelPlugin
                         },
                         min: 100,
                         beginAtZero: false

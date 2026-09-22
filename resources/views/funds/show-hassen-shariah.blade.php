@@ -675,7 +675,7 @@
            edge, so the canvas is widened into the gutter and the plot's left
            padding grows to match. */
         .perf-wrapper { height: 46.06mm; margin-left: -3mm; }
-        .perf-wrapper .chart-ytitle { left: -7mm; }
+        .perf-wrapper .chart-ytitle { left: -5.25mm; } /* QC card 291: caption ~0.9mm off the axis */
 
         .chart-wrapper canvas {
             width: 100% !important;
@@ -1000,6 +1000,7 @@
         .btn-muted { background: var(--medium-grey); color: white; }
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->

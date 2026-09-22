@@ -703,7 +703,7 @@
            it right beside the axis). */
         .chart-ytitle {
             position: absolute;
-            left: -9mm;
+            left: -7.95mm; /* QC card 291: caption ~0.9mm off the axis */
             /* Keep the rotated label vertically centred on the 46mm-high
                chart (-8mm at 39mm, -12mm at 47mm). */
             top: -11.5mm;
@@ -1009,6 +1009,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1775,7 +1776,7 @@
                         labels: {
                             distance: 2,
                             // Reference "100" is vertically centred on the baseline.
-                            y: 3,
+                            y: -3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';

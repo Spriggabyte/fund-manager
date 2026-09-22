@@ -1019,6 +1019,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1778,7 +1779,7 @@
                             distance: 2,
                             // Reference centres "100" on the baseline (y: 8 hung it
                             // 1.4mm below the axis line).
-                            y: 3,
+                            y: -3, /* QC card 291: label sits just above the axis */
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';

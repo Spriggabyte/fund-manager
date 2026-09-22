@@ -474,7 +474,7 @@
             align-items: center;
             /* 825 reference row pitch ~6.4mm (five buckets share the credit
                tables' height). */
-            margin-bottom: 3.7mm;
+            margin-bottom: 2.65mm; /* row pitch unchanged with the 4.5mm bar */
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -490,7 +490,7 @@
             min-width: 0;
         }
         .maturity-spread-bar {
-            height: 2.6mm;
+            height: 4.5mm; /* design bars fill the row — QC card 304 */
             background-color: var(--naartjie);
         }
         .maturity-spread-value {
@@ -504,7 +504,7 @@
 
         .credit-tables {
             display: flex;
-            gap: 1.6mm;
+            gap: 0;
         }
         .credit-tables .table-container {
             flex: 1;
@@ -1041,6 +1041,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1750,7 +1751,7 @@
                         tickPositions: [100],
                         labels: {
                             distance: 2,
-                            y: 8,
+                            y: -3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';

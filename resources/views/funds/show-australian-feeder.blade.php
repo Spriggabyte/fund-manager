@@ -1076,6 +1076,7 @@
         .btn-muted { background: var(--medium-grey); color: white; }
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->

@@ -663,7 +663,7 @@
         .perf-wrapper { height: 54mm; margin-left: -3mm; }
         /* Reference: 70mm from the chart headings to PORTFOLIO PERFORMANCE %. */
         .charts-row { margin-bottom: 5.3mm; }
-        .perf-wrapper .chart-ytitle { left: -7mm; }
+        .perf-wrapper .chart-ytitle { left: -5.25mm; } /* QC card 291: caption ~0.9mm off the axis */
 
         .chart-wrapper canvas {
             width: 100% !important;
@@ -988,6 +988,7 @@
         .btn-muted { background: var(--medium-grey); color: white; }
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->

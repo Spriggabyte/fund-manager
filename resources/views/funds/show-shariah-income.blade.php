@@ -482,7 +482,7 @@
             display: flex;
             align-items: center;
             /* Reference row pitch 5.335mm. */
-            margin-bottom: 1.95mm;
+            margin-bottom: 0.84mm; /* 4.5mm bar + 0.84 = 5.335 pitch */
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -498,7 +498,7 @@
             min-width: 0;
         }
         .maturity-spread-bar {
-            height: 2.6mm;
+            height: 4.5mm; /* design bars fill the row (841 ref: 4.53mm) — QC card 304 */
             background-color: var(--naartjie);
         }
         .maturity-spread-value {
@@ -527,7 +527,7 @@
         }
         .credit-tables {
             display: flex;
-            gap: 2.9mm;
+            gap: 0;
         }
         .credit-tables .table-container {
             flex: 1;
@@ -847,7 +847,7 @@
             position: absolute;
             /* Rotated caption measured on the 841 reference: 21.97mm of text
                centred at x=137.41mm, y=179.65mm. */
-            left: -11.46mm;
+            left: -10.36mm; /* QC card 291: caption ~0.9mm off the axis */
             top: -10.48mm;
             width: 24mm;
             text-align: center;
@@ -1199,6 +1199,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1932,7 +1933,7 @@
                         tickPositions: [100],
                         labels: {
                             distance: 2,
-                            y: 8,
+                            y: -3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';

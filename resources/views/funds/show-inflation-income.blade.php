@@ -490,7 +490,7 @@
             align-items: center;
             /* 827 reference row pitch ~5.3mm (six buckets; the 3.45mm label
                line-height sets the row height, not the 2.6mm bar). */
-            margin-bottom: 1.85mm;
+            margin-bottom: 0.8mm; /* row pitch unchanged with the 4.5mm bar */
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -506,7 +506,7 @@
             min-width: 0;
         }
         .maturity-spread-bar {
-            height: 2.6mm;
+            height: 4.5mm; /* design bars fill the row — QC card 304 */
             background-color: var(--naartjie);
         }
         .maturity-spread-value {
@@ -520,7 +520,7 @@
 
         .credit-tables {
             display: flex;
-            gap: 1.6mm;
+            gap: 0;
             /* 827 reference: header row tops land at y=169.2mm. */
             margin-top: 1mm;
         }
@@ -756,7 +756,7 @@
            it right beside the axis). */
         .chart-ytitle {
             position: absolute;
-            left: -9mm;
+            left: -7.15mm; /* QC card 291: caption ~0.9mm off the axis */
             /* Keep the rotated label vertically centred on the 50mm-high
                chart (-8mm at 39mm, -12mm at 47mm). */
             top: -13mm;
@@ -1045,6 +1045,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1717,7 +1718,7 @@
                         tickPositions: [100],
                         labels: {
                             distance: 2,
-                            y: 8,
+                            y: -3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';

@@ -965,6 +965,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1790,7 +1791,7 @@
                         tickPositions: [100],
                         labels: {
                             distance: 2,
-                            y: 8,
+                            y: -3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';

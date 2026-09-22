@@ -636,6 +636,7 @@
             z-index: 50;
         }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification -->
@@ -1650,6 +1651,27 @@
             const keepTicks = new Set(anchoredTickIndices(dates));
             const ctx = document.getElementById('portfolioChart');
             if (ctx) {
+        // QC card 291: the "100" baseline label sits just above the x-axis,
+                // to the left of the y-axis, instead of straddling the axis line.
+                // The scale's own tick label is kept but transparent so the axis
+                // keeps its width; this plugin draws the visible one.
+                const hundredLabelPlugin = {
+                    id: 'hundredLabel',
+                    afterDraw(chart) {
+                        const { ctx, scales } = chart;
+                        if (!scales.y || !scales.x) return;
+                        const t = scales.y.options.ticks || {};
+                        const f = t.font || {};
+                        ctx.save();
+                        ctx.font = (f.size || 6) + 'px ' + (f.family || 'Avenir Next, Lato, sans-serif');
+                        ctx.fillStyle = '#000';
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'alphabetic';
+                        ctx.fillText('100', scales.y.right - (t.padding === undefined ? 3 : t.padding), scales.y.getPixelForValue(100) - 1.5);
+                        ctx.restore();
+                    }
+                };
+
                 new Chart(ctx.getContext('2d'), {
                     type: 'line',
                     data: {
@@ -1677,7 +1699,7 @@
                             }
                         ]
                     },
-                    plugins: [endLabelPlugin, axisLinePlugin, lineLegendPlugin],
+                    plugins: [endLabelPlugin, axisLinePlugin, lineLegendPlugin, hundredLabelPlugin],
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
@@ -1713,7 +1735,7 @@
                                 border: { display: true, color: '#000', width: 1 },
                                 ticks: {
                                     font: { size: 8 },
-                                    color: '#000',
+                                    color: 'rgba(0,0,0,0)', // QC card 291: visible "100" drawn by hundredLabelPlugin
                                     padding: 1,
                                     // Per the reference design only the "100" label shows.
                                     callback: v => v === 100 ? '100' : ''

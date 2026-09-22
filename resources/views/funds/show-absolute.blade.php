@@ -741,7 +741,7 @@
            it right beside the axis). */
         .chart-ytitle {
             position: absolute;
-            left: -11.7mm;
+            left: -11mm; /* QC card 291: caption ~0.9mm off the axis */
             top: 9.8mm;
             width: 26mm;
             text-align: center;
@@ -1048,6 +1048,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1935,7 +1936,7 @@
                         labels: {
                             align: 'right',
                             x: -1,
-                            y: -1,
+                            y: -3, /* QC card 291: label sits just above the axis */
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () { return this.value === 100 ? '100' : ''; },
                         },

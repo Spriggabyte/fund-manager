@@ -657,7 +657,7 @@
            it right beside the axis). */
         .chart-ytitle {
             position: absolute;
-            left: -12.5mm;
+            left: -11.5mm; /* QC card 291: caption ~0.9mm off the axis */
             /* Vertically centred on the 33mm plot (plot middle ≈192mm) */
             top: -5.3mm;
             width: 22mm;
@@ -965,6 +965,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.global-fixes')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1702,7 +1703,7 @@
                         tickPositions: [100],
                         labels: {
                             distance: 2,
-                            y: 8,
+                            y: 1, /* QC card 291: label sits just above the axis (this chart is offset differently) */
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';
