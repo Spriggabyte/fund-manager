@@ -65,6 +65,33 @@ class ExcelImportConservativeTest extends TestCase
         $this->assertSame(['date' => '2015-01', 'value' => 12.29], $rolling[1]);
     }
 
+    public function test_rolling_return_graph_import_starts_on_first_december_a_year_after_inception(): void
+    {
+        $fund = Fund::factory()->create([
+            'template' => 'show-conservative',
+            'inception_date' => '2 January 2014',
+        ]);
+
+        // The export starts at the first month-end after inception, but the
+        // published chart starts on the first December at least a year after
+        // inception (Dec 2015 for a 2 Jan 2014 inception — QC card 231).
+        $rows = [['Start Date', 'Description', '818 Fund Published', '818 A Class [iR]']];
+        $month = new \DateTimeImmutable('2014-12-01');
+        for ($i = 0; $i < 15; $i++) {
+            $rows[] = [45000 + $i, $month->format('M Y').' (1Y)', 0.05 + $i / 100, 0.04];
+            $month = $month->modify('+1 month');
+        }
+        $path = $this->makeXlsx($rows, 'rolling-inception-test');
+
+        (new RollingReturnGraphImporter)->import($fund, $path);
+
+        $rolling = $fund->chart_data['rollingReturnData'];
+
+        $this->assertCount(3, $rolling);
+        $this->assertSame('2015-12', $rolling[0]['date']);
+        $this->assertSame('2016-02', $rolling[2]['date']);
+    }
+
     public function test_import_manager_routes_rolling_return_graph_exports(): void
     {
         $manager = new FundImportManager;

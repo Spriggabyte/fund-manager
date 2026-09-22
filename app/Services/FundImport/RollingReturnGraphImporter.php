@@ -3,6 +3,7 @@
 namespace App\Services\FundImport;
 
 use App\Models\Fund;
+use Carbon\Carbon;
 
 class RollingReturnGraphImporter extends AbstractExcelImporter
 {
@@ -67,7 +68,48 @@ class RollingReturnGraphImporter extends AbstractExcelImporter
         }
 
         $chartData = $fund->chart_data ?? [];
-        $chartData['rollingReturnData'] = $rollingReturnData;
+        $chartData['rollingReturnData'] = $this->trimToPublishedStart($fund, $rollingReturnData);
         $fund->chart_data = $chartData;
+    }
+
+    /**
+     * The export lists every rolling window from the first month-end after
+     * inception, but the published chart only starts once a full year of
+     * history exists — on the first December at least one year after the
+     * inception date (Foord Conservative: inception 2 Jan 2014, export starts
+     * "Dec 2014 (1Y)", the fact sheet's first bar is Dec 2015; QC card 231).
+     * Without a parseable inception date, the first point stands in for it.
+     *
+     * @param  array<int, array{date: string, value: float}>  $points
+     * @return array<int, array{date: string, value: float}>
+     */
+    protected function trimToPublishedStart(Fund $fund, array $points): array
+    {
+        if ($points === []) {
+            return $points;
+        }
+
+        $inception = null;
+        if (! empty($fund->inception_date)) {
+            try {
+                $inception = Carbon::parse($fund->inception_date);
+            } catch (\Throwable) {
+                $inception = null;
+            }
+        }
+        $inception ??= Carbon::createFromFormat('Y-m', $points[0]['date'])?->startOfMonth();
+        if (! $inception) {
+            return $points;
+        }
+
+        $earliest = $inception->copy()->addYear()->format('Y-m');
+
+        foreach ($points as $i => $point) {
+            if ($point['date'] >= $earliest && str_ends_with($point['date'], '-12')) {
+                return array_values(array_slice($points, $i));
+            }
+        }
+
+        return $points;
     }
 }

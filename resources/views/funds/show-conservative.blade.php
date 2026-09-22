@@ -279,9 +279,10 @@
         /* Main Content Area — spans x=64mm → 204mm (140mm wide) */
         .main-content {
             flex: 1;
-            /* 6.4mm top lands the ASSET ALLOCATION header row at the
-               reference y=442px/150dpi. */
-            padding: 6.4mm 6mm 4mm 4mm;
+            /* 5.1mm top puts the ASSET ALLOCATION heading level with the
+               sidebar's DOMICILE heading (reference: both at y≈65.5mm; QC
+               card 230 — 6.4mm sat the heading 1.3mm lower). */
+            padding: 5.1mm 6mm 4mm 4mm;
             min-width: 0;
             overflow: hidden;
         }
@@ -403,7 +404,9 @@
            taller row pitches than the design, so the inter-section margins
            are tightened to land the next section on the reference y. */
         .aa-table {
-            margin-bottom: 2mm;
+            /* Reference TOP 10 heading at y=114.2mm with the asset table
+               (7 rows) ending ~110mm. */
+            margin-bottom: 3.4mm;
         }
         .top10-table {
             margin-bottom: 2.6mm;
@@ -647,9 +650,9 @@
         .charts-row {
             display: flex;
             gap: 6mm;
-            /* Reduced from 3mm when the chart wrappers grew to 46mm: keeps the
-               performance table anchored at the reference y position. */
-            margin: 0.5mm 0 0 0;
+            /* Reference: chart headings at y=168.8mm (TOP 10 table foot at
+               ~165mm). */
+            margin: 4.7mm 0 0 0;
         }
 
         .chart-container {
@@ -669,11 +672,19 @@
         }
 
         .chart-wrapper {
-            /* Measured from the flexible reference: y-axis line 195px at
-               150dpi (33mm plot) → 46mm wrapper including x labels + legend.
-               (39mm rendered the plot area ~22% too short.) */
-            height: 46mm;
+            /* Reference (818, Aug 2026): rolling-return plot 24% tick at
+               +8.4mm and -1% tick at +42.9mm below the heading top, date
+               labels at +45.9mm. */
+            height: 44.8mm;
             position: relative;
+        }
+
+        /* Reference (818, Aug 2026): both charts' date labels sit on one line
+           (y≈214.7mm) and the performance chart's legend hangs 4mm BELOW that
+           line (y≈218.9mm), so the right wrapper is taller than the left —
+           the legend must not eat into the plot (QC cards 209/241). */
+        .chart-container.performance .chart-wrapper {
+            height: 49.5mm;
         }
 
         .chart-wrapper > div {
@@ -717,7 +728,7 @@
             line-height: 9.25pt;
             letter-spacing: 0.01em;
             color: #000;
-            margin: 1.5mm 0 2.4mm 0;
+            margin: 2mm 0 3.1mm 0;
         }
 
         /* =====================================================
@@ -841,23 +852,26 @@
 
         .fee-rates-table td:last-child:not([colspan]) {
             text-align: left;
-            font-weight: 500;
+            /* Conservative reference (Aug 2026) sets the value column in
+               AvenirNext-Regular, same as the labels — Medium read as "too
+               bold" next to the reference (QC card 241). */
+            font-weight: 400;
             padding-left: 1.6mm;
         }
 
         /* "Foord global funds:" — white background, then two pink rows (black text).
-           Reference sets these three rows in Avenir Next Medium. */
+           Reference sets these three rows in Avenir Next Regular too. */
         .fee-rates-table tr.global-funds-header td {
             background-color: var(--white) !important;
             color: var(--dark-navy);
-            font-weight: 500;
+            font-weight: 400;
             text-align: left;
         }
 
         .fee-rates-table tr.sub-item td {
             background-color: var(--naartjie-20) !important;
             color: #000;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         /* Conservative reference: the sub-item fund names sit flush with the
@@ -1336,7 +1350,7 @@
                                 <div id="rollingChart"></div>
                             </div>
                         </div>
-                        <div class="chart-container">
+                        <div class="chart-container performance">
                             <h4 class="chart-title">{{ $fund->data['mainContent']['charts']['rightTitle'] ?? 'PORTFOLIO PERFORMANCE VS BENCHMARK³' }}</h4>
                             <div class="chart-wrapper">
                                 <div class="chart-ytitle">Cash Value<sup>2</sup> (R&rsquo;000)</div>
@@ -1716,6 +1730,11 @@
                 const chart = Highcharts.chart(containerId, {
                     chart: {
                         type: 'spline', backgroundColor: 'transparent', spacing: [10, 46, 4, 0], animation: false,
+                        // Fixed bottom margin (reference: axis foot 40.5mm below
+                        // the wrapper top, legend hanging under the date labels).
+                        // Left to Highcharts, the lowered date labels reserve
+                        // their own offset again and squash the plot (QC 209/241).
+                        marginBottom: 36,
                     },
                     title: { text: null },
                     xAxis: {
@@ -1772,7 +1791,7 @@
                         symbolRadius: 0,
                         symbolPadding: 2,
                         itemDistance: legendItemDistance,
-                        margin: 6,
+                        margin: 2,
                         padding: 0,
                     },
                     tooltip: { enabled: false },
@@ -1801,7 +1820,8 @@
                 for (let pass = 0; pass < 2; pass++) {
                     const yAx = chart.yAxis[0];
                     const lift = yAx.toPixels(100, true) - chart.plotHeight; // negative px
-                    chart.xAxis[0].update({ offset: lift, labels: { y: -lift + 12 } }, true);
+                    // Reference: date label tops 1.5mm under the axis foot.
+                    chart.xAxis[0].update({ offset: lift, labels: { y: -lift + 13 } }, true);
                 }
                 const lastY = chart.series.map(s => s.points[s.points.length - 1].plotY);
                 if (lastY.length === 2 && Math.abs(lastY[0] - lastY[1]) < MIN_LABEL_GAP) {
@@ -1841,14 +1861,15 @@
                 Highcharts.chart('rollingChart', {
                     // Reference plot top sits ~10mm below the heading (ours was
                     // 5mm) and the x labels ~1.5mm under the axis foot.
-                    chart: { type: 'column', backgroundColor: 'transparent', spacing: [22, 4, 4, 0], animation: false },
+                    chart: { type: 'column', backgroundColor: 'transparent', spacing: [19, 4, 4, 0], animation: false },
                     title: { text: null },
                     xAxis: {
                         categories: rollingData.map(d => d.date),
                         lineWidth: 0,
                         tickWidth: 0,
                         labels: {
-                            y: 12,
+                            // Reference: label tops 3mm below the -1% tick label.
+                            y: 16,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () { return formatXTickPortfolio(this.value); },
                             rotation: 0,
