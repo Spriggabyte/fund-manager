@@ -276,9 +276,10 @@
         /* Main Content Area — spans x=64mm → 204mm (140mm wide) */
         .main-content {
             flex: 1;
-            /* 6.4mm top lands the ASSET ALLOCATION header row at the
-               reference y=442px/150dpi. */
-            padding: 6.4mm 6mm 4mm 4mm;
+            /* 4.5mm top lands the ASSET ALLOCATION % heading level with the
+               sidebar's DOMICILE (both 65.5mm in the August reference —
+               Trello card 258). */
+            padding: 4.5mm 6mm 4mm 4mm;
             min-width: 0;
             overflow: hidden;
         }
@@ -400,10 +401,15 @@
            taller row pitches than the design, so the inter-section margins
            are tightened to land the next section on the reference y. */
         .aa-table {
+            /* Reference: header row 9.5mm under the ASSET ALLOCATION heading */
+            margin-top: 1.3mm;
             margin-bottom: 2mm;
         }
         .top10-table {
-            margin-bottom: 2.6mm;
+            /* Reference: SECURITY row 5.3mm under its heading, chart heading
+               5.4mm under the last row. */
+            margin-top: 0.6mm;
+            margin-bottom: 1.7mm;
         }
 
         /* Performance Table — columns: name 20.1%, cash 11.55%, since 12%, 8 x 8.05% */
@@ -626,7 +632,13 @@
             /* Reference gap between triangle and value is ~8-9px at 150dpi;
                the bare word space only gave ~4px. */
             margin-right: 0.8mm;
+            /* The fallback glyph font has a tall line box that stretched the
+               AA rows to 4.76mm (ref 4.48mm) — keep it out of the row height. */
+            line-height: 0;
+            display: inline-block;
+            vertical-align: -0.05em;
         }
+
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
 
@@ -635,7 +647,10 @@
            ===================================================== */
         .charts-row {
             display: flex;
-            gap: 6mm;
+            /* Reference columns: left chart 65.2→134.7mm, right title at
+               137.6mm — a 3mm gutter with the left column 69.5mm wide, so
+               the end-of-line cash labels have room without clipping. */
+            gap: 3mm;
             /* Reduced from 3mm when the chart wrappers grew to 46mm: keeps the
                performance table anchored at the reference y position. */
             margin: 0.5mm 0 0 0;
@@ -644,6 +659,9 @@
         .chart-container {
             flex: 1;
             min-width: 0;
+        }
+        .chart-container:first-child {
+            flex: 0 0 69.5mm;
         }
 
         .chart-title {
@@ -661,7 +679,9 @@
             /* Measured from the flexible reference: y-axis line 195px at
                150dpi (33mm plot) → 46mm wrapper including x labels + legend.
                (39mm rendered the plot area ~22% too short.) */
-            height: 43mm;
+            /* August reference: heading→axis top 6.9mm, axis 36mm, date labels
+               4.3mm under the baseline, legend 4.3mm under the labels → 48mm. */
+            height: 48mm;
             position: relative;
         }
 
@@ -681,10 +701,12 @@
            it right beside the axis). */
         .chart-ytitle {
             position: absolute;
-            left: -9mm;
-            /* Keep the rotated label vertically centred on the 46mm-high
+            /* Reference caption's right edge sits 0.4mm left of the axis line;
+               -9mm overlapped the axis (card 235 "labels on the axis"). */
+            left: -8.4mm;
+            /* Keep the rotated label vertically centred on the 48mm-high
                chart (-8mm at 39mm, -12mm at 47mm). */
-            top: -11.5mm;
+            top: -12.3mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
@@ -703,12 +725,12 @@
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 7.5pt;
-            line-height: 9.25pt;
-            letter-spacing: 0.01em;
+            line-height: 9.15pt;
+            /* No tracking: the reference sets this at natural Regular width
+               (6 lines); 0.01em wrapped "portfolio." onto a 7th (card 235). */
+            letter-spacing: 0;
             color: #000;
-            /* Tightened (with the 3mm shorter charts) so the page-1 footnotes
-               clear the foot of the page when the explanation runs long. */
-            margin: 1.5mm 0 0.8mm 0;
+            margin: 1.2mm 0 1.2mm 0;
         }
 
         /* =====================================================
@@ -718,15 +740,17 @@
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 400;
             font-size: 6pt;
-            line-height: 7.2pt;
+            /* Reference footnote pitch is 2.5mm (7.1pt); 7.2pt + 0.3mm p
+               margins ran 2.85mm and pushed the last note off the page foot. */
+            line-height: 7.1pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin-top: 1.2mm;
+            margin-top: 0.4mm;
             padding-left: 1.2mm;
         }
 
         .footnotes p {
-            margin: 0.3mm 0;
+            margin: 0;
         }
 
         .footnotes sup {
@@ -832,7 +856,9 @@
 
         .fee-rates-table td:last-child:not([colspan]) {
             text-align: left;
-            font-weight: 500;
+            /* Flexible reference sets the values in Regular, same as the
+               labels (card 235: "font weight for the right column too dark"). */
+            font-weight: 400;
             padding-left: 1.6mm;
         }
 
@@ -1704,7 +1730,12 @@
 
                 Highcharts.chart(containerId, {
                     chart: {
-                        type: 'spline', backgroundColor: 'transparent', spacing: [4, 46, 4, 0], animation: false,
+                        // Top 12: reference sets the axis top 6.9mm under the heading.
+                        // Right 40 (10.6mm): the reference line ends 11.7mm before the
+                        // column edge with the "R 673" label filling that zone.
+                        // Bottom 23 with the legend's y: 19 keeps the legend inside the
+                        // SVG while reserving 4px more under the plot than the old 4/0.
+                        type: 'spline', backgroundColor: 'transparent', spacing: [12, 40, 23, 0], animation: false,
                     },
                     title: { text: null },
                     xAxis: {
@@ -1717,6 +1748,8 @@
                         labels: {
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () { return formatXTickPortfolio(this.value); },
+                            // Reference date labels sit 4.3mm under the baseline.
+                            y: 18,
                             rotation: 0,
                             autoRotation: false,
                         },
@@ -1743,7 +1776,9 @@
                         tickPositions: [2],
                         labels: {
                             distance: 2,
-                            y: 8,
+                            // Reference centres "100" on the baseline (y: 8 hung it
+                            // 1.4mm below the axis line).
+                            y: 3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';
@@ -1761,6 +1796,12 @@
                         itemDistance: legendItemDistance,
                         margin: 6,
                         padding: 0,
+                        // Reference legend sits 4.3mm under the date labels; with the
+                        // axis crossing at 100 Highcharts under-reserves the label
+                        // zone and the legend overlapped the dates (card 235).
+                        // (Highcharts subtracts legend.y from the reserved bottom
+                        // margin, so spacingBottom carries the offset too.)
+                        y: 19,
                     },
                     tooltip: { enabled: false },
                     plotOptions: {
@@ -1770,7 +1811,7 @@
                     series: seriesDefs.map(s => ({
                         name: s.name, data: data.map(d => d[s.key]), color: s.color,
                         dataLabels: [{
-                            enabled: true, align: 'left', verticalAlign: 'middle', x: 6, y: 0,
+                            enabled: true, align: 'left', verticalAlign: 'middle', x: 3, y: 0,
                             style: { fontSize: '9px', fontWeight: '500', color: s.color, textOutline: 'none' },
                             formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
                             crop: false, overflow: 'allow', allowOverlap: true,
