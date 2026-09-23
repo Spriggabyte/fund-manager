@@ -212,6 +212,13 @@
         /* 822 reference: the MINIMUM DISCLOSURE DOCUMENT heading opens the
            sidebar on two lines with a clear gap before the CLASS row. */
         .mdd-heading { margin-bottom: 2.6mm; }
+        /* QC card 244: the heading is set larger than the row labels below
+           it — Avenir Next Medium 7.5pt (reference 7.56pt, 3.05mm pitch). */
+        .sidebar-section.mdd-heading h3 {
+            font-size: 7.5pt;
+            line-height: 8.65pt;
+            letter-spacing: 0;
+        }
 
         /* Feeder sidebar carries far more copy than the international page
            (distributions, orientation, restrictions, US$ note …) — the
@@ -337,21 +344,23 @@
 
         /* Reference: labels flush left, bars start after the longest label */
         .alloc-label {
-            width: 25mm;
+            width: 24.35mm;
             text-align: left;
-            padding-right: 1mm;
+            padding-right: 0;
+            white-space: nowrap;
             flex-shrink: 0;
             font-weight: 400;
         }
 
+        /* QC card 246: reference bars are ~3.1mm thick on the 4mm pitch. */
         .alloc-bar-container {
             flex: 1;
-            height: 2.4mm;
+            height: 3.1mm;
             position: relative;
         }
 
         .alloc-bar {
-            height: 2.4mm;
+            height: 3.1mm;
             background-color: var(--naartjie);
         }
 
@@ -374,12 +383,16 @@
         /* Reference: the arrow sits centred in the gap between the % value
            and the change number, not jammed against the number — a fixed,
            centred slot achieves that regardless of the number's width. */
+        /* QC card 244: the slot spans the whole gap from the % value to the
+           change number (flex: 1, pulled back over the 1mm row gap), so the
+           centred triangle sits midway between the two figures. */
         .alloc-arrow {
             display: inline-block;
-            width: 4mm;
-            flex-shrink: 0;
+            flex: 1 1 auto;
+            margin-left: -1mm;
             text-align: center;
         }
+        .alloc-arrow::before { flex-shrink: 0; }
 
         .alloc-change-num { text-align: right; }
 
@@ -399,8 +412,9 @@
             color: #000;
         }
 
+        /* QC card 246: reference sector bars start at x=97.5mm. */
         .sector-label {
-            width: 34mm;
+            width: 31mm;
             text-align: left;
             padding-right: 1mm;
             flex-shrink: 0;
@@ -409,12 +423,12 @@
 
         .sector-bar-container {
             flex: 1;
-            height: 2.4mm;
+            height: 3.1mm;
             position: relative;
         }
 
         .sector-bar {
-            height: 2.4mm;
+            height: 3.1mm;
             background-color: var(--naartjie);
         }
 
@@ -661,8 +675,10 @@
 
         .chart-ytitle {
             position: absolute;
-            left: -7.2mm; /* QC card 291: caption ~0.9mm off the axis */
-            top: 18mm;
+            /* QC card 244: caption top-aligned with the y-axis and ~1.1mm
+               off it (reference). */
+            left: -9.3mm;
+            top: 10.6mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
@@ -675,7 +691,9 @@
         .chart-ytitle sup {
             font-size: 3.9pt;
             line-height: 0;
-            vertical-align: super;
+            vertical-align: baseline;
+            position: relative;
+            top: -0.45em;
         }
 
         /* 875 reference: hairline swatches (~1px at 150 dpi) and lighter
@@ -865,6 +883,8 @@
         /* 822 reference: the contributors/detractors label column runs to
            ~35% of the main column, the names fill the rest. */
         .contributors-table td:first-child { width: 35%; }
+        /* QC card 247: the names column is left-aligned (reference x=114.7mm). */
+        .contributors-table td:last-child { text-align: left; padding-left: 1.4mm; }
         /* Block spacing measured off the reference: contributors → policy
            17.9mm, policy → fee rates 19.1mm, fee rates → TIC 31.7mm. */
         .contributors-table { margin-bottom: 6.7mm; }
@@ -1299,7 +1319,7 @@
                                               x-text="value"></span>
                                     </p>
                                     @php
-                                        /* Reference bar scale: the largest value spans ~95%
+                                        /* Reference bar scale: the largest value spans ~91%
                                            of the bar area; all bars are relative to it. */
                                         $allocMax = max(1.0, ...array_map(
                                             fn ($r) => (float) ($r['value'] ?? $r['total'] ?? 0),
@@ -1316,7 +1336,7 @@
                                                           x-text="value"></span>
                                                 </span>
                                                 <div class="alloc-bar-container">
-                                                    <div class="alloc-bar" style="width: {{ round((float) ($row['value'] ?? $row['total'] ?? 0) / $allocMax * 95, 1) }}%;"></div>
+                                                    <div class="alloc-bar" style="width: {{ round((float) ($row['value'] ?? $row['total'] ?? 0) / $allocMax * 90.6, 1) }}%;"></div>
                                                 </div>
                                                 <span class="alloc-value">
                                                     <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.value', '{{ ($row['value'] ?? $row['total'] ?? '') }}')"
@@ -1372,7 +1392,7 @@
                                                           x-text="value"></span>
                                                 </span>
                                                 <div class="sector-bar-container">
-                                                    <div class="sector-bar" style="width: {{ round((float) ($row['value'] ?? 0) / $sectorMax * 63, 1) }}%;"></div>
+                                                    <div class="sector-bar" style="width: {{ round((float) ($row['value'] ?? 0) / $sectorMax * 74, 1) }}%;"></div>
                                                 </div>
                                                 <span class="sector-value">
                                                     <span x-data="editableField('mainContent.sectorAllocation.sectors.{{ $rowIndex }}.value', '{{ $row['value'] ?? '' }}')"
@@ -2010,10 +2030,14 @@
                     const lastValue = dataset.data[dataset.data.length - 1];
                     const label = 'R ' + Math.round(lastValue).toLocaleString();
                     ctx.save();
-                    ctx.font = 'bold 7px Avenir Next, Lato, sans-serif';
+                    // QC card 244: reference labels are Avenir Next Medium
+                    // 6.8pt (Chart.js sizes are px: 9px), ~1.9mm right of
+                    // the line end and centred on it.
+                    ctx.font = '500 9px Avenir Next, Lato, sans-serif';
                     ctx.fillStyle = dataset.borderColor;
                     ctx.textAlign = 'left';
-                    ctx.fillText(label, lastPoint.x + 4, lastPoint.y - 3);
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, lastPoint.x + 7, lastPoint.y);
                     ctx.restore();
                 });
             }
@@ -2036,6 +2060,13 @@
                 ctx.beginPath();
                 ctx.moveTo(chartArea.left, y);
                 ctx.lineTo(chartArea.right, y);
+                // QC card 244: the date tick marks hang off this line
+                // (reference: 0.8mm), not off the chart floor.
+                scales.x.ticks.forEach((_, i) => {
+                    const x = Math.round(scales.x.getPixelForTick(i)) + 0.5;
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x, y + 3);
+                });
                 ctx.stroke();
                 ctx.restore();
             }
@@ -2054,7 +2085,7 @@
                 const f = t.font || {};
                 ctx.save();
                 ctx.font = (f.size || 6) + 'px ' + (f.family || 'Avenir Next, Lato, sans-serif');
-                ctx.fillStyle = '#535353';
+                ctx.fillStyle = '#000';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'alphabetic';
                 ctx.fillText('100', scales.y.right - (t.padding === undefined ? 3 : t.padding), scales.y.getPixelForValue(100) - 1.5);
@@ -2118,7 +2149,8 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                        // Tick marks are drawn on the 100 line by baselineAxisPlugin.
+                        grid: { drawOnChartArea: false, drawTicks: false },
                         // The default x-axis border draws at the scale's own
                         // position (the chart floor, y=85) — hidden here since
                         // the baselineAxisPlugin above draws the real 100-line
@@ -2129,8 +2161,11 @@
                         // mark per tick, so unlabelled months are dropped here).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 9 === 0); },
                         ticks: {
-                            font: { size: 6.8, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            // QC card 244: reference dates are black 6pt
+                            // (8px — Chart.js font sizes are px, not pt).
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
+                            padding: 4,
                             maxRotation: 0,
                             autoSkip: false,
                             // 822 reference ticks: Feb 22, Nov 22, Aug 23,
@@ -2149,9 +2184,12 @@
                         type: 'logarithmic',
                         grid: { display: false },
                         border: { color: '#000' },
+                        // Fixed gutter so the y-axis lands at x=141.3mm (reference).
+                        afterFit: (scale) => { scale.width = 15; },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
                             color: 'rgba(0,0,0,0)',
+                            padding: 2,
                             callback: (value) => value === 100 ? '100' : null // QC card 291: visible \"100\" drawn by hundredLabelPlugin
                         },
                         // The 822 series dips below the 100 baseline (world
@@ -2163,7 +2201,7 @@
                     }
                 },
                 layout: {
-                    padding: { right: 40, top: 10 }
+                    padding: { right: 36, top: 10 }
                 }
             }
         });
