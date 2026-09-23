@@ -690,6 +690,10 @@
                1mm lower. */
             margin-top: -1.7mm;
             margin-bottom: 1mm;
+            /* QC card 159: the y-axis sits at x=141.0mm on the reference.
+               Its position inside the canvas is fixed by half the "Feb 22"
+               label, so the canvas itself starts 0.7mm left of the column. */
+            margin-left: -0.7mm;
         }
 
         .chart-wrapper canvas {
@@ -697,21 +701,23 @@
             height: 100% !important;
         }
 
+        /* QC card 159: reference caption is 5pt, top-aligned with the
+           y-axis and ~1.2mm off it. */
         .chart-ytitle {
             position: absolute;
-            left: -9mm;
-            top: 18mm;
+            left: -8.45mm;
+            top: 8.8mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-size: 6pt;
+            font-size: 5pt;
             color: #000;
             z-index: 2;
         }
 
         .chart-ytitle sup {
-            font-size: 3.9pt;
+            font-size: 3.2pt;
             line-height: 0;
             vertical-align: super;
         }
@@ -726,7 +732,8 @@
             margin-top: 0.44mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 6pt;
-            color: #4d585e;
+            /* QC card 327: reference legend text is dark navy, not slate. */
+            color: var(--dark-navy);
         }
 
         .chart-legend span {
@@ -1675,6 +1682,7 @@
                 <!-- Right Content -->
                 <div class="page2-content">
                     <!-- Asset Allocation % — static (no feed keys for 823) -->
+                    {{-- QC card 160: values print to one decimal (reference 94.6 / 4.7 / 0.7). --}}
                     @if(!empty($fund->data['page2Content']['assetAllocation']['rows']))
                         <div class="page2-section asset-alloc-table">
                             <h3 class="page2-heading">
@@ -1695,7 +1703,7 @@
                                                           x-text="value"></span>
                                                 </td>
                                                 <td>
-                                                    <span x-data="editableField('page2Content.assetAllocation.rows.{{ $rowIndex }}.value', '{{ addslashes((string) ($row['value'] ?? '')) }}')"
+                                                    <span x-data="editableField('page2Content.assetAllocation.rows.{{ $rowIndex }}.value', '{{ addslashes($fmt($row['value'] ?? '')) }}')"
                                                           @click="editMode && startEdit()"
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
@@ -2082,31 +2090,40 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false }, tooltip: { enabled: true } },
                 scales: {
+                    // QC card 327: the reference sets the axis type darker —
+                    // regions Avenir Next 5pt dark navy, percentages 6pt black
+                    // (Chart.js font sizes are px: 6.7px / 8px) — on dark
+                    // axes with 0.85mm tick marks at the category boundaries.
                     x: {
-                        grid: { display: false },
-                        border: { color: '#9a9a9a' },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 4, tickColor: '#444' },
+                        border: { color: '#444' },
                         ticks: {
-                            font: { size: 5.5, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353'
+                            font: { size: 6.7, family: 'Avenir Next, Lato, sans-serif' },
+                            color: colors.darkNavy,
+                            padding: 1
                         }
                     },
                     y: {
                         beginAtZero: true,
                         max: 70,
-                        grid: { display: false },
-                        border: { color: '#9a9a9a' },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#444' },
+                        border: { color: '#444' },
+                        // Fixed gutter so the y-axis lands at x=73.3mm and the
+                        // labels end at 70.9mm (reference).
+                        afterFit: (scale) => { scale.width = 34.7; },
                         ticks: {
                             stepSize: 10,
-                            padding: 7,
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            padding: 6,
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
                             callback: (value) => value + '%'
                         }
                     }
                 },
                 // Reference plot box: x 73.1mm → 128.0mm, 0% baseline at
                 // y=217.8mm with the 70% gridline at 185.3mm.
-                layout: { padding: { right: 14 } }
+                // top/bottom: 70% line at y=185.6mm, axis at 217.9mm (reference).
+                layout: { padding: { right: 14, top: 3, bottom: 6.4 } }
             }
         });
         @endif
@@ -2138,10 +2155,14 @@
                     const lastValue = dataset.data[dataset.data.length - 1];
                     const label = 'R ' + Math.round(lastValue).toLocaleString();
                     ctx.save();
-                    ctx.font = 'bold 7px Avenir Next, Lato, sans-serif';
+                    // QC card 159: reference labels are Avenir Next Medium
+                    // 6.65pt (Chart.js sizes are px: 9px), ~2.6mm right of
+                    // the line end and centred on it.
+                    ctx.font = '500 9px Avenir Next, Lato, sans-serif';
                     ctx.fillStyle = dataset.borderColor;
                     ctx.textAlign = 'left';
-                    ctx.fillText(label, lastPoint.x + 4, lastPoint.y - 3);
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, lastPoint.x + 9.5, lastPoint.y);
                     ctx.restore();
                 });
             }
@@ -2163,10 +2184,22 @@
                 const f = t.font || {};
                 ctx.save();
                 ctx.font = (f.size || 6) + 'px ' + (f.family || 'Avenir Next, Lato, sans-serif');
-                ctx.fillStyle = '#535353';
+                ctx.fillStyle = '#000';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'alphabetic';
                 ctx.fillText('100', scales.y.right - (t.padding === undefined ? 3 : t.padding), scales.y.getPixelForValue(100) - 1.5);
+                // QC card 159: the reference hangs the date tick marks off
+                // the 100 line (0.8mm), not off the chart floor.
+                const y = Math.round(scales.y.getPixelForValue(100)) + 0.5;
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                scales.x.ticks.forEach((_, i) => {
+                    const x = Math.round(scales.x.getPixelForTick(i)) + 0.5;
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x, y + 3);
+                });
+                ctx.stroke();
                 ctx.restore();
             }
         };
@@ -2183,7 +2216,8 @@
                         borderColor: colors.naartjie,
                         borderWidth: 1.5,
                         pointRadius: 0,
-                        tension: 0.3,
+                        // Reference joins the month-ends with straight segments.
+                        tension: 0,
                         fill: false
                     },
                     {
@@ -2192,7 +2226,8 @@
                         borderColor: colors.darkNavy,
                         borderWidth: 1.5,
                         pointRadius: 0,
-                        tension: 0.3,
+                        // Reference joins the month-ends with straight segments.
+                        tension: 0,
                         fill: false
                     }
                 ]
@@ -2207,7 +2242,8 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                        // Tick marks are drawn on the 100 line by hundredLabelPlugin.
+                        grid: { drawOnChartArea: false, drawTicks: false },
                         // The reference draws no rule along the bottom of the
                         // plot: its only horizontal line is the 100 baseline,
                         // which the series dip below early on. That rule is
@@ -2216,10 +2252,16 @@
                         // Tick marks only under the labelled dates (Chart.js draws a
                         // mark per tick, so unlabelled months are dropped here).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 9 === 0); },
+                        // Chart.js reserves the label padding twice; pin the
+                        // band (padding + one line) so the plot floor lands at
+                        // y=218.6mm and the dates at 220.1mm (reference).
+                        afterFit: (scale) => { scale.height = 13.9; },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
-                            padding: 0,
+                            // QC card 159: reference dates are black 5.9pt
+                            // (7.9px — Chart.js font sizes are px, not pt).
+                            font: { size: 7.9, lineHeight: 1, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
+                            padding: 6,
                             maxRotation: 0,
                             autoSkip: false,
                             // 823 reference ticks: Feb 22, Nov 22, Aug 23,
@@ -2245,7 +2287,8 @@
                         },
                         border: { color: '#000' },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
+                            // Reference "100" is 5pt (6.7px) black.
+                            font: { size: 6.7, family: 'Avenir Next, Lato, sans-serif' },
                             color: 'rgba(0,0,0,0)',
                             callback: (value) => value === 100 ? '100' : null // QC card 291: visible "100" drawn by hundredLabelPlugin
                         },
