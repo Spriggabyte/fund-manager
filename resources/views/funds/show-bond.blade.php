@@ -223,7 +223,9 @@
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: #000;
-            margin: 0;
+            /* 826 reference: heading-to-body pitch 2.7mm (6.8pt line + 0.4mm),
+               which stretches the block to the design length (ISIN at 234.5mm). */
+            margin: 0 0 0.37mm 0;
         }
 
         .sidebar-text {
@@ -276,9 +278,9 @@
         /* Main Content Area — spans x=64mm → 204mm (140mm wide) */
         .main-content {
             flex: 1;
-            /* 6.4mm top lands the ASSET ALLOCATION header row at the
-               reference y=442px/150dpi. */
-            padding: 6.4mm 6mm 4mm 4mm;
+            /* 5.5mm top lands MATURITY BREAKDOWN level with the sidebar's
+               DOMICILE heading (826 reference: both cap-tops at ~65.5mm). */
+            padding: 5.5mm 6mm 4mm 4mm;
             min-width: 0;
             overflow: hidden;
         }
@@ -398,8 +400,8 @@
            The wrapper height includes the two-line bucket labels and the
            centred legend beneath the plot. */
         .maturity-section {
-            /* Lands PORTFOLIO STATISTICS on the reference y≈811px/150dpi. */
-            margin-bottom: 9.5mm;
+            /* Lands PORTFOLIO STATISTICS on the reference y≈135.7mm. */
+            margin-bottom: 10.4mm;
         }
         .maturity-chart-wrapper {
             height: 52mm;
@@ -453,8 +455,9 @@
         .credit-charts-row {
             display: flex;
             gap: 6mm;
-            /* Lands the performance table on the reference y≈1441px/150dpi. */
-            margin: 0 0 10mm 0;
+            /* Lands the PORTFOLIO PERFORMANCE heading on the reference
+               y≈242.6mm (the 49mm chart wrapper is the taller column). */
+            margin: 0 0 7mm 0;
         }
         .credit-block {
             width: 47%;
@@ -476,11 +479,9 @@
             padding-top: 0.62mm;
             padding-bottom: 0.62mm;
         }
-        /* Padding rows (no content) keep the full row pitch so both TOTAL
-           rows sit level (border-box: height includes the cell padding). */
-        .credit-tables table td:empty {
-            height: 4.25mm;
-        }
+        /* Padding rows carry a non-breaking space (see the blade) so they
+           take exactly the text rows' line box and both TOTAL rows sit level;
+           a fixed height left the SECTOR table ~0.2mm taller (card 243). */
         /* % value column — narrow, right-aligned like the reference. */
         .credit-tables table th:last-child,
         .credit-tables table td:last-child {
@@ -499,7 +500,8 @@
             font-size: 7pt;
             line-height: 8.7pt;
             text-align: right;
-            padding: 0.35mm 0.5mm;
+            /* 826 reference header row is 8.44mm tall. */
+            padding: 1.25mm 0.5mm;
         }
         .performance-table table th:first-child {
             text-align: left;
@@ -512,7 +514,8 @@
             color: #000;
             font-size: 7.5pt;
             line-height: 8pt;
-            padding: 0.45mm 0.5mm;
+            /* 826 reference rows: 4.22mm pitch (card 243). */
+            padding: 0.58mm 0.5mm;
         }
         .performance-table table td:first-child {
             padding-left: 1.5mm;
@@ -525,8 +528,8 @@
         .performance-table table tr.perf-spacer-row td {
             background-color: var(--row-grey-2) !important;
             padding: 0;
-            height: 3.58mm;
-            line-height: 3.58mm;
+            height: 3.95mm;
+            line-height: 3.95mm;
             font-size: 0;
         }
 
@@ -548,7 +551,9 @@
             font-weight: 400;
             font-size: 7pt;
             color: #000;
-            margin-top: 3mm;
+            /* Reference prints the note at 287.4mm, ~10.5mm under the table
+               (card 243: space at the bottom of page 1). */
+            margin-top: 10.6mm;
         }
 
         /* =====================================================
@@ -573,13 +578,25 @@
         /* The numbered footnote block sits between the TER paragraph and
            the footer. */
         .page2-footnotes {
-            margin-top: 54mm;
+            margin-top: 54.4mm;
         }
+        /* 826 reference: Avenir Next Regular 7pt on a 3.05mm (8.6pt) pitch,
+           uniform between and within footnotes. Lato read noticeably bolder
+           than the design (card 243). */
         .page2-footnotes .footnotes {
-            font-size: 6.5pt;
-            line-height: 8pt;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 7pt;
+            line-height: 8.6pt;
+            letter-spacing: 0;
             color: #000;
             padding-left: 0;
+        }
+        .page2-footnotes .footnotes p {
+            margin: 0;
+        }
+        .page2-footnotes .footnotes sup {
+            font-size: 4.5pt;
         }
 
         /* TIC table — reference (App 2): label 50.2% (value column starts at
@@ -742,10 +759,10 @@
         }
 
         .chart-wrapper {
-            /* Measured from the flexible reference: y-axis line 195px at
-               150dpi (33mm plot) → 46mm wrapper including x labels + legend.
-               (39mm rendered the plot area ~22% too short.) */
-            height: 46mm;
+            /* 826 reference: y-axis 187.3→223.3mm (36mm plot) with the x-axis
+               1mm under the credit tables' TOTAL rows; 49mm wrapper including
+               the date labels + legend (card 243: axis below the "100"). */
+            height: 49mm;
             position: relative;
         }
 
@@ -765,10 +782,12 @@
            it right beside the axis). */
         .chart-ytitle {
             position: absolute;
-            left: -9mm;
-            /* Keep the rotated label vertically centred on the 46mm-high
+            /* Right edge ~0.9mm clear of the y-axis line (card 243: caption
+               was touching the axis). */
+            left: -8.5mm;
+            /* Keep the rotated label vertically centred on the 49mm-high
                chart (-8mm at 39mm, -12mm at 47mm). */
-            top: -11.5mm;
+            top: -13mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
@@ -1377,7 +1396,7 @@
                                                 <tbody>
                                                     @for ($i = 0; $i < $creditRowCount; $i++)
                                                         <tr>
-                                                            <td>{{ $creditRows[$i]['name'] ?? '' }}</td>
+                                                            <td>{!! ($creditRows[$i]['name'] ?? '') !== '' ? e($creditRows[$i]['name']) : '&nbsp;' !!}</td>
                                                             <td><span x-data="editableField('mainContent.assetAllocation.creditExposure.{{ $creditKey }}.{{ $i }}.value', '{{ addslashes($creditRows[$i]['value'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $creditRows[$i]['value'] ?? '' }}</span></td>
                                                         </tr>
                                                     @endfor
@@ -1715,7 +1734,11 @@
                 const maxVal = Math.max(
                     ...data.map(d => Math.max(...seriesDefs.map(s => d[s.key] || 0)))
                 );
-                const yMax = Math.ceil(maxVal * 1.05 / 100) * 100;
+                // 826 reference: the peak sits 0.4mm under the top of a 36mm
+                // plot (yMax = 100 + 1.2% headroom on the range), not rounded up
+                // to the next hundred — that left a quarter of the plot empty
+                // (card 274).
+                const yMax = 100 + Math.max(maxVal - 100, 1) * 1.012;
 
                 const dates = data.map(d => d.date);
                 const tickPositions = (function () {
@@ -1775,6 +1798,8 @@
                             // never ellipsized (the right spacing reserves room).
                             style: { fontSize: '7.5px', color: '#000', textOverflow: 'none' },
                             formatter: function () { return formatXTickPortfolio(this.value); },
+                            // Reference: date labels start 2.1mm under the axis.
+                            distance: 8,
                             rotation: 0,
                             autoRotation: false,
                             overflow: 'allow',
@@ -1799,7 +1824,9 @@
                         startOnTick: false,
                         tickPositions: [100],
                         labels: {
-                            distance: 2,
+                            // Reference: "100" ends ~1.1mm left of the y-axis and
+                            // sits 0.4mm above the x-axis (cards 243 / 274).
+                            distance: 4,
                             y: -3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
@@ -1816,7 +1843,9 @@
                         symbolRadius: 0,
                         symbolPadding: 2,
                         itemDistance: legendItemDistance,
-                        margin: 6,
+                        // Reference: legend 5.2mm under the date labels; the
+                        // extra margin also lifts the x-axis to 223.3mm.
+                        margin: 12,
                         padding: 0,
                     },
                     tooltip: { enabled: false },
