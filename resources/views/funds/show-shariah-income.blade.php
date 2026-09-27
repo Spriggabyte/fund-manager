@@ -1200,6 +1200,28 @@
         [x-cloak] { display: none !important; }
     </style>
     @include('funds.partials.global-fixes')
+    <style>
+        /* Trello 349/350 (24 Sept, after the global round): this sheet's
+           page-2 tables and TER paragraph are Avenir Next 7.5pt (overrides
+           global-fixes' 8pt). vertical-align:middle alone left the caps
+           0.68mm from the row top but 1.31mm from the bottom (Avenir's line
+           box sits low), so the padding is weighted to the top to centre the
+           cap height optically. */
+        .fee-rates-table td,
+        .tic-table td {
+            font-size: 7.5pt !important;
+        }
+        .fee-rates-table td {
+            line-height: 9pt;
+            padding-top: 0.7mm;
+            padding-bottom: 0.25mm;
+        }
+        .tic-section .fee-description {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 7.5pt;
+        }
+    </style>
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1896,6 +1918,11 @@
                     title: { text: null },
                     xAxis: {
                         categories: dates,
+                        // Trello 348: category axes pad half a category either
+                        // side, leaving a gap between the y-axis and the first
+                        // point. 'on' (with pointPlacement below) starts the
+                        // curves on the axis and puts ticks under their labels.
+                        tickmarkPlacement: 'on',
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
@@ -1963,7 +1990,7 @@
                         // series is simply not clipped to the plot area).
                         // Reference stroke measures ~0.38mm (3px at 200dpi).
                         line: { marker: { enabled: false }, lineWidth: 1.4, clip: false },
-                        series: { animation: false, clip: false },
+                        series: { animation: false, clip: false, pointPlacement: 'on' },
                     },
                     series: seriesDefs.map(s => ({
                         name: s.name, data: data.map(d => d[s.key]), color: s.color,

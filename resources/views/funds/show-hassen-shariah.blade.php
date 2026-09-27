@@ -159,7 +159,9 @@
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
-            padding: 3.1mm 6mm 0 7.75mm;
+            /* QC card 315: title baseline 36.5mm, paragraph moved up to
+               43.3mm so it clears the bottom of the banner (Aug reference). */
+            padding: 2.82mm 6mm 0 7.75mm;
             margin: 0;
             width: 100%;
         }
@@ -170,7 +172,7 @@
             font-size: 23pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 4.25mm 0;
+            margin: 0 0 2.33mm 0;
             line-height: 1.05;
         }
 
@@ -269,7 +271,7 @@
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.84pt;
+            font-size: 8pt; /* QC card 360: headings Avenir Next Medium 8 */
             line-height: 9.4pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
@@ -609,7 +611,7 @@
         .cost-table .foord-table th:nth-child(2),
         .cost-table .foord-table td:nth-child(2) { width: 24.45%; }
         .cost-table .foord-table th:not(:first-child),
-        .cost-table .foord-table td:not(:first-child) { text-align: center; padding-right: 3.1mm; }
+        .cost-table .foord-table td:not(:first-child) { text-align: center; padding-left: 0; padding-right: 0; } /* QC card 361: centred in the cell */
         .cost-table .foord-table th { font-size: 8.01pt; padding-top: 0.3mm; }
         .cost-table .foord-table td {
             font-size: 8.01pt;
@@ -635,13 +637,15 @@
         .pfe-table .foord-table th { font-size: 6.96pt; padding-top: 0.4mm; padding-bottom: 0.1mm; }
         /* Reference: the two-line accrual row sets its label on the lower line. */
         .pfe-table .foord-table tbody tr:last-child td { vertical-align: bottom; }
-        .pfe-table .foord-table td {
-            font-size: 7.53pt;
+        /* QC card 361: performance fee table 7.5pt — outranks the global
+           partial's 8pt page-2 table rule. */
+        .page2-content .pfe-table .foord-table td {
+            font-size: 7.5pt !important;
             padding-top: 0.3mm;
             padding-bottom: 0.3mm;
         }
         .pfe-note {
-            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif; /* QC card 361 */
             font-weight: 400;
             font-size: 6.92pt;
             line-height: 8.4pt;
@@ -670,11 +674,11 @@
             position: relative;
         }
 
-        .geo-wrapper { height: 41.54mm; }
+        .geo-wrapper { height: 43.02mm; } /* QC card 315: plot 133.8→167.5mm, labels 3.4mm below the axis */
         /* The reference sets the "100" axis label outside the column's left
            edge, so the canvas is widened into the gutter and the plot's left
            padding grows to match. */
-        .perf-wrapper { height: 46.06mm; margin-left: -3mm; }
+        .perf-wrapper { height: 44.36mm; margin-left: -3mm; } /* QC card 360: plot ends 171.8mm, dates clear of the legend */
         .perf-wrapper .chart-ytitle { left: -5.25mm; } /* QC card 291: caption ~0.9mm off the axis */
 
         .chart-wrapper canvas {
@@ -709,31 +713,37 @@
             flex-wrap: wrap;
             justify-content: flex-start;
             gap: 0.5mm 7.3mm;
-            line-height: 2.6mm;
+            line-height: 3.17mm;
             margin-top: 1.4mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-size: 6pt;
-            color: #4d585e;
+            /* QC cards 315/360: Aug reference legend 6.48pt dark navy */
+            font-size: 6.48pt;
+            color: var(--dark-navy);
         }
 
-        .geo-legend { padding-left: 20.97mm; margin-top: 2.2mm; }
-        .perf-legend { padding-left: 10.38mm; margin-top: 0.2mm; }
+        .geo-legend { padding-left: 21.5mm; margin-top: 0.32mm; }
+        .perf-legend { padding-left: 10.38mm; margin-top: 1.4mm; row-gap: 0; }
 
+        /* Keys sit on the text baseline like the reference's glyph keys. */
         .chart-legend span {
             display: flex;
-            align-items: center;
-            gap: 2.1mm;
+            align-items: baseline;
+            gap: 2.3mm;
         }
+        .perf-legend span { gap: 0.8mm; }
 
         .legend-line {
-            width: 4.8mm;
+            width: 3.1mm;
             height: 0.2mm;
             display: inline-block;
+            position: relative;
+            top: -0.75mm; /* mid x-height */
         }
 
+        /* QC card 315: keys were too big — reference squares are ~1.25mm. */
         .legend-square {
-            width: 1.8mm;
-            height: 1.8mm;
+            width: 1.25mm;
+            height: 1.25mm;
             display: inline-block;
         }
 
@@ -846,16 +856,17 @@
         .page2-body {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7.65pt;
+            font-size: 7.7pt; /* QC card 361 */
             line-height: 8.79pt;
             letter-spacing: 0.01em;
             color: #000;
         }
 
+        /* QC card 362: notes Avenir Next 7.4 */
         .page2-note {
-            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7.59pt;
+            font-size: 7.4pt;
             line-height: 9.35pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
@@ -1001,6 +1012,28 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    <style>
+        /* QC card 359: this sheet's sidebar is too long for the global
+           8pt/11pt spec — the reviewer set 0.85 line spacing (9.35pt) with
+           4pt after each paragraph, i.e. the Aug reference's 3.30mm line
+           pitch and 5.0mm section pitch. */
+        .sidebar-section h3,
+        .sidebar-section p,
+        .sidebar-section .sidebar-value {
+            line-height: 9.35pt !important;
+            margin: 0 !important;
+        }
+        .sidebar-section { margin-bottom: 1.70mm !important; }
+        /* QC card 360: MARKETING COMMUNICATION shares PORTFOLIO STRUCTURE's
+           baseline (67.2mm); the extra gap under it keeps the rows below
+           where they were. */
+        .sidebar { padding-top: 3.81mm; }
+        .sidebar-section:first-child { margin-bottom: 2.99mm !important; }
+        .sidebar-section:last-child { margin-bottom: 0 !important; }
+        /* QC card 315: YTD sits on the bottom line of the two-line header
+           row, level with YRS / MONTH. */
+        .perf-table th { vertical-align: bottom !important; }
+    </style>
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->
@@ -1217,7 +1250,7 @@
                                     {{-- Reference: the label is set ~13% larger than the
                                          other sidebar headings, same medium weight. --}}
                                     <div class="sidebar-section">
-                                        <h3 style="font-size: 8.9pt; line-height: 10.7pt;">{{ $label }}</h3>
+                                        <h3 style="font-size: 8.9pt !important; line-height: 10.7pt !important;">{{ $label }}</h3>
                                     </div>
                                 @elseif ($key === 'shareClass')
                                     {{-- Heading-only row (877 reference: "SHARE CLASS R") --}}
@@ -1939,15 +1972,15 @@
                         label: 'Fund',
                         data: geoData.map(d => d.fund),
                         backgroundColor: colors.naartjie,
-                        categoryPercentage: 0.666,
-                        barPercentage: 0.905
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.93
                     },
                     {
                         label: 'MSCI ACWI',
                         data: geoData.map(d => d.benchmark),
                         backgroundColor: colors.darkNavy,
-                        categoryPercentage: 0.666,
-                        barPercentage: 0.905
+                        categoryPercentage: 0.8,
+                        barPercentage: 0.93
                     }
                 ]
             },
@@ -1963,11 +1996,13 @@
                         grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000', offset: true },
                         border: { color: '#a5a5a5' },
                         ticks: {
-                            font: { size: 7.2, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            // QC cards 315/360: ref 5.52pt dark navy, set
+                            // 3.4mm below the axis.
+                            font: { size: 7.36, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#29363d',
                             maxRotation: 0,
                             autoSkip: false,
-                            padding: 3
+                            padding: 9.6
                         }
                     },
                     y: {
@@ -1976,8 +2011,9 @@
                         grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#a5a5a5' },
                         border: { color: '#a5a5a5' },
                         ticks: {
-                            font: { size: 7.8, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            // QC card 315: values darker (ref 6pt black).
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
                             stepSize: 10,
                             padding: 4,
                             callback: (value) => value + '%'
@@ -1986,7 +2022,7 @@
                 },
                 /* Plot box measured off the reference: x 73.19–127.94mm,
                    0% baseline at y=167.46mm. */
-                layout: { padding: { top: 12.6, left: 8, right: 12 } }
+                layout: { padding: { top: 11.1, left: 8, right: 12 } }
             }
         });
         @endif
@@ -2009,7 +2045,8 @@
                     const lastValue = dataset.data[dataset.data.length - 1];
                     const label = '$ ' + Math.round(lastValue).toLocaleString();
                     ctx.save();
-                    ctx.font = '7.9px Avenir Next, Lato, sans-serif';
+                    // QC card 360: ref end values 6.78pt AvenirNext Medium.
+                    ctx.font = '500 9px Avenir Next, Lato, sans-serif';
                     ctx.fillStyle = dataset.borderColor;
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'middle';
@@ -2037,8 +2074,19 @@
                 ctx.moveTo(chartArea.left, chartArea.top);
                 ctx.lineTo(chartArea.left, chartArea.bottom);
                 ctx.stroke();
-                ctx.font = '7.9px Avenir Next, Lato, sans-serif';
-                ctx.fillStyle = '#535353';
+                // The year tick marks hang off the 100 baseline (the
+                // reference's x axis), not the bottom of the plot.
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                scales.x.ticks.forEach(t => {
+                    const x = scales.x.getPixelForValue(t.value);
+                    ctx.moveTo(x, yHundred);
+                    ctx.lineTo(x, yHundred + 3);
+                });
+                ctx.stroke();
+                // QC card 360: ref "100" 6pt black.
+                ctx.font = '8px Avenir Next, Lato, sans-serif';
+                ctx.fillStyle = '#000';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('100', chartArea.left - 2.5, yHundred - 5);
@@ -2102,17 +2150,19 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                        // Tick marks are drawn on the 100 baseline by
+                        // baselinePlugin.
+                        grid: { display: false, drawTicks: false },
                         border: { display: false },
-                        // Tick marks only under the labelled dates (Chart.js draws a
-                        // mark per tick, so unlabelled months are dropped here).
+                        // Only the labelled dates keep a tick (and so a mark).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 12 === 1); },
                         ticks: {
-                            font: { size: 7.9, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            // QC card 315: dates darker (ref 6pt black).
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
                             maxRotation: 0,
                             autoSkip: false,
-                            padding: 3,
+                            padding: 6.5,
                             // Reference ticks: Jan 21, Jan 22, … — every 12
                             // months from the first January (the series opens
                             // at Dec 2020, index 0).
@@ -2135,7 +2185,7 @@
                     }
                 },
                 layout: {
-                    padding: { right: 34, top: 4.2, left: 23.34 }
+                    padding: { right: 34, top: 7.6, left: 23.34 }
                 }
             }
         });

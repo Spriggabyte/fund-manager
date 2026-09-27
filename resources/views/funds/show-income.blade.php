@@ -11,6 +11,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     @include('funds.partials.avenir-fonts')
     <style>
+        /* Static TrueType Merriweather (SorkinType upstream, OFL). Google Fonts
+           serves Merriweather as a variable font, which Chromium's PDF backend
+           embeds as a Type3 font that prints wrongly (Foord QC card 332); the
+           reference embeds TrueType Merriweather. */
+        @font-face {
+            font-family: 'Merriweather TT';
+            src: url('{{ asset('fonts/Merriweather/Merriweather-Regular.ttf') }}') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
         /* =====================================================
            FOORD FUND FACT SHEET - PDF TEMPLATE
            Optimized for 2-page A4 layout
@@ -173,11 +185,13 @@
         }
 
         .fund-description {
-            font-family: 'Merriweather', Georgia, serif;
+            font-family: 'Merriweather TT', 'Merriweather', Georgia, serif;
             font-weight: 400;
             font-size: 9pt;
             line-height: 11.3pt;
-            letter-spacing: 0.01em;
+            /* Reference line 1 measures 192.6mm at 9pt; static Merriweather
+               with 0.01em set 189.8mm (QC card 332). */
+            letter-spacing: 0.018em;
             margin: 0;
             color: var(--white);
         }
@@ -407,6 +421,9 @@
         }
         .structure-block { width: 49%; min-width: 0; }
         .stats-block { flex: 1; min-width: 0; }
+        /* QC card 332: the Yield table's top edge lines up with the ASSET
+           CLASS table (the left block has the extra "Change since" line). */
+        .stats-block .stats-table { margin-top: 4.2mm; }
 
         /* 825 reference column split: name 42% / date 30% / change 28% (the
            name column at 54% squeezed the "31 AUG 2026" header into CHANGE). */
@@ -425,6 +442,12 @@
         .structure-table table td {
             padding-top: 0.36mm;
             padding-bottom: 0.36mm;
+        }
+        /* "Inflation linked bonds" on one line like the reference (QC card
+           331) — the right cell padding pushed it onto two. */
+        .structure-table table td:first-child {
+            white-space: nowrap;
+            padding-right: 0.5mm;
         }
 
         /* Portfolio statistics — label/value pairs, no header row. */
@@ -474,7 +497,9 @@
             align-items: center;
             /* 825 reference row pitch ~6.4mm (five buckets share the credit
                tables' height). */
-            margin-bottom: 2.65mm; /* row pitch unchanged with the 4.5mm bar */
+            /* QC cards 288/331: thicker bars on a tighter 6.0mm pitch
+               (reference bars 4.9mm on 6.0mm). */
+            margin-bottom: 1.1mm;
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -490,7 +515,7 @@
             min-width: 0;
         }
         .maturity-spread-bar {
-            height: 4.5mm; /* design bars fill the row — QC card 304 */
+            height: 4.9mm; /* design bars fill the row — QC cards 304/288 */
             background-color: var(--naartjie);
         }
         .maturity-spread-value {
@@ -509,6 +534,11 @@
         .credit-tables .table-container {
             flex: 1;
             margin-bottom: 0;
+        }
+        /* QC card 288: RATING and SECTOR read as one table in the reference —
+           the gap between them is a single cell separator, not two. */
+        .credit-tables .table-container + .table-container {
+            margin-left: -1.1pt;
         }
         .credit-tables table td {
             padding-top: 0.62mm;
@@ -536,7 +566,8 @@
             margin: 0 0 6mm 0;
         }
         .portfolio-chart-block {
-            width: 63%;
+            /* QC card 288: shorter x-axis like the reference (plot ~56mm). */
+            width: 50%;
             min-width: 0;
         }
 
@@ -603,16 +634,21 @@
         /* MONTHLY PERFORMANCE % — the 825 reference prints the grid at the
            bottom of PAGE 1, between the performance table and the overleaf
            note. Year label column + JAN..DEC + YTD. */
+        /* QC card 334: header Avenir Next Medium 7.5, cells Avenir Next 7.5. */
         .monthly-table table th {
-            font-size: 6.5pt;
-            padding: 0.6mm 0.7mm;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 7.5pt;
+            padding: 0.35mm 0.7mm;
         }
         .monthly-table table th:first-child {
             width: 7%;
         }
         .monthly-table table td {
-            font-size: 7pt;
-            padding: 0.5mm 0.7mm;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 400;
+            font-size: 7.5pt;
+            padding: 0.35mm 0.7mm;
         }
         .monthly-section {
             /* Lands MONTHLY PERFORMANCE % at the reference y=255.4mm. */
@@ -626,9 +662,11 @@
         .page2-footnotes {
             margin-top: 94mm;
         }
+        /* QC card 336: Avenir Next 7pt (reference 6.96pt on an 8.6pt pitch). */
         .page2-footnotes .footnotes {
-            font-size: 6.5pt;
-            line-height: 8pt;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 7pt;
+            line-height: 8.6pt;
             color: #000;
             padding-left: 0;
         }
@@ -655,15 +693,19 @@
             padding-left: 1mm;
             padding-right: 1mm;
         }
+        /* QC card 288: header at the body size (was 6pt) and the reference
+           4.5mm row pitch (was 5.1mm). */
         .tic-table table th {
-            font-size: 6pt;
+            font-size: 7.5pt;
+            padding-top: 0.45mm;
+            padding-bottom: 0.45mm;
         }
         .tic-table table td {
             /* Reference labels ~7% larger than 7pt ("Total expense ratio
                (TER)" measures 174px at 150dpi). */
             font-size: 7.5pt;
-            padding-top: 0.92mm;
-            padding-bottom: 0.92mm;
+            padding-top: 0.62mm;
+            padding-bottom: 0.62mm;
         }
         .tic-table table tbody tr td {
             background-color: var(--row-grey-2);
@@ -677,8 +719,8 @@
         .tic-table table tr.total-row td {
             font-size: 7.5pt;
             font-weight: 500;
-            padding-top: 0.95mm;
-            padding-bottom: 0.95mm;
+            padding-top: 0.62mm;
+            padding-bottom: 0.62mm;
         }
 
         .tic-section {
@@ -697,12 +739,25 @@
            Reference arrows are 4.86pt Wingdings3 triangles with a 2.09mm glyph
            box; our glyph is squatter, so 5.9pt lands the same printed height. */
         td.change-cell { color: #000; }
+        /* QC card 77: the ▲/▼ glyphs fell back to Helvetica and printed
+           small — draw them as the global-spec SVG triangles (1.7 x 1.55mm). */
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            font-size: 5.9pt;
+            display: inline-block;
+            width: 1.7mm;
+            height: 1.55mm;
+            font-size: 0;
+            vertical-align: 0;
+            background: no-repeat center / 1.7mm 1.55mm;
             /* Reference gap between triangle and value is ~8-9px at 150dpi;
                the bare word space only gave ~4px. */
             margin-right: 0.8mm;
+        }
+        td.change-cell .change-arrow-up {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 9'><path d='M5 0L10 9H0z' fill='%23000000'/></svg>");
+        }
+        td.change-cell .change-arrow-down {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 9'><path d='M0 0h10L5 9z' fill='%237a9cb4'/></svg>");
         }
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
@@ -946,11 +1001,11 @@
         }
 
         .footer-text {
-            font-family: 'Merriweather', Georgia, serif;
+            font-family: 'Merriweather TT', 'Merriweather', Georgia, serif;
             font-weight: 400;
             font-size: 8pt;
             line-height: 10.1pt;
-            letter-spacing: 0.01em;
+            letter-spacing: 0.018em; /* static Merriweather — see .fund-description */
             color: var(--naartjie);
             margin: 0 0 3.5mm 0;
         }

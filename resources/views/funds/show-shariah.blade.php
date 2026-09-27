@@ -589,11 +589,16 @@
         }
 
         /* Change indicators — arrow coloured only; number inherits table colour.
-           Reference arrows are ~5pt Wingdings triangles, smaller than the digits. */
+           Drawn as inline SVG (as on the balanced sheet): the ▲/▼ glyphs are
+           missing from Avenir Next, so their size depended on the fallback
+           font and QC card 289 found them too small. Global fixes size them
+           1.7 x 1.55mm; the 2.1mm gap before the number is the reference's. */
         td.change-cell { color: #000; }
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            font-size: 5.1pt;
+            display: inline-block;
+            margin-right: 2.1mm;
+            vertical-align: baseline;
         }
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
@@ -928,8 +933,15 @@
            the balanced sheet carries two, so it spends the reclaimed height
            on larger gaps between every page-1 block.
            ===================================================== */
+        /* QC cards 289/343: the description sat 1.5mm off the band's foot
+           (reference 3.5mm). August reference: title top 28.8mm, first
+           description line 41.0mm, last line ends 57.0mm in a band ending
+           60.5mm. */
+        .title-banner {
+            padding-top: 3mm;
+        }
         .fund-description {
-            margin-top: 4.4mm;
+            margin-top: 2.5mm;
         }
 
         /* Subtitle → column headers: 6.9mm on the reference (4.9mm here). */
@@ -957,12 +969,44 @@
             height: 49mm;
         }
 
+        /* QC card 344: the eight quarterly x labels ran together ("Sep 24Dec
+           24…") at the reference's 51.2% width / 51mm plot. The chart takes
+           61.5% of the column (the rest of the row is empty) so the labels
+           clear each other by ~1.5mm; longer histories step the labels out
+           to 6/12 months in the chart script. */
+        .perf-chart-container {
+            max-width: 61.5%;
+        }
 
-        /* Every page-1 table sets its first column 1.1mm left of the balanced
-           sheet's, flush under the section headings at x=65.2mm. */
+        /* QC card 289: the reference's y caption is Avenir Next 7pt (6pt
+           here), and the reviewer asked for it slightly higher. Its box is
+           sized explicitly — `.chart-wrapper > div` stretches every child to
+           the wrapper, which tied the caption's rotated position to the chart
+           width. Rotated about its centre: x ≈ 1.8–4.4mm, centred 12.3mm
+           below the wrapper top (axis runs 2.4 → 37.3mm). */
+        .chart-wrapper > .chart-ytitle {
+            font-size: 7pt;
+            line-height: 3mm;
+            width: 26mm !important;
+            height: 3mm !important;
+            left: -9.9mm;
+            top: 10.8mm;
+        }
+
+
+        /* QC cards 345/346/347: every table's cell edge sits 1mm LEFT of the
+           section headings (x=64.4mm on the August reference) with the text
+           1.2mm inside it at x=65.6mm; ours butted the text against the edge.
+           The tables grow 1mm leftward (right edge unchanged) and each first
+           column gains 1mm of padding, so the text stays where it was. */
+        .main-content table,
+        .fees-content table {
+            margin-left: calc(-1.1pt - 1mm);
+            width: calc(100% + 1mm);
+        }
         .aa-table table td:first-child,
         .aa-table table th:first-child {
-            padding-left: 0.4mm;
+            padding-left: 1.4mm;
         }
 
         .performance-footnotes {
@@ -975,7 +1019,7 @@
         .top10-table table td:first-child,
         .top10-table table th:first-child {
             width: 32.9%;
-            padding-left: 0.9mm;
+            padding-left: 1.9mm;
         }
         .top10-table table td:nth-child(2),
         .top10-table table th:nth-child(2) { width: 35.07%; }
@@ -995,7 +1039,7 @@
         .performance-table table th:first-child,
         .performance-table table td:first-child {
             width: 25.36%;
-            padding-left: 0.4mm;
+            padding-left: 1.4mm;
         }
         .performance-table table th:nth-child(2) { width: 11.52%; }
         .performance-table table th:nth-child(3) { width: 14.57%; }
@@ -1036,18 +1080,21 @@
         .fee-rates-table td {
             padding-top: 0.16mm;
             padding-bottom: 0.16mm;
-            padding-left: 0.4mm;
+            padding-left: 1.4mm;
             /* Class B3's prose values run to two lines; the reference sets the
                label on the value's FIRST line, not centred against both. */
             vertical-align: top;
             line-height: 11pt;
         }
+        /* QC card 289: the reference's column break is at x=108.5mm with the
+           value text 3.8mm inside it at 112.6mm (ours broke at 112.2mm with
+           the text against the cell edge). */
         .fee-rates-table td:first-child {
-            width: 34%;
-            padding-left: 0.4mm;
+            width: 31.7%;
+            padding-left: 1.4mm;
         }
         .fee-rates-table td:last-child:not([colspan]) {
-            padding-left: 0.4mm;
+            padding-left: 4.1mm;
         }
 
         /* A fixed gap below the fee-rates table. The two class references
@@ -1068,12 +1115,36 @@
         }
         .tic-table table th:first-child,
         .tic-table table td:first-child {
-            padding-left: 0.4mm;
+            padding-left: 1.4mm;
+        }
+
+        /* QC card 347: page-2 table text is Avenir Next 7.5pt on this sheet
+           (the August reference's TIC rows measure 7.56pt), not the global
+           fixes' 8pt — the extra specificity beats that !important rule. */
+        .fees-content .fee-rates-table td,
+        .fees-content .tic-table table td {
+            font-size: 7.5pt !important;
+        }
+        /* QC card 289: the header and total rows carried ~0.4-0.9mm of dead
+           space under the text. Reference: header 3.8mm, rows 4.1mm, total
+           row 4.0mm on a 4.45mm pitch. */
+        .fees-content .tic-table table th {
+            padding-top: 0.4mm;
+            padding-bottom: 0.4mm;
+        }
+        .fees-content .tic-table table tr.total-row td {
+            padding-top: 0.5mm;
+            padding-bottom: 0.5mm;
         }
 
         /* The TIC footnote is set a size larger than the balanced sheet's, which
-           is what wraps it onto three lines like the reference. */
+           is what wraps it onto three lines like the reference. Reference:
+           Avenir Next 7pt, black, 3.0mm line pitch (was Lato, navy). */
         .tic-section .footnotes {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            color: #000;
+            line-height: 8.6pt;
+            letter-spacing: 0;
             font-size: 7pt;
             padding-left: 0;
             /* 199.1mm right edge — 2mm short of the TIC table, which is what
@@ -1098,6 +1169,11 @@
             top: 153mm;
             left: 5.35mm;
             right: 6mm;
+        }
+
+        /* QC card 289: the reference sets this prose in black, not navy. */
+        .shariah-funds-section .fee-description {
+            color: #000;
         }
 
         .shariah-funds-section p + p {
@@ -1456,7 +1532,7 @@
                                                     }
                                                 @endphp
                                                 <td class="change-cell">
-                                                    @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span>@endif {{ $numPart }}
+                                                    @if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 10" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,10 5,0 10,10' : '0,0 10,0 5,10' }}"/></svg>@endif{{ $numPart }}
                                                 </td>
                                             @else
                                                 <td>{{ $fmt($row[$colKey] ?? '', 1) }}</td>
@@ -1512,7 +1588,7 @@
                      not plotted. -->
                 @if(isset($fund->data['mainContent']['charts']['portfolioData']))
                     <div class="charts-row">
-                        <div class="chart-container" style="max-width: 51.2%;">
+                        <div class="chart-container perf-chart-container">
                             <h4 class="chart-title">PERFORMANCE VS BENCHMARK</h4>
                             <div class="chart-wrapper">
                                 <div class="chart-ytitle">Cash Value<sup>2</sup> (R&rsquo;000)</div>
@@ -1846,8 +1922,11 @@
                 // series opens at the September 2024 inception.
                 const portfolioDates = portfolioData.map(d => d.date);
                 const portfolioTickPositions = (function () {
+                    // QC card 344: the widened plot fits nine labels without
+                    // them touching; beyond that, label every 6 or 12 months.
+                    const step = portfolioDates.length <= 27 ? 3 : (portfolioDates.length <= 54 ? 6 : 12);
                     const positions = [];
-                    for (let i = 0; i < portfolioDates.length; i += 3) positions.push(i);
+                    for (let i = 0; i < portfolioDates.length; i += step) positions.push(i);
                     // The reference stops one tick short of the final month rather
                     // than crowding a label against the end-value annotations.
                     if (positions[positions.length - 1] === portfolioDates.length - 1) positions.pop();
@@ -1855,7 +1934,9 @@
                 })();
 
                 Highcharts.chart('portfolioChart', {
-                    chart: { type: 'line', backgroundColor: 'transparent', spacing: [0, 46, 4, 5], animation: false },
+                    // Top spacing 9px (QC card 289): the reference leaves 3.3mm
+                    // between the heading and the y-axis top; the x-axis stays put.
+                    chart: { type: 'line', backgroundColor: 'transparent', spacing: [9, 46, 4, 5], animation: false },
                     title: { text: null },
                     xAxis: {
                         categories: portfolioDates,

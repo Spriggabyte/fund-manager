@@ -78,12 +78,13 @@
             justify-content: center;
             background-color: var(--naartjie);
             color: var(--white);
-            font-family: 'Lato', 'Avenir Next', sans-serif;
-            font-weight: 400;
-            font-size: 8.7pt;
+            /* Trello 367: Avenir Next Medium 10pt, as on every other sheet. */
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 10pt;
             letter-spacing: 0.01em;
             text-align: center;
-            padding-top: 0.8mm;
+            padding-top: 0.3mm;
         }
         .logo { position: absolute; top: 8.4mm; right: 10.5mm; height: 11mm; }
         .logo img { height: 100%; width: auto; }
@@ -105,7 +106,8 @@
             letter-spacing: 0.005em;
             text-transform: uppercase;
             line-height: 1.05;
-            margin: 0 0 4.5mm 0;
+            /* Trello 319: tighter title → body gap (same as the global sheet). */
+            margin: 0 0 2.0mm 0;
         }
         .sheet-description {
             font-family: 'Merriweather', Georgia, serif;
@@ -164,6 +166,10 @@
             height: 5.59mm;
         }
         .perf .head.head-label { grid-column: 1 / span 3; }
+        /* Trello 320: Avenir's ascender-heavy line box leaves figures ~0.3mm
+           above the cell's centre; 0.6mm of top padding re-centres them
+           (equal space above and below the cap height). */
+        .perf .cell:not(.head) { padding-top: 0.6mm; }
         .perf .cell.label { padding-left: 1.3mm; }
         .perf .cell.value { justify-content: flex-end; padding-right: 1.75mm; }
         .perf .row-fund .cell { background-color: var(--naartjie-20); }
@@ -301,19 +307,19 @@
             font-weight: 500;
             text-transform: uppercase;
             align-items: flex-end;
-            justify-content: flex-end;
-            text-align: right;
+            /* Trello 320: table data centred in its column (as the global sheet). */
+            justify-content: center;
+            text-align: center;
             line-height: 3.9mm;
-            padding: 0 1.95mm 0 0;
+            padding: 0;
             white-space: normal;
         }
-        .aa .head { padding-right: 3.2mm; }
         .stats .head { height: 11.5mm; }
         .aa .head { height: 11.56mm; }
         .stats .head.head-label, .aa .head.head-label { justify-content: flex-start; text-align: left; padding-left: 1.2mm; }
+        .stats .cell:not(.head), .aa .cell:not(.head) { padding-top: 0.6mm; }
         .stats .cell.label, .aa .cell.label { padding-left: 1.2mm; }
-        .stats .cell.value { justify-content: flex-end; padding-right: 1.95mm; }
-        .aa .cell.value { justify-content: flex-end; padding-right: 3.2mm; }
+        .stats .cell.value, .aa .cell.value { justify-content: center; }
         .stats .row-total .cell, .aa .row-total .cell { background-color: var(--naartjie); color: var(--white); font-weight: 500; text-transform: uppercase; }
         .aa .row-subtotal .cell { background-color: var(--naartjie-20); font-weight: 500; text-transform: uppercase; }
         .row-contents { display: contents; }
@@ -326,7 +332,9 @@
             margin-bottom: 0.4mm;
             padding-left: 3mm;
         }
-        #maturityChart { width: 64.5mm; height: 34.4mm; margin-top: -3.6mm; }
+        /* Trello 220: the chart sits ~6mm lower (x-axis level with the
+           offshore-duration rows, legend with TOTAL DURATION, as the reference). */
+        #maturityChart { width: 64.5mm; height: 34.4mm; margin-top: 2.3mm; }
 
         .sector-block { margin-left: 9.9mm; width: 190mm; margin-top: 2.6mm; }
         #sectorChart { width: 190mm; height: 55mm; margin-top: 0.5mm; }
@@ -591,7 +599,20 @@
                     </div>
                 @endforeach
             </div>
-            @php $maturity = $charts['maturityData'] ?? []; @endphp
+            @php
+                $maturity = $charts['maturityData'] ?? [];
+                // Trello 220: the bars come from the same source as the Foord
+                // Bond Fund fact sheet (826 Class A record: fund buckets from
+                // its feed, hand-maintained ALBI benchmark), read at render
+                // time so the two sheets can never disagree. The fact sheet's
+                // bracketed change labels are not shown here. Falls back to
+                // the overview feed's 826_MATURITY_* figures.
+                $bondMaturity = \App\Models\Fund::where('fund_code', '826')->where('class_code', 'A')->first()
+                    ?->data['mainContent']['charts']['maturityData']['categories'] ?? [];
+                $maturityCategories = $bondMaturity
+                    ? array_map(fn ($c) => ['name' => $c['name'] ?? '', 'fund' => $c['fund'] ?? null, 'benchmark' => $c['benchmark'] ?? null], $bondMaturity)
+                    : ($maturity['categories'] ?? []);
+            @endphp
             <div class="maturity-block">
                 <div class="chart-title"><span x-data="editableField('mainContent.charts.maturityData.title', '{{ $attr($maturity['title'] ?? 'Foord Bond Fund Maturity Breakdown') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $maturity['title'] ?? 'Foord Bond Fund Maturity Breakdown' }}</span></div>
                 <div id="maturityChart"></div>
@@ -640,7 +661,7 @@
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11/highcharts.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const maturityData = @json($charts['maturityData']['categories'] ?? []);
+            const maturityData = @json($maturityCategories);
             const sectorData = @json($sectors['sectors'] ?? []);
 
             const colors = { naartjie: '#d25347', darkNavy: '#29363d' };
@@ -690,7 +711,10 @@
                     xAxis: {
                         categories: rows.map(r => r.name),
                         lineWidth: 1, lineColor: '#000',
-                        tickWidth: 0,
+                        // Trello 220/222: marker lines on the x-axis — a small
+                        // notch between categories, as the reference.
+                        tickWidth: 1, tickLength: opts.xTickLength ?? 3, tickColor: '#000',
+                        tickmarkPlacement: 'between',
                         labels: {
                             style: { fontSize: opts.labelSize, color: '#000', textAlign: 'center', whiteSpace: 'normal', width: opts.labelWidth, textOverflow: 'none' },
                             useHTML: false,
@@ -734,7 +758,7 @@
 
             renderGroupedColumns('maturityChart', maturityData, {
                 tickInterval: 10, minMax: 50,
-                spacing: [2, 2, 0, 0],
+                spacing: [6, 2, 0, 0],
                 labelSize: '5.3pt', axisSize: '5.3pt', legendSize: '6pt',
                 legendGap: 38, legendMargin: 9, labelY: 12, legendX: 8, axisLabelX: -4,
                 pointPadding: 0.05, groupPadding: 0.12,
@@ -746,7 +770,8 @@
                 spacing: [4, 2, 0, 0],
                 labelSize: '5.3pt', axisSize: '4.7pt', legendSize: '6pt',
                 legendGap: 37, legendMargin: 21, labelY: 15,
-                pointPadding: 0.02, groupPadding: 0.17,
+                // Trello 222: a small gap between the Fund and Benchmark bars.
+                pointPadding: 0.07, groupPadding: 0.15,
                 // Publisher wraps each sector label in a ~11mm box. Greedy
                 // word-wrap at 11 characters reproduces every break in the
                 // reference ("Consumer /" ⏎ "services", "Capital" ⏎ "goods /"

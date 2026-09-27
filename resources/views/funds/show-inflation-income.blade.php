@@ -477,8 +477,9 @@
         .credit-chart-row {
             display: flex;
             gap: 6mm;
-            /* Lands the performance-table title at the reference y=218.8mm. */
-            margin: 0 0 0 0;
+            /* Keeps the performance-table title 17mm below the chart axis
+               (reference) now that the chart wrapper is shorter. */
+            margin: 0 0 4.4mm 0;
         }
         .credit-block { width: 49%; min-width: 0; }
 
@@ -528,6 +529,11 @@
             flex: 1;
             margin-bottom: 0;
         }
+        /* QC card 255: RATING and SECTOR tables butt together with a single
+           cell-width gap (was double: both tables' border-spacing). */
+        .credit-tables .table-container + .table-container {
+            margin-left: -0.75pt;
+        }
         .credit-tables table td {
             padding-top: 0.62mm;
             padding-bottom: 0.62mm;
@@ -563,7 +569,8 @@
             background-color: var(--dark-navy);
             color: var(--white);
             font-weight: 500;
-            font-size: 7pt;
+            /* QC card 112/255: headings at the reference 7.5pt (were 7pt). */
+            font-size: 7.5pt;
             line-height: 8.7pt;
             text-align: right;
             padding: 0.7mm 0.5mm;
@@ -632,8 +639,9 @@
         .tic-footnote {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7pt;
-            line-height: 8.6pt;
+            /* 827 reference: 6.5pt on an 8pt pitch (smaller than the TER text). */
+            font-size: 6.5pt;
+            line-height: 8pt;
             color: #000;
             /* Negative top margin offsets the table container's 2.6mm
                bottom margin (they collapse to 1.7mm — reference gap). */
@@ -662,8 +670,9 @@
             padding-left: 1mm;
             padding-right: 1mm;
         }
+        /* QC card 112: headings at the reference 7.5pt (were 6pt). */
         .tic-table table th {
-            font-size: 6pt;
+            font-size: 7.5pt;
         }
         .tic-table table td {
             /* Reference labels ~7% larger than 7pt ("Total expense ratio
@@ -705,18 +714,21 @@
             color: var(--white);
         }
 
-        /* Change indicators — arrow coloured only; number inherits table colour.
-           Reference arrows are ~5pt Wingdings triangles, smaller than the digits. */
+        /* Change indicators — inline-SVG triangles (Avenir Next has no ▲/▼
+           glyphs, so text arrows fell back to a Type3 font). Size comes from
+           global-fixes (1.7 x 1.55mm); number inherits table colour.
+           QC card 255: triangles sit further left — the 827 reference centres
+           them ~8.7mm left of the value's right edge (3.6mm gap to digits). */
         td.change-cell { color: #000; }
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            font-size: 5.1pt;
-            /* Reference gap between triangle and value is ~8-9px at 150dpi;
-               the bare word space only gave ~4px. */
-            margin-right: 0.8mm;
+            display: inline-block;
+            vertical-align: 0;
+            margin-right: 3.8mm;
+            overflow: visible;
         }
-        td.change-cell .change-arrow-up { color: #000; }
-        td.change-cell .change-arrow-down { color: #7A9CB4; }
+        td.change-cell .change-arrow-up { fill: #000; }
+        td.change-cell .change-arrow-down { fill: #7A9CB4; }
 
         /* =====================================================
            CHARTS SECTION
@@ -736,7 +748,9 @@
             /* Measured from the 827 reference: plot 169.5→203.5mm (34mm)
                plus x labels + legend → 49.5mm wrapper (legend bottom lands
                at y≈216.9mm; the baseline is pinned by chart.marginBottom). */
-            height: 49.5mm;
+            /* QC card 255: legend pulled up to 7.5mm under the axis (was
+               12.6mm) — wrapper 4.6mm shorter, marginBottom 54→35. */
+            height: 44.9mm;
             position: relative;
         }
 
@@ -756,10 +770,13 @@
            it right beside the axis). */
         .chart-ytitle {
             position: absolute;
-            left: -7.15mm; /* QC card 291: caption ~0.9mm off the axis */
-            /* Keep the rotated label vertically centred on the 50mm-high
-               chart (-8mm at 39mm, -12mm at 47mm). */
-            top: -13mm;
+            /* QC card 291/255: caption right edge ~0.9mm off the axis. This
+               div inherits the wrapper height (.chart-wrapper > div), so its
+               rotation centre moves with the wrapper: re-measure left/top
+               whenever the wrapper height changes (tuned at 44.9mm). */
+            left: -8.1mm;
+            /* Caption centre ~5.3mm above the plot's centre (827 reference). */
+            top: -9.3mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
@@ -886,7 +903,8 @@
            so the two tables' column breaks align vertically (per Paul's
            red-line annotation on the SKM scan); 7pt labels, 7pt medium values. */
         .fee-rates-table td {
-            padding: 0.3mm 1mm 0.3mm 1.6mm;
+            /* QC card 255: label indent 1.2mm like the reference. */
+            padding: 0.3mm 1mm 0.3mm 1.1mm;
             /* Reference sets this table ~14% larger than the old 7pt
                ("Initial, exit and switching fees" measures 217px at 150dpi);
                row pitch unchanged (line-height still 9.4pt). */
@@ -898,15 +916,15 @@
         }
 
         .fee-rates-table td:first-child {
-            /* Reference value column starts at x≈816px/150dpi (138.2mm):
-               ~2.5mm right of the TIC table's 50.2% break. */
-            width: 51.9%;
+            /* QC card 255: column break at the TIC table's 50.2% (x≈134mm,
+               like the reference); the values are indented 3.8mm instead. */
+            width: 50.2%;
         }
 
         .fee-rates-table td:last-child:not([colspan]) {
             text-align: left;
             font-weight: 500;
-            padding-left: 1.6mm;
+            padding-left: 3.7mm;
         }
 
         .fee-description {
@@ -922,6 +940,9 @@
         /* TER paragraph is black in the reference (fee-rates text is navy) */
         .tic-section .fee-description {
             color: #000;
+            /* QC card 255: reference gap between the "*Estimated" note and
+               the TER paragraph is 6.7mm baseline-to-baseline. */
+            margin-top: 3.7mm;
         }
 
         /* =====================================================
@@ -933,7 +954,8 @@
             /* Lands "Please visit our website…" at the reference y=251.6mm
                (no numbered-footnote block on the 827 page 2, so the gap
                after the TER paragraph is wide). */
-            margin-top: 128.6mm;
+            /* 127.8mm since QC card 255 widened the TIC note/TER gap. */
+            margin-top: 127.8mm;
             padding-top: 5.5mm;
             border-top: none;
             position: relative;
@@ -1046,6 +1068,23 @@
         [x-cloak] { display: none !important; }
     </style>
     @include('funds.partials.global-fixes')
+    {{-- 827 QC card 255 (17 Sept 2026) — sheet-specific overrides that must
+         follow global-fixes (which sets these with !important). --}}
+    <style>
+        /* The 827 reference steps 7.07mm between single-line sidebar sections
+           (global 1.4mm gap gives 6.62mm): same line spacing, more air. */
+        .sidebar-section {
+            margin-bottom: 1.85mm !important;
+        }
+        .sidebar-section:last-child {
+            margin-bottom: 0 !important;
+        }
+        /* Performance headers sit on the bottom line of the header row
+           (single-line "YTD" level with "MONTHS"), not vertically centred. */
+        .performance-table table th {
+            vertical-align: bottom !important;
+        }
+    </style>
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1301,7 +1340,7 @@
                                             <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['name'] }}</span></td>
                                             <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.value', '{{ addslashes($row['value'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['value'] ?? '' }}</span></td>
                                             <td class="change-cell">
-                                                @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span>@endif {{ $numPart }}
+                                                @if ($arrowChar === '▲')<svg class="change-arrow-up" viewBox="0 0 10 9" xmlns="http://www.w3.org/2000/svg"><path d="M5 0 L10 9 L0 9 Z"/></svg>@elseif ($arrowChar === '▼')<svg class="change-arrow-down" viewBox="0 0 10 9" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 L10 0 L5 9 Z"/></svg>@endif{{ $numPart }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -1452,7 +1491,7 @@
                             <thead>
                                 <tr>
                                     @foreach ($perfHeaders as $header)
-                                        <th>{!! $header !!}</th>
+                                        <th>{!! $normaliseSupers($header) !!}</th>
                                     @endforeach
                                 </tr>
                             </thead>
@@ -1678,7 +1717,10 @@
                         // Pin the baseline: 54px from the wrapper bottom puts the
                         // x-axis at the reference y=203.5mm (independent of the
                         // label/legend boxes, which otherwise resize the plot).
-                        marginBottom: 54,
+                        // QC card 255: 35px puts the axis level with the
+                        // credit tables' TOTAL row bottom and the legend
+                        // 7.5mm under the axis like the reference.
+                        marginBottom: 35,
                     },
                     title: { text: null },
                     xAxis: {
@@ -1694,8 +1736,8 @@
                             rotation: 0,
                             autoRotation: false,
                             overflow: 'allow',
-                            // 827 reference: label tops sit 2.6mm below the axis.
-                            y: 17,
+                            // 827 reference: date baselines 3.45mm below the axis.
+                            y: 14,
                         },
                         tickPositions: tickPositions,
                     },
@@ -1717,9 +1759,11 @@
                         startOnTick: false,
                         tickPositions: [100],
                         labels: {
-                            distance: 2,
-                            y: -3,
-                            style: { fontSize: '8px', color: '#000' },
+                            // QC card 255: "100" at the reference 7pt, ~1mm
+                            // left of the axis, sitting just above it.
+                            distance: 4,
+                            y: -1,
+                            style: { fontSize: '9.33px', color: '#000' },
                             formatter: function () {
                                 return this.value === 100 ? '100' : '';
                             },

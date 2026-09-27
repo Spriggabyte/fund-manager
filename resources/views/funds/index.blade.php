@@ -4,7 +4,22 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('All Funds') }}
             </h2>
-            <div class="flex space-x-3">
+            <div class="flex space-x-3" x-data="{ busy: null }">
+                <form method="POST" action="{{ route('funds.data-feed.download') }}" @submit="busy = 'download'">
+                    @csrf
+                    <button type="submit" :disabled="busy" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
+                            title="Download the newest month of fund data from the SFTP server">
+                        <span x-text="busy === 'download' ? 'Downloading…' : 'Download Latest Data'">Download Latest Data</span>
+                    </button>
+                </form>
+                <form method="POST" action="{{ route('funds.data-feed.import') }}"
+                      @submit="if (! confirm('Import the latest downloaded data into every fund with a fund code? A revision is saved before each import; funds already imported for their latest month are skipped.')) { $event.preventDefault(); return; } busy = 'import'">
+                    @csrf
+                    <button type="submit" :disabled="busy" class="bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
+                            title="Import each fund's newest downloaded month">
+                        <span x-text="busy === 'import' ? 'Importing…' : 'Import Latest Data'">Import Latest Data</span>
+                    </button>
+                </form>
                 <a href="{{ route('funds.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
                     Create New Fund
                 </a>
@@ -30,6 +45,12 @@
                             <p class="text-sm text-green-800">{{ session('success') }}</p>
                         </div>
                     </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <p class="text-sm text-red-800">{{ session('error') }}</p>
                 </div>
             @endif
 

@@ -106,6 +106,41 @@ class ExcelImportIncomeTest extends TestCase
         $this->assertArrayNotHasKey('foreignCurrencyHedge', $structure);
     }
 
+    public function test_income_portfolio_structure_prefers_overridden_sa_column(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-income']);
+
+        // August 2026 825 export: Foord nets the negative cash-and-call into
+        // money market by overriding the PS_SA_* cells; PS_TOTAL_* keep the
+        // raw figures.
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['MONTH_END_DATE', '31 August 2026'],
+            ['LAST_QUARTER_END', '30 June 2026'],
+            ['PS_SA_CASH_AND_CALL', '-'],
+            ['PS_TOTAL_CASH_AND_CALL', '-4'],
+            ['PS_TOTAL_CHANGE_CASH_AND_CALL', '-'],
+            ['PS_TOTAL_CHANGE_SIGN_CASH_AND_CALL', '-'],
+            ['PS_SA_MONEY_MARKET', '19'],
+            ['PS_TOTAL_MONEY_MARKET', '22'],
+            ['PS_TOTAL_CHANGE_MONEY_MARKET', '3.5'],
+            ['PS_TOTAL_CHANGE_SIGN_MONEY_MARKET', '-'],
+            ['PS_SA_FLOATING_RATE_NOTES', '58'],
+            ['PS_TOTAL_FLOATING_RATE_NOTES', '58'],
+            ['PS_SA_TOTAL', '100'],
+            ['PS_FOREIGN_TOTAL', '-'],
+        ], 'income-structure-override');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $rows = collect($fund->asset_allocation['rows'])->keyBy('name');
+        $this->assertSame('-', $rows['Cash and call']['value']);
+        $this->assertSame('-', $rows['Cash and call']['change']);
+        $this->assertSame('19', $rows['Money market']['value']);
+        $this->assertSame('▼ 3.5', $rows['Money market']['change']);
+        $this->assertSame('58', $rows['Floating rate notes']['value']);
+    }
+
     public function test_income_statistics_err_cells_preserve_seeded_values(): void
     {
         $fund = Fund::factory()->create([

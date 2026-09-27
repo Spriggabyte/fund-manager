@@ -272,20 +272,19 @@
         /* === Content area — x=64mm → 204mm (140mm wide) === */
         .content-area {
             flex: 1;
-            padding: 5.4mm 6mm 4mm 4mm;
+            padding: 5.1mm 6mm 4mm 4mm;
             min-width: 0;
             overflow: hidden;
         }
 
-        /* === Section headings — 7.5pt Avenir Next Medium, dark navy,
-           per the signed-off balanced spec (the 874 reference measures
-           the same ~12px heading caps at 150 dpi as the July 875) === */
+        /* === Section headings — Avenir Next Medium 8pt, dark navy, on a
+           3.9mm line (874 August reference, same as the 875 QC round) === */
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 9pt;
-            letter-spacing: 0.02em;
+            font-size: 8pt;
+            line-height: 3.9mm;
+            letter-spacing: 0.01em;
             text-transform: uppercase;
             color: var(--dark-navy);
             margin: 0 0 0.8mm 0;
@@ -305,46 +304,50 @@
         .section-subtitle {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
-            line-height: 9pt;
+            font-size: 8pt;
+            line-height: 3.9mm;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin: -0.5mm 0 0.9mm 0;
+            margin: -0.8mm 0 1.2mm 0;
         }
 
-        /* === Two-column layout === */
+        /* === Two-column layout ===
+           874 reference grid: left 64 → 133mm (the change / sector value
+           column), 4.1mm gutter, right 137.1 → 204mm. The page-1 blocks sit
+           in two rows (allocation | geo table, then sector | chart) so both
+           headings of a row share one baseline, level with MARKETING
+           COMMUNICATION in the sidebar (QC card 308). NB: never give a
+           layout row the `alloc-row` class — that is the bar-row rule (1mm
+           gap, centred), which centred the allocation block against the geo
+           table and pushed both left-hand headings ~3mm low. */
         .two-col {
             display: flex;
-            gap: 6mm;
-            margin-bottom: 4.2mm;
+            align-items: flex-start;
+            gap: 4.1mm;
         }
 
-        /* Reference: 11mm more air between the allocation row and the
-           EQUITY SECTOR / PERFORMANCE row. */
-        .two-col.alloc-row { margin-bottom: 1mm; }
-        /* Reference: the asset-allocation/sector values (with their change
-           triangles) sit clear of the geo table and the chart's rotated
-           y-axis title on the right — give col-left's own content a right
-           margin so its bar shrinks rather than the value/triangle columns
-           crowding (or overflowing into) col-right. */
-        .two-col .col-left { flex: 1; min-width: 0; padding-right: 4mm; }
-        .two-col .col-right { flex: 1; min-width: 0; }
+        .two-col.top-row { margin-bottom: 5.2mm; }
+        .two-col.mid-row { margin-bottom: 3.8mm; }
+        .two-col .col-left { flex: 0 0 69mm; min-width: 0; }
+        .two-col .col-right { flex: 1 1 0; min-width: 0; }
 
-        /* === Asset allocation bars === */
+        /* === Asset allocation bars ===
+           874 reference: 8pt navy rows on a 4.57mm pitch, 3.7mm bars
+           starting at x=91.6mm; value column ends at 120.3mm and the change
+           figure at 133mm (QC card 130: values/triangles clear of the geo
+           table). */
         .alloc-row {
             display: flex;
             align-items: center;
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-size: 7.5pt;
-            /* 874 reference: 4.75mm row pitch */
-            line-height: 4.75mm;
-            color: #000;
+            font-size: 8pt;
+            line-height: 4.57mm;
+            color: var(--dark-navy);
         }
 
-        /* Reference: labels flush left, bars start after the longest label */
         .alloc-label {
-            width: 25mm;
+            width: 26.6mm;
             text-align: left;
             padding-right: 1mm;
             flex-shrink: 0;
@@ -353,12 +356,12 @@
 
         .alloc-bar-container {
             flex: 1;
-            height: 2.8mm;
+            height: 3.7mm;
             position: relative;
         }
 
         .alloc-bar {
-            height: 2.8mm;
+            height: 3.7mm;
             background-color: var(--naartjie);
         }
 
@@ -370,35 +373,37 @@
         }
 
         .alloc-change {
-            width: 9mm;
+            width: 11.7mm;
             text-align: right;
             flex-shrink: 0;
-            font-size: 7.5pt;
+            font-size: 8pt;
         }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
-           stays black. Zero changes carry no arrow. Reference triangles are a
-           full glyph (not a small accent) and sit vertically centred on the
-           row — bump the size up from the number's font-size and centre it. */
-        .change-up { color: #000; }
-        .change-down { color: #000; }
+           stays black. Zero changes carry no arrow. The glyph is replaced by
+           an SVG in partials/global-fixes; its 874 size is set after that
+           include (QC card 130). */
+        .change-up { color: var(--dark-navy); }
+        .change-down { color: var(--dark-navy); }
         .change-up::before { content: '▲ '; font-size: 7.5pt; color: #000; vertical-align: middle; }
         .change-down::before { content: '▼ '; font-size: 7.5pt; color: var(--light-blue); vertical-align: middle; }
 
-        /* === Equity sector bars === */
+        /* === Equity sector bars ===
+           874 reference: 8pt rows on a 4.57mm pitch, bars from x=98.3mm, the
+           longest ending ~2.5mm short of its value; values end at 132.7mm,
+           clear of the chart's y-axis caption (QC card 130). */
         .sector-row {
             display: flex;
             align-items: center;
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-size: 7.5pt;
-            /* 874 reference: 4.7mm row pitch */
-            line-height: 4.7mm;
-            color: #000;
+            font-size: 8pt;
+            line-height: 4.57mm;
+            color: var(--dark-navy);
         }
 
         .sector-label {
-            width: 34mm;
+            width: 33.3mm;
             text-align: left;
             padding-right: 1mm;
             flex-shrink: 0;
@@ -407,12 +412,12 @@
 
         .sector-bar-container {
             flex: 1;
-            height: 2.8mm;
+            height: 3.7mm;
             position: relative;
         }
 
         .sector-bar {
-            height: 2.8mm;
+            height: 3.7mm;
             background-color: var(--naartjie);
         }
 
@@ -439,7 +444,7 @@
             border-spacing: 1.1pt 1.1pt;
             margin-left: -1.1pt;
             margin-right: -1.1pt;
-            font-size: 7.5pt;
+            font-size: 8pt;
         }
 
         .foord-table th {
@@ -447,12 +452,14 @@
             color: var(--white);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 8.5pt;
             letter-spacing: 0;
             text-transform: uppercase;
             text-align: right;
-            padding: 0.6mm 1.4mm 0.6mm 1.5mm;
+            /* Avenir's caps sit high in the line box: ~0.15mm more top
+               than bottom padding centres them optically (QC card 256). */
+            padding: 0.62mm 1.4mm 0.42mm 1.5mm;
         }
 
         .foord-table th:first-child { text-align: left; }
@@ -461,9 +468,9 @@
             background-color: var(--row-grey-2);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 8.5pt;
-            padding: 0.62mm 1.4mm 0.62mm 1.5mm;
+            padding: 0.6mm 1.4mm 0.42mm 1.5mm;
             text-align: right;
             overflow: hidden;
         }
@@ -479,7 +486,8 @@
             line-height: 0;
             vertical-align: baseline;
             position: relative;
-            top: -0.25em;
+            /* 874 reference: markers raised ~1.3mm above the baseline */
+            top: -0.6em;
             margin-left: 0.25mm;
         }
 
@@ -503,40 +511,48 @@
         .foord-table tr.empty-row td {
             background-color: var(--row-grey-2) !important;
             padding: 0;
-            height: 4.1mm;
-            line-height: 4.1mm;
+            /* 874 reference: spacer rows on the same 4.22mm pitch */
+            height: 3.83mm;
+            line-height: 3.83mm;
             font-size: 0;
         }
 
         /* Geographic exposure — region 40%, three equal numeric columns */
         .geo-table .foord-table th:first-child,
-        .geo-table .foord-table td:first-child { width: 45.5%; }
+        .geo-table .foord-table td:first-child { width: 44%; white-space: nowrap; }
         .geo-table .foord-table td { background-color: var(--row-grey-2); }
+        /* 874 reference: geo rows on a 4.6mm pitch (taller than 875's) */
+        .geo-table .foord-table th,
+        .geo-table .foord-table td { padding-top: 0.8mm; padding-bottom: 0.6mm; }
 
         /* Top 10 — SECURITY 40.1%, ASSET CLASS 28.3% (left), MARKET and
            % OF FUND centred; row backgrounds fade in pairs. */
+        /* QC card 256: text optically centred in the cell (more top than
+           bottom padding) and MARKET / % OF FUND trimmed to the reference's
+           18.5mm columns (36.3 / 36.3 / 13.3 / 13.3%). */
         .top10-table .foord-table td,
         .top10-table .foord-table th {
-            padding-top: 0.45mm;
-            padding-bottom: 0.45mm;
+            padding-top: 0.55mm;
+            padding-bottom: 0.35mm;
         }
         .top10-table .foord-table td:first-child,
         .top10-table .foord-table th:first-child {
-            width: 40.1%;
-            padding-left: 2.1mm;
+            width: 36.3%;
+            padding-left: 1.8mm;
         }
         .top10-table .foord-table td:nth-child(2),
         .top10-table .foord-table th:nth-child(2) {
             text-align: left;
-            width: 28.3%;
-            padding-left: 2.9mm;
+            width: 36.3%;
+            padding-left: 2.8mm;
         }
         .top10-table .foord-table td:nth-child(3),
         .top10-table .foord-table th:nth-child(3),
         .top10-table .foord-table td:nth-child(4),
         .top10-table .foord-table th:nth-child(4) {
             text-align: center;
-            padding-left: 0.6mm;
+            padding-left: 0.4mm;
+            padding-right: 0.4mm;
         }
         /* Row-grey ramp measured off the 875 reference: rows 1-3 #d4d4d4,
            row 4 #dddddd, 5-6 #e6e6e6, 7-8 #ebebeb, 9-10 #f0f0f0. */
@@ -551,18 +567,24 @@
         .top10-table .foord-table tbody tr:nth-child(9) td,
         .top10-table .foord-table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
 
-        .top10-table { margin-bottom: 4.2mm; }
+        .top10-table { margin-bottom: 5mm; }
 
         /* Performance table — column grid measured off the 875 reference
            (separators at 533/644/760/833/908/982/1056/1130 px @150 dpi):
            name 18.75%, cash 13.42%, since inception 14.03%, then
            8.83/9.07/8.95/8.95/8.95 and the remainder for THIS MONTH. */
+        /* Reference: 8pt headers on two 3.9mm lines; body rows on a 4.2mm
+           pitch (QC cards 256 / 261 — rows were 4.9mm, the table overran
+           the page). QC card 132: YTD bottom-aligned with the two-line
+           headers. */
         .perf-table th {
-            font-size: 7pt;
-            line-height: 8.7pt;
+            font-size: 8pt;
+            line-height: 3.9mm;
             text-align: right;
-            padding: 0.35mm 0.5mm;
-            vertical-align: bottom;
+            padding: 0.2mm 0.5mm 0.1mm;
+            /* Single-line headers (YTD) sit on the second line, as in the
+               reference; outranks the global middle-alignment rule. */
+            vertical-align: bottom !important;
         }
         .perf-table th:first-child {
             text-align: left;
@@ -578,10 +600,9 @@
         .perf-table th:nth-child(8) { width: 8.95%; }
         .perf-table td {
             color: #000;
-            font-size: 7.5pt;
-            line-height: 8pt;
-            /* 874 reference: 4.23mm row pitch */
-            padding: 0.68mm 0.5mm;
+            font-size: 8pt;
+            line-height: 8.5pt;
+            padding: 0.52mm 0.5mm 0.32mm;
         }
         .perf-table td:first-child { padding-left: 1.5mm; }
         /* Row greys fade down the table (measured off the 875 reference):
@@ -604,28 +625,42 @@
            headers and values centred */
         .cost-table .foord-table th:first-child,
         .cost-table .foord-table td:first-child {
-            width: 33.2%;
+            width: 33.33%;
             padding-left: 1.6mm;
         }
         .cost-table .foord-table th:not(:first-child),
         .cost-table .foord-table td:not(:first-child) { text-align: center; }
-        .cost-table .foord-table th { font-size: 6pt; }
+        /* QC cards 256 / 262: the whole cost-ratio block is Avenir Next 8pt
+           (reference rows on a 4.5mm pitch; the total row is Regular). */
+        .cost-table .foord-table th {
+            font-size: 8pt;
+            /* 874 reference: 4.65mm header row */
+            padding-top: 1.0mm;
+            padding-bottom: 0.77mm;
+        }
         .cost-table .foord-table td {
-            font-size: 7pt;
-            padding-top: 0.65mm;
-            padding-bottom: 0.65mm;
+            font-size: 8pt;
+            padding-top: 0.7mm;
+            padding-bottom: 0.5mm;
         }
         .cost-table .foord-table tr.total-row td {
-            font-size: 7pt;
-            font-weight: 500;
-            padding-top: 0.95mm;
-            padding-bottom: 0.95mm;
+            font-size: 8pt;
+            font-weight: 400;
+            /* 874 reference: 4.65mm total row */
+            padding-top: 0.93mm;
+            padding-bottom: 0.72mm;
         }
+        /* 874 reference: the cost table spans x 64 → 204mm (1.2mm proud of
+           the body text on the left), three equal 46.67mm columns, text
+           centred in each (QC card 353). */
+        .cost-table .table-wrapper { margin-left: -1.2mm; margin-right: -1.6mm; }
+        /* 874 reference: table header top 2.2mm under the heading baseline */
+        .cost-table .page2-heading { margin-bottom: 0.75mm; }
 
         /* === Chart === */
         .chart-wrapper {
-            /* 874 reference: heading top -> legend end spans 54.9mm */
-            height: 45mm;
+            /* 874 reference: x-axis 39.9mm below the heading baseline */
+            height: 42.7mm;
             position: relative;
         }
 
@@ -634,12 +669,15 @@
             height: 100% !important;
         }
 
+        /* QC card 124: caption closer to the axis and further up — the
+           reference right-aligns it so "($'000)" starts level with the top
+           of the plot (rotated -90deg, the element's right end is its top). */
         .chart-ytitle {
             position: absolute;
-            left: -8.1mm; /* QC card 291: caption ~0.9mm off the axis */
-            top: 18mm;
+            left: -8.9mm;
+            top: 12.2mm;
             width: 22mm;
-            text-align: center;
+            text-align: right;
             transform: rotate(-90deg);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 6pt;
@@ -653,30 +691,30 @@
             vertical-align: super;
         }
 
-        /* 875 reference: hairline swatches (~1px at 150 dpi) and lighter
-           slate legend text. Reference lays the four keys out as a fixed
-           2-column grid (Fund / US inflation over World equities / World
-           bonds) so both rows' swatches line up — flex-wrap centred each
-           wrapped row independently and drifted them out of alignment. */
+        /* QC card 130 ("align the keys"): the 874 reference sets the four
+           keys on a fixed grid — key columns start 19.8mm apart (x=151.8 /
+           171.6mm), 4.3mm hairline swatches, text 0.5mm after the swatch,
+           rows 3.1mm apart — so both rows' swatches and labels line up. */
         .chart-legend {
             display: grid;
-            grid-template-columns: auto auto;
+            grid-template-columns: 19.8mm auto;
             justify-content: center;
-            gap: 0.4mm 4.2mm;
-            margin-top: 0.2mm;
+            gap: 0;
+            margin-top: 2.2mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 6pt;
-            color: #4d585e;
+            line-height: 3.1mm;
+            color: var(--dark-navy);
         }
 
-        .chart-legend span {
+        .chart-legend > span {
             display: flex;
             align-items: center;
-            gap: 1mm;
+            gap: 0.5mm;
         }
 
         .legend-line {
-            width: 4.8mm;
+            width: 4.3mm;
             height: 0.2mm;
             display: inline-block;
         }
@@ -726,7 +764,9 @@
             margin: 0;
         }
 
-        .info-sidebar-content { padding: 6.3mm 4mm 4mm 9mm; }
+        /* 874 reference: disclaimer text runs x 7.6 → 56.2mm and its first
+           baseline sits level with ANNUALISED COST RATIO % (QC card 353). */
+        .info-sidebar-content { padding: 5.45mm 3.3mm 4mm 7.6mm; }
 
         /* Reference: 8.5pt Lato Light on a 9.6pt leading */
         .info-sidebar-content p,
@@ -734,11 +774,13 @@
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 300;
             font-size: 8.5pt;
-            /* 874 reference: 3.03mm line pitch (8.6pt) */
+            /* QC card 352 (Publisher paragraph settings): 0.85sp line
+               spacing = the reference's 3.03mm pitch (8.6pt), 0pt before and
+               4pt after each paragraph. */
             line-height: 8.6pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin: 0 0 0.7mm 0;
+            margin: 0 0 4pt 0;
             text-align: left;
         }
 
@@ -779,21 +821,20 @@
         .page2-body {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            /* 874 reference: ~107 chars/line at the same cap height — the
-               published face is more condensed, so trim size + tracking */
-            font-size: 7.9pt;
-            line-height: 9.8pt;
+            /* QC card 353: Avenir Next 8pt on the reference's 3.47mm pitch */
+            font-size: 8pt;
+            line-height: 9.84pt;
             letter-spacing: 0;
             color: #000;
         }
 
+        /* QC card 353: notes Avenir Next 7.5pt (reference 3.2mm pitch) */
         .page2-note {
-            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7.8pt;
-            /* 874 reference: 3.05mm note pitch */
-            line-height: 8.6pt;
-            letter-spacing: 0.01em;
+            font-size: 7.5pt;
+            line-height: 9.1pt;
+            letter-spacing: 0;
             color: var(--dark-navy);
             margin: 0.1mm 0;
             /* Hanging indent: wrapped lines align after the superscript */
@@ -941,6 +982,37 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    <style>
+        /* 874 overrides that must follow the global-fixes partial. */
+
+        /* QC card 308: MARKETING COMMUNICATION is Avenir Next Medium 8.9pt
+           (reference), outranking the global 8pt sidebar heading rule. */
+        .sidebar .sidebar-section h3.marketing-communication {
+            font-size: 8.9pt !important;
+            line-height: 11pt !important;
+            font-weight: 500 !important;
+            letter-spacing: 0 !important;
+            white-space: nowrap;
+        }
+
+        /* QC card 353: page-2 headings Avenir Next Medium 8pt (the global
+           round set 7.5pt). */
+        .page2-heading {
+            font-size: 8pt !important;
+            line-height: 9.5pt !important;
+        }
+
+        /* QC card 130: larger change triangles — the 874 reference's
+           Wingdings triangles measure 2.05 x 1.76mm (global default 1.7 x
+           1.55mm); flex-shrink off so the arrow keeps its width. */
+        .alloc-change.change-up::before,
+        .alloc-change.change-down::before {
+            flex: 1 0 2.05mm !important;
+            width: 2.05mm !important;
+            height: 1.76mm !important;
+            background-size: 2.05mm 1.76mm !important;
+        }
+    </style>
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->
@@ -1135,9 +1207,10 @@
                                         </p>
                                     </div>
                                 @elseif ($key === 'marketingCommunication')
-                                    {{-- Reference: larger bold black label with a clear gap below --}}
-                                    <div class="sidebar-section" style="margin-bottom: 2.6mm;">
-                                        <h3 style="font-size: 8.4pt; line-height: 10pt; font-weight: 600; letter-spacing: 0;">{{ $label }}</h3>
+                                    {{-- Reference: Avenir Next Medium 8.9pt, top level with the
+                                         ASSET ALLOCATION / GEOGRAPHIC EXPOSURE headings (QC card 308) --}}
+                                    <div class="sidebar-section">
+                                        <h3 class="marketing-communication">{{ $label }}</h3>
                                     </div>
                                 @elseif (!is_array($value))
                                     <div class="sidebar-section">
@@ -1167,12 +1240,11 @@
 
                 <!-- Content Area -->
                 <div class="content-area">
-                    <!-- Two-column: Asset Allocation + Geographic Exposure -->
-                    <div class="two-col alloc-row">
-                        <!-- Left: Asset Allocation -->
+                    <!-- Row 1: Asset Allocation | Geographic Exposure -->
+                    <div class="two-col top-row">
                         <div class="col-left">
                             @if(isset($fund->data['mainContent']['assetAllocation']))
-                                <div style="margin-bottom: 0;">
+                                <div>
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.assetAllocation.title', '{{ addslashes($fund->data['mainContent']['assetAllocation']['title']) }}', 'headingSuffix')"
                                               @click="editMode && startEdit()"
@@ -1185,8 +1257,8 @@
                                               x-text="value"></span>
                                     </p>
                                     @php
-                                        /* Reference bar scale: the largest value spans ~95%
-                                           of the bar area; all bars are relative to it. */
+                                        /* 874 reference bar scale: the largest value spans
+                                           the full bar area; all bars are relative to it. */
                                         $allocMax = max(1.0, ...array_map(
                                             fn ($r) => (float) ($r['value'] ?? $r['total'] ?? 0),
                                             $fund->data['mainContent']['assetAllocation']['rows']
@@ -1202,7 +1274,7 @@
                                                           x-text="value"></span>
                                                 </span>
                                                 <div class="alloc-bar-container">
-                                                    <div class="alloc-bar" style="width: {{ round((float) ($row['value'] ?? $row['total'] ?? 0) / $allocMax * 95, 1) }}%;"></div>
+                                                    <div class="alloc-bar" style="width: {{ round((float) ($row['value'] ?? $row['total'] ?? 0) / $allocMax * 100, 1) }}%;"></div>
                                                 </div>
                                                 <span class="alloc-value">
                                                     <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.value', '{{ ($row['value'] ?? $row['total'] ?? '') }}')"
@@ -1226,48 +1298,8 @@
                                 </div>
                             @endif
 
-                            <!-- Equity Sector Allocation — bound to the
-                                 sector_allocation column (ESAOT_*), which the
-                                 factsheet import refreshes monthly. The
-                                 published 874 sheet shows bare bars + values
-                                 (no change arrows). -->
-                            @if(!empty($fund->data['mainContent']['sectorAllocation']['sectors']))
-                                {{-- Reference: 11.3mm clear above the heading --}}
-                                <div style="margin-top: 11.2mm; margin-bottom: 2mm;">
-                                    <h3 class="section-heading">EQUITY SECTOR ALLOCATION %</h3>
-                                    @php
-                                        $sectorRows = $fund->data['mainContent']['sectorAllocation']['sectors'];
-                                        $sectorMax = max(1.0, ...array_map(
-                                            fn ($r) => (float) ($r['value'] ?? 0),
-                                            $sectorRows
-                                        ));
-                                    @endphp
-                                    <div>
-                                        @foreach ($sectorRows as $rowIndex => $row)
-                                            <div class="sector-row">
-                                                <span class="sector-label">
-                                                    <span x-data="editableField('mainContent.sectorAllocation.sectors.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </span>
-                                                <div class="sector-bar-container">
-                                                    <div class="sector-bar" style="width: {{ round((float) ($row['value'] ?? 0) / $sectorMax * 63, 1) }}%;"></div>
-                                                </div>
-                                                <span class="sector-value">
-                                                    <span x-data="editableField('mainContent.sectorAllocation.sectors.{{ $rowIndex }}.value', '{{ $row['value'] ?? '' }}')"
-                                                          @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-text="value"></span>
-                                                </span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
                         </div>
 
-                        <!-- Right: Geographic Exposure + Chart -->
                         <div class="col-right">
                             @if(!empty($fund->data['mainContent']['assetAllocation']['geographicExposure']))
                                 @php
@@ -1278,10 +1310,10 @@
                                     $geoTotals = $fund->data['mainContent']['assetAllocation']['geographicTotals'] ?? [];
                                     $geoFmt = fn ($v) => (is_numeric($v) && (float) $v == 0.0) ? '-' : $v;
                                 @endphp
-                                <div class="geo-table" style="margin-bottom: 2mm;">
+                                <div class="geo-table">
                                     <h3 class="section-heading">GEOGRAPHIC EXPOSURE %</h3>
                                     <p class="section-subtitle">(Gross exposure)</p>
-                                    <div class="table-wrapper">
+                                    <div class="table-wrapper" style="margin-bottom: 0;">
                                         <table class="foord-table">
                                             <thead>
                                                 <tr>
@@ -1317,10 +1349,55 @@
                                 </div>
                             @endif
 
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Equity Sector Allocation | Portfolio Performance chart -->
+                    <div class="two-col mid-row">
+                        <div class="col-left">
+                            <!-- Equity Sector Allocation — bound to the
+                                 sector_allocation column (ESAOT_*), which the
+                                 factsheet import refreshes monthly. The
+                                 published 874 sheet shows bare bars + values
+                                 (no change arrows). -->
+                            @if(!empty($fund->data['mainContent']['sectorAllocation']['sectors']))
+                                <div>
+                                    <h3 class="section-heading">EQUITY SECTOR ALLOCATION %</h3>
+                                    @php
+                                        $sectorRows = $fund->data['mainContent']['sectorAllocation']['sectors'];
+                                        $sectorMax = max(1.0, ...array_map(
+                                            fn ($r) => (float) ($r['value'] ?? 0),
+                                            $sectorRows
+                                        ));
+                                    @endphp
+                                    <div>
+                                        @foreach ($sectorRows as $rowIndex => $row)
+                                            <div class="sector-row">
+                                                <span class="sector-label">
+                                                    <span x-data="editableField('mainContent.sectorAllocation.sectors.{{ $rowIndex }}.name', '{{ $row['name'] }}')"
+                                                          @click="editMode && startEdit()"
+                                                          :class="editMode ? 'editable' : ''"
+                                                          x-text="value"></span>
+                                                </span>
+                                                <div class="sector-bar-container">
+                                                    <div class="sector-bar" style="width: {{ round((float) ($row['value'] ?? 0) / $sectorMax * 95, 1) }}%;"></div>
+                                                </div>
+                                                <span class="sector-value">
+                                                    <span x-data="editableField('mainContent.sectorAllocation.sectors.{{ $rowIndex }}.value', '{{ $row['value'] ?? '' }}')"
+                                                          @click="editMode && startEdit()"
+                                                          :class="editMode ? 'editable' : ''"
+                                                          x-text="value"></span>
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="col-right">
                             <!-- Portfolio Performance Chart -->
                             @if(isset($fund->data['mainContent']['charts']))
-                                {{-- Reference: 6.8mm clear above the heading --}}
-                                <div style="margin-top: 7.5mm;">
+                                <div>
                                     <h3 class="section-heading">
                                         <span x-data="editableField('mainContent.charts.title', '{{ $fund->data['mainContent']['charts']['title'] ?? 'PORTFOLIO PERFORMANCE' }}')"
                                               @click="editMode && startEdit()"
@@ -1333,7 +1410,7 @@
                                     </div>
                                     {{-- Legend colours per the 874 reference: Fund red, US inflation
                                          dark navy, World equities steel blue, World bonds light grey --}}
-                                    <div class="chart-legend" style="max-width: 52mm; margin-left: auto; margin-right: auto;">
+                                    <div class="chart-legend">
                                         <span><span class="legend-line" style="background: var(--naartjie);"></span> Fund</span>
                                         <span><span class="legend-line" style="background: var(--dark-navy);"></span> US inflation</span>
                                         <span><span class="legend-line" style="background: var(--light-blue);"></span> World equities</span>
@@ -1574,7 +1651,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <p class="page2-body" style="margin-top: 5px;">
+                            <p class="page2-body" style="margin-top: 0;">
                                 <span x-data="editableField('fees.annualisedCostRatio.description', '{{ addslashes($fund->data['fees']['annualisedCostRatio']['description'] ?? '') }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
@@ -1792,6 +1869,17 @@
     <script>
         @php
             $chartPerformanceData = $fund->data['mainContent']['charts']['performanceData'] ?? [];
+            // Chart end labels ($'000) from the performance table's cash
+            // values: raw import row name => chart series key.
+            $chartEndLabels = [];
+            $endLabelRows = ['fund' => 'fund', 'comparator 2' => 'usInflation', 'comparator 3' => 'worldEquities', 'comparator 4' => 'worldBonds'];
+            foreach ($fund->data['mainContent']['performanceTable']['rows'] ?? [] as $perfRow) {
+                $seriesKey = $endLabelRows[strtolower(trim(strip_tags((string) ($perfRow['name'] ?? ''))))] ?? null;
+                $cash = preg_replace('/[^0-9.]/', '', (string) ($perfRow['cashValue'] ?? ''));
+                if ($seriesKey !== null && is_numeric($cash)) {
+                    $chartEndLabels[$seriesKey] = (float) $cash / 1000;
+                }
+            }
         @endphp
         const chartData = @json($chartPerformanceData);
 
@@ -1813,7 +1901,17 @@
             return monthNames[parseInt(m[2], 10) - 1] + ' ' + m[1].slice(-2);
         };
 
-        // End value annotation plugin
+        // Chart.js font sizes are CSS px: 1pt = 4/3 px.
+        const pt = (v) => v * 4 / 3;
+
+        // End labels print the performance table's cash values (QC card 131:
+        // the feed's US CPI series repeats the prior month at month end, so
+        // its last chart point read $208 against the published $209 —
+        // the table's $208,791). Falls back to the series' last point.
+        const endLabelValues = @json($chartEndLabels ?? []);
+
+        // End value annotation plugin — reference: Avenir Next Medium 6.7pt
+        // in the series colour, centred on the line end.
         const endValuePlugin = {
             id: 'endValueAnnotation',
             afterDraw(chart) {
@@ -1823,13 +1921,14 @@
                     if (meta.hidden) return;
                     const lastPoint = meta.data[meta.data.length - 1];
                     if (!lastPoint) return;
-                    const lastValue = dataset.data[dataset.data.length - 1];
+                    const lastValue = endLabelValues[dataset.seriesKey] ?? dataset.data[dataset.data.length - 1];
                     const label = '$ ' + Math.round(lastValue).toLocaleString();
                     ctx.save();
-                    ctx.font = 'bold 7px Avenir Next, Lato, sans-serif';
+                    ctx.font = '500 ' + pt(6.7) + 'px "Avenir Next", Lato, sans-serif';
                     ctx.fillStyle = dataset.borderColor;
                     ctx.textAlign = 'left';
-                    ctx.fillText(label, lastPoint.x + 4, lastPoint.y - 3);
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, lastPoint.x + 4, lastPoint.y);
                     ctx.restore();
                 });
             }
@@ -1847,8 +1946,8 @@
                 const t = scales.y.options.ticks || {};
                 const f = t.font || {};
                 ctx.save();
-                ctx.font = (f.size || 6) + 'px ' + (f.family || 'Avenir Next, Lato, sans-serif');
-                ctx.fillStyle = '#535353';
+                ctx.font = (f.size || pt(6)) + 'px ' + (f.family || '"Avenir Next", Lato, sans-serif');
+                ctx.fillStyle = '#000';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'alphabetic';
                 ctx.fillText('100', scales.y.right - (t.padding === undefined ? 3 : t.padding), scales.y.getPixelForValue(100) - 1.5);
@@ -1866,6 +1965,7 @@
                 datasets: [
                     {
                         label: 'Fund',
+                        seriesKey: 'fund',
                         data: chartData.map(d => d.fund),
                         borderColor: colors.naartjie,
                         borderWidth: 1.5,
@@ -1875,6 +1975,7 @@
                     },
                     {
                         label: 'US inflation',
+                        seriesKey: 'usInflation',
                         data: chartData.map(d => d.usInflation),
                         borderColor: colors.darkNavy,
                         borderWidth: 1.5,
@@ -1884,6 +1985,7 @@
                     },
                     {
                         label: 'World equities',
+                        seriesKey: 'worldEquities',
                         data: chartData.map(d => d.worldEquities),
                         borderColor: colors.lightBlue,
                         borderWidth: 1.5,
@@ -1893,6 +1995,7 @@
                     },
                     {
                         label: 'World bonds',
+                        seriesKey: 'worldBonds',
                         data: chartData.map(d => d.worldBonds),
                         borderColor: colors.lightGrey,
                         borderWidth: 1.5,
@@ -1918,8 +2021,8 @@
                         // mark per tick, so unlabelled months are dropped here).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 48 === 0); },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            font: { size: pt(6), family: '"Avenir Next", Lato, sans-serif' },
+                            color: '#000',
                             maxRotation: 0,
                             autoSkip: false,
                             // Reference ticks: Mar 97, Mar 01, … — every 48
@@ -1936,8 +2039,10 @@
                         type: 'logarithmic',
                         grid: { display: false },
                         border: { color: '#000' },
+                        // Pin the axis position (auto-fit width drifts with fonts).
+                        afterFit: axis => { axis.width = 17; },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
+                            font: { size: pt(6), family: '"Avenir Next", Lato, sans-serif' },
                             color: 'rgba(0,0,0,0)',
                             callback: (value) => value === 100 ? '100' : null // QC card 291: visible \"100\" drawn by hundredLabelPlugin
                         },
@@ -1946,7 +2051,7 @@
                     }
                 },
                 layout: {
-                    padding: { right: 40, top: 10 }
+                    padding: { right: 36, top: 10 }
                 }
             }
         });

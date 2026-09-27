@@ -176,8 +176,10 @@ abstract class AbstractOverviewImporter extends AbstractExcelImporter
                 continue;
             }
 
-            $benchmarkKey = "{$prefix}{$n}_BENCHMARK";
-            $benchmark = array_key_exists($benchmarkKey, $data)
+            // The local export spells the column _BENCHMARK, the global one _BM.
+            $benchmarkKey = collect(["{$prefix}{$n}_BENCHMARK", "{$prefix}{$n}_BM"])
+                ->first(fn (string $key): bool => array_key_exists($key, $data));
+            $benchmark = $benchmarkKey !== null
                 ? $this->chartNumber($data[$benchmarkKey])
                 : ($storedByName->get($name)['benchmark'] ?? 0);
 

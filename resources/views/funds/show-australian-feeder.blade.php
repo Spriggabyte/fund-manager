@@ -912,7 +912,9 @@
             line-height: 9pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
-            color: var(--dark-navy);
+            /* Card 216: black like the body text (reference) — the navy
+               read lighter than the Regular body beneath it. */
+            color: #000;
             margin: 0 0 1.2mm 0;
         }
 
@@ -925,13 +927,15 @@
             color: #000;
         }
 
+        /* Card 216: notes are Avenir Next Regular 7.56pt black (reference),
+           so the Medium NOTES heading stands out above them. */
         .page2-note {
-            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7.70pt;
+            font-size: 7.56pt;
             line-height: 10.28pt;
-            letter-spacing: 0.01em;
-            color: var(--dark-navy);
+            letter-spacing: 0;
+            color: #000;
             margin: 0;
             /* Hanging indent: wrapped lines align after the superscript */
             padding-left: 1.70mm;
@@ -1839,8 +1843,33 @@
         // Grouped GEOGRAPHIC EQUITY EXPOSURE column chart (880 reference:
         // Fund red vs MSCI ACWI navy, 0–70% axis with 10% gridless ticks).
         const geoData = @json($fund->data['mainContent']['assetAllocation']['geographicEquityExposure']);
+        // Card 214: 4px (1.06mm) ticks hang below the x-axis at each
+        // category boundary, both ends included (reference). Drawn here
+        // rather than via grid ticks so the axis height (and with it the
+        // measured plot box) is unchanged.
+        const categoryTicksPlugin = {
+            id: 'categoryTicks',
+            afterDraw(chart) {
+                const { ctx, scales: { x } } = chart;
+                const n = chart.data.labels.length;
+                if (!n) return;
+                const step = (x.right - x.left) / n;
+                ctx.save();
+                ctx.strokeStyle = '#a5a5a5';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let k = 0; k <= n; k++) {
+                    const px = Math.round(x.left + k * step) + 0.5;
+                    ctx.moveTo(px, x.top);
+                    ctx.lineTo(px, x.top + 4);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+        };
         new Chart(document.getElementById('geoChart').getContext('2d'), {
             type: 'bar',
+            plugins: [categoryTicksPlugin],
             data: {
                 labels: geoData.map(d => d.name),
                 datasets: [
@@ -1918,7 +1947,8 @@
                     const lastValue = dataset.data[dataset.data.length - 1];
                     const label = '$ ' + Math.round(lastValue).toLocaleString();
                     ctx.save();
-                    ctx.font = '7.9px Avenir Next, Lato, sans-serif';
+                    // Card 214: Avenir Next Medium 6.75pt (9px), as in the reference.
+                    ctx.font = '500 9px Avenir Next, Lato, sans-serif';
                     ctx.fillStyle = dataset.borderColor;
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'middle';
@@ -1945,6 +1975,17 @@
                 ctx.lineTo(chartArea.right, yHundred);
                 ctx.moveTo(chartArea.left, chartArea.top);
                 ctx.lineTo(chartArea.left, chartArea.bottom);
+                ctx.stroke();
+                // Card 214: a 3px (0.78mm) tick hangs below the baseline at
+                // each labelled date, the first one on the y-axis.
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                scales.x.ticks.forEach((tick, i) => {
+                    if (!tick.label) return;
+                    const x = Math.round(scales.x.getPixelForTick(i)) + 0.5;
+                    ctx.moveTo(x, yHundred);
+                    ctx.lineTo(x, yHundred + 3);
+                });
                 ctx.stroke();
                 ctx.font = '7.9px Avenir Next, Lato, sans-serif';
                 ctx.fillStyle = '#535353';

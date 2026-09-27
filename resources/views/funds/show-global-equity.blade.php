@@ -190,7 +190,7 @@
             min-width: 60mm;
             max-width: 60mm;
             background-color: transparent;
-            padding: 5.4mm 4mm 4mm 8mm;
+            padding: 3.7mm 4mm 4mm 8mm;
             overflow: hidden;
         }
 
@@ -255,10 +255,11 @@
 
         /* === Section headings — 7.5pt Avenir Next Medium, dark navy,
            per the signed-off balanced spec === */
+        /* QC card 354: headings Avenir Next Medium 8pt (reference 8.04pt). */
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 9pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
@@ -322,7 +323,7 @@
         .ps-header .ps-header-col {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 9pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
@@ -345,13 +346,15 @@
             align-items: center;
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 4.0mm;
             color: #000;
         }
 
+        /* QC card 354: reference bars start at x=100.2mm, run 33.5mm for
+           the largest sector and are 3.3mm thick (smaller row gaps). */
         .ps-label {
-            width: 34mm;
+            width: 35.2mm;
             text-align: left;
             padding-right: 1mm;
             flex-shrink: 0;
@@ -359,20 +362,20 @@
         }
 
         .ps-bar-container {
-            flex: 0 0 38mm;
-            height: 2.4mm;
+            flex: 0 0 34.2mm;
+            height: 3.3mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 2.4mm;
+            height: 3.3mm;
             background-color: var(--naartjie);
         }
 
         .ps-bar.navy { background-color: var(--dark-navy); }
 
         .ps-value {
-            width: 3.5mm;
+            width: 5.7mm;
             text-align: right;
             flex-shrink: 0;
             font-weight: 400;
@@ -414,7 +417,7 @@
             border-spacing: 1.1pt 1.1pt;
             margin-left: -1.1pt;
             margin-right: -1.1pt;
-            font-size: 7.5pt;
+            font-size: 8pt;
         }
 
         .foord-table th {
@@ -422,7 +425,7 @@
             color: var(--white);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 8.5pt;
             letter-spacing: 0;
             text-transform: uppercase;
@@ -436,7 +439,7 @@
             background-color: var(--row-grey-2);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 8.5pt;
             padding: 0.62mm 1.4mm 0.62mm 1.5mm;
             text-align: right;
@@ -518,7 +521,7 @@
            name 18.75%, cash 13.42%, since inception 14.03%, then
            8.83/9.07/8.95/8.95/8.95 and the remainder for THIS MONTH. */
         .perf-table th {
-            font-size: 7pt;
+            font-size: 8pt;
             line-height: 8.7pt;
             text-align: right;
             padding: 1.3mm 0.5mm;
@@ -540,7 +543,7 @@
         .perf-table th:nth-child(8) { width: 8.4%; }
         .perf-table td {
             color: #000;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 8pt;
             padding: 0.75mm 0.5mm;
         }
@@ -569,11 +572,12 @@
         }
         .cost-table .foord-table th:not(:first-child),
         .cost-table .foord-table td:not(:first-child) { text-align: center; }
-        .cost-table .foord-table th { font-size: 6pt; }
+        /* Card 358: header row 8pt (was 6pt); reference rows on a 5.0mm pitch. */
+        .cost-table .foord-table th { font-size: 8pt; }
         .cost-table .foord-table td {
             font-size: 7pt;
-            padding-top: 0.72mm;
-            padding-bottom: 0.72mm;
+            padding-top: 0.8mm;
+            padding-bottom: 0.8mm;
         }
         .cost-table .foord-table td.indent-cell { padding-left: 8.4mm; }
         .cost-table .foord-table tr.total-row td {
@@ -622,6 +626,11 @@
             position: relative;
         }
 
+        /* QC card 355: the geographic plot is shorter than the performance
+           plot in the reference (x-axis 167.2mm vs 169.9mm), which lifts
+           its legend to 175.4mm. */
+        .chart-wrapper.geo-wrapper { height: 42.1mm; }
+
         .chart-wrapper canvas {
             width: 100% !important;
             height: 100% !important;
@@ -629,8 +638,10 @@
 
         .chart-ytitle {
             position: absolute;
-            left: -7.3mm; /* QC card 291: caption ~0.9mm off the axis */
-            top: 16mm;
+            /* QC cards 291 + 354: caption sits at the column's left edge,
+               its top level with the top of the plot (reference). */
+            left: -9.7mm;
+            top: 11.3mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
@@ -646,34 +657,48 @@
             vertical-align: super;
         }
 
-        /* 877 reference: hairline swatches and lighter slate legend text. */
+        /* QC cards 313 + 354: legends 6.5pt dark navy (reference). The
+           performance legend starts flush with the column; the geographic
+           legend is centred with the reference's wide item gap. */
         .chart-legend {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.4mm 4.2mm;
+            justify-content: flex-start;
+            gap: 0.4mm 3.2mm;
             margin-top: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-size: 6pt;
-            color: #4d585e;
+            font-size: 6.5pt;
+            color: var(--dark-navy);
+        }
+
+        .chart-legend.geo-legend {
+            justify-content: center;
+            gap: 0.4mm 9.5mm;
+            padding-left: 10mm;
         }
 
         .chart-legend span {
             display: flex;
             align-items: center;
-            gap: 1mm;
+            gap: 0.5mm;
         }
+
+        .chart-legend.geo-legend span { gap: 2.3mm; }
 
         .legend-line {
             width: 4.8mm;
-            height: 0.2mm;
+            height: 0.25mm;
             display: inline-block;
+            flex: 0 0 4.8mm;
         }
 
+        /* QC card 313: key squares must be square — flex-shrink had
+           squeezed them to 1.59 x 1.85mm. */
         .legend-square {
-            width: 1.8mm;
-            height: 1.8mm;
+            width: 1.7mm;
+            height: 1.7mm;
             display: inline-block;
+            flex: 0 0 1.7mm;
         }
 
         /* === Footnotes === */
@@ -758,6 +783,23 @@
         }
 
         .page2-section { margin-bottom: 3.4mm; }
+
+        /* Class B layout (no performance-fee sections; Trello 313/356/357):
+           ANNUALISED COST RATIO % baseline level with the first disclaimer
+           line (reference 29.6mm), the TER note under the table, and the
+           sections spread down the page as in the reference (SHARE PRICING
+           88.9mm, MORE ABOUT 119.4mm, NOTES 193.7mm) instead of leaving the
+           space at the bottom. */
+        .page2-content.p2-spread { padding-top: 27.1mm; }
+        .p2-spread .cost-table .page2-heading { margin-bottom: 2.2mm; }
+        .p2-spread .cost-table .foord-table td { padding-top: 0.92mm; padding-bottom: 0.92mm; }
+        .p2-spread .ter-note { margin-top: -1.4mm; }
+        .p2-spread .p2-share-pricing { margin-top: 11.9mm; }
+        .p2-spread .p2-more-about { margin-top: 8.8mm; }
+        .p2-spread .p2-notes { margin-top: 15.3mm; }
+        /* Class B reference body: 8pt on a 3.47mm (9.85pt) pitch. (The R/R1
+           page 2 carries the performance-fee sections and has no room.) */
+        .p2-spread .page2-body { font-size: 8pt; line-height: 9.85pt; }
 
         .page2-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
@@ -928,6 +970,42 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    {{-- QC round 2 (Trello 313/354, 24 Sept 2026) — later in source order than
+         global-fixes so these win at equal specificity. --}}
+    <style>
+        /* Sidebar: reference 8pt Medium headings / 8pt Regular body on a
+           3.3mm (9.35pt) pitch, heading and value tight, 1.7mm between
+           sections (heading-to-heading 5.0mm). */
+        .sidebar .sidebar-section h3,
+        .sidebar .sidebar-section p {
+            line-height: 9.35pt !important;
+            margin: 0 !important;
+        }
+        .sidebar .sidebar-section { margin-bottom: 1.7mm !important; }
+        .sidebar .sidebar-section:last-child { margin-bottom: 0 !important; }
+        /* MARKETING COMMUNICATION — Avenir Next Medium 8.9pt, baseline level
+           with PORTFOLIO STRUCTURE %. */
+        .sidebar .sidebar-section.marketing-comm { margin-bottom: 1.8mm !important; }
+        .sidebar .sidebar-section.marketing-comm h3 {
+            font-size: 8.9pt !important;
+            line-height: 10.4pt !important;
+        }
+
+        /* Cards 313/354: triangles further left of the change figure
+           (reference: triangle at 162.8mm, number at 167.7mm). */
+        .ps-change.change-up::before,
+        .ps-change.change-down::before { margin-right: 3.2mm; }
+
+        /* Card 358: page-2 NOTES — Avenir Next 7.5pt, single (1sp) spacing
+           (Class B layout; R/R1 keep their measured notes until reviewed). */
+        .p2-spread .page2-note {
+            font-family: 'Avenir Next', 'Lato', sans-serif !important;
+            font-size: 7.5pt !important;
+            line-height: 10.2pt !important;
+            letter-spacing: 0 !important;
+            margin: 0 !important;
+        }
+    </style>
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->
@@ -1144,8 +1222,8 @@
                                     </div>
                                 @elseif ($key === 'marketingCommunication')
                                     {{-- Reference: larger bold black label with a clear gap below --}}
-                                    <div class="sidebar-section" style="margin-bottom: 2.6mm;">
-                                        <h3 style="font-size: 7pt; line-height: 8.2pt; font-weight: 700;">{{ $label }}</h3>
+                                    <div class="sidebar-section marketing-comm">
+                                        <h3>{{ $label }}</h3>
                                     </div>
                                 @elseif ($key === 'shareClass')
                                     {{-- Heading-only row (877 reference: "SHARE CLASS R") --}}
@@ -1253,10 +1331,10 @@
                             @if(!empty($fund->data['mainContent']['assetAllocation']['geographicEquityExposure']))
                                 <div>
                                     <h3 class="section-heading">GEOGRAPHIC EQUITY EXPOSURE<sup>6</sup></h3>
-                                    <div class="chart-wrapper">
+                                    <div class="chart-wrapper geo-wrapper">
                                         <canvas id="geoChart"></canvas>
                                     </div>
-                                    <div class="chart-legend">
+                                    <div class="chart-legend geo-legend">
                                         <span><span class="legend-square" style="background: var(--naartjie);"></span> Fund</span>
                                         <span><span class="legend-square" style="background: var(--dark-navy);"></span> MSCI ACWI</span>
                                     </div>
@@ -1430,6 +1508,22 @@
 
         <!-- ==================== PAGE 2 ==================== -->
         <div class="page page-break">
+            @php
+                // Card 357: the TER explanation prints under the ANNUALISED
+                // COST RATIO table (reference), not in the disclaimer column.
+                // The feed keeps it as the last importantInfo paragraph, so it
+                // is moved at render time and stays editable at its own path.
+                $terNoteIndex = null;
+                $p2Spread = empty($fund->data['page2Content']['performanceFees'])
+                    && empty($fund->data['page2Content']['performanceFeeExamples']);
+                if ($p2Spread && empty($fund->data['fees']['annualisedCostRatio']['description'])) {
+                    foreach ($fund->data['importantInfo']['paragraphs'] ?? [] as $i => $para) {
+                        if (str_starts_with(trim((string) $para), 'A TER is')) {
+                            $terNoteIndex = $i;
+                        }
+                    }
+                }
+            @endphp
             <div class="main-body" style="min-height: 297mm;">
                 <!-- Left Sidebar - Important Information -->
                 @if(isset($fund->data['importantInfo']))
@@ -1445,6 +1539,7 @@
                         </div>
                         <div class="info-sidebar-content">
                             @foreach ($fund->data['importantInfo']['paragraphs'] as $index => $paragraph)
+                                @continue($index === $terNoteIndex)
                                 <p class="important-info-text">
                                     <span x-data="editableField('importantInfo.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}', 'linkify')"
                                           @click="editMode && startEdit()"
@@ -1462,7 +1557,7 @@
                 @endif
 
                 <!-- Right Content -->
-                <div class="page2-content">
+                <div class="page2-content {{ $p2Spread ? 'p2-spread' : '' }}">
                     <!-- Annualised Cost Ratio -->
                     @if(isset($fund->data['fees']['annualisedCostRatio']))
                         <div class="page2-section cost-table" style="margin-bottom: 0.6mm;">
@@ -1517,6 +1612,13 @@
                             @if(!empty($fund->data['fees']['annualisedCostRatio']['description']))
                                 <p class="page2-body" style="margin-top: 5px;">
                                     <span x-data="editableField('fees.annualisedCostRatio.description', '{{ addslashes($fund->data['fees']['annualisedCostRatio']['description']) }}')"
+                                          @click="editMode && startEdit()"
+                                          :class="editMode ? 'editable' : ''"
+                                          x-text="value"></span>
+                                </p>
+                            @elseif($terNoteIndex !== null)
+                                <p class="page2-body ter-note">
+                                    <span x-data="editableField('importantInfo.paragraphs.{{ $terNoteIndex }}', '{{ addslashes($fund->data['importantInfo']['paragraphs'][$terNoteIndex]) }}')"
                                           @click="editMode && startEdit()"
                                           :class="editMode ? 'editable' : ''"
                                           x-text="value"></span>
@@ -1598,7 +1700,7 @@
 
                     <!-- Share Pricing and Transactions -->
                     @if(isset($fund->data['page2Content']['sharePricing']))
-                        <div class="page2-section">
+                        <div class="page2-section p2-share-pricing">
                             <h3 class="page2-heading">
                                 <span x-data="editableField('page2Content.sharePricing.title', '{{ $fund->data['page2Content']['sharePricing']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -1615,7 +1717,7 @@
 
                     <!-- More About the Fund -->
                     @if(isset($fund->data['page2Content']['moreAboutFund']))
-                        <div class="page2-section">
+                        <div class="page2-section p2-more-about">
                             <h3 class="page2-heading">
                                 <span x-data="editableField('page2Content.moreAboutFund.title', '{{ $fund->data['page2Content']['moreAboutFund']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -1636,7 +1738,7 @@
                     <!-- Notes (the performance-table footnotes, displayed on
                          page 2 per the 877 reference) -->
                     @if(!empty($fund->data['mainContent']['performanceTable']['footnotes']))
-                        <div class="page2-section">
+                        <div class="page2-section p2-notes">
                             <h3 class="page2-heading">NOTES</h3>
                             <div>
                                 @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $note)
@@ -1836,6 +1938,10 @@
         // Grouped GEOGRAPHIC EQUITY EXPOSURE column chart (877 reference:
         // Fund red vs MSCI ACWI navy, 0–70% axis with 10% gridless ticks).
         const geoData = @json($fund->data['mainContent']['assetAllocation']['geographicEquityExposure']);
+        // QC cards 313/355: reference bars are 4.0mm wide with a 1.0mm gap
+        // inside each pair on a 13.8mm category pitch (9.0mm of bars).
+        const GEO_CATEGORY_PCT = 0.652;
+        const GEO_BAR_PCT = 0.89;
         new Chart(document.getElementById('geoChart').getContext('2d'), {
             type: 'bar',
             data: {
@@ -1845,15 +1951,15 @@
                         label: 'Fund',
                         data: geoData.map(d => d.fund),
                         backgroundColor: colors.naartjie,
-                        categoryPercentage: 0.82,
-                        barPercentage: 0.94
+                        categoryPercentage: GEO_CATEGORY_PCT,
+                        barPercentage: GEO_BAR_PCT
                     },
                     {
                         label: 'MSCI ACWI',
                         data: geoData.map(d => d.benchmark),
                         backgroundColor: colors.darkNavy,
-                        categoryPercentage: 0.82,
-                        barPercentage: 0.94
+                        categoryPercentage: GEO_CATEGORY_PCT,
+                        barPercentage: GEO_BAR_PCT
                     }
                 ]
             },
@@ -1868,9 +1974,12 @@
                     x: {
                         grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000', offset: true },
                         border: { color: '#000' },
+                        // QC card 313: bigger, darker axis text — reference
+                        // 5.5pt navy categories / 6pt black percentages
+                        // (Chart.js font sizes are CSS px: 1pt = 1.333px).
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            font: { size: 7.3, family: 'Avenir Next, Lato, sans-serif' },
+                            color: colors.darkNavy,
                             maxRotation: 0,
                             autoSkip: false
                         }
@@ -1881,14 +1990,14 @@
                         grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
                         border: { color: '#000' },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
                             stepSize: 10,
                             callback: (value) => value + '%'
                         }
                     }
                 },
-                layout: { padding: { top: 2 } }
+                layout: { padding: { top: 22, left: 9.5, right: 10 } }
             }
         });
         @endif
@@ -1910,10 +2019,12 @@
                     const lastValue = dataset.data[dataset.data.length - 1];
                     const label = '$ ' + Math.round(lastValue).toLocaleString();
                     ctx.save();
-                    ctx.font = 'bold 7px Avenir Next, Lato, sans-serif';
+                    // QC card 313: reference end values are Avenir Next
+                    // Medium 6.75pt (= 9px), ~2.6mm right of the line end.
+                    ctx.font = '500 9px Avenir Next, Lato, sans-serif';
                     ctx.fillStyle = dataset.borderColor;
                     ctx.textAlign = 'left';
-                    ctx.fillText(label, lastPoint.x + 4, lastPoint.y - 3);
+                    ctx.fillText(label, lastPoint.x + 10, lastPoint.y - 3);
                     ctx.restore();
                 });
             }
@@ -1935,11 +2046,11 @@
                 const t = scales.y.options.ticks || {};
                 const f = t.font || {};
                 ctx.save();
-                ctx.font = (f.size || 6) + 'px ' + (f.family || 'Avenir Next, Lato, sans-serif');
-                ctx.fillStyle = '#535353';
+                ctx.font = (f.size || 8) + 'px ' + (f.family || 'Avenir Next, Lato, sans-serif');
+                ctx.fillStyle = '#000';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'alphabetic';
-                ctx.fillText('100', scales.y.right - (t.padding === undefined ? 3 : t.padding), scales.y.getPixelForValue(100) - 1.5);
+                ctx.fillText('100', scales.y.right - 2, scales.y.getPixelForValue(100) - 1.5);
                 ctx.restore();
             }
         };
@@ -1994,9 +2105,10 @@
                         // Tick marks only under the labelled dates (Chart.js draws a
                         // mark per tick, so unlabelled months are dropped here).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 36 === 0); },
+                        // QC card 313: dates 6pt (8px) black, per reference
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
                             maxRotation: 0,
                             autoSkip: false,
                             // Reference ticks: Apr 13, Apr 16, … — every 36
@@ -2013,8 +2125,11 @@
                         type: 'logarithmic',
                         grid: { display: false },
                         border: { color: '#000' },
+                        // Reference y-axis sits 4.1mm (15.5px) in from the
+                        // column edge; the caption and "100" share that strip.
+                        afterFit: axis => { axis.width = 15.5; },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
                             color: 'rgba(0,0,0,0)',
                             callback: (value) => value === 100 ? '100' : null // QC card 291: visible \"100\" drawn by hundredLabelPlugin
                         },
@@ -2023,7 +2138,7 @@
                     }
                 },
                 layout: {
-                    padding: { right: 34, top: 8 }
+                    padding: { right: 40, top: 12 }
                 }
             }
         });

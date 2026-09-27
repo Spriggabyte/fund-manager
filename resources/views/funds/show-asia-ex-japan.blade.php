@@ -173,7 +173,9 @@
             font-size: 23pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 4.25mm 0;
+            /* QC card 363: paragraph sits directly under the title so the
+               banner space above and below it matches (ref 39.4→55.4mm). */
+            margin: 0 0 0.75mm 0;
             line-height: 1.05;
         }
 
@@ -284,7 +286,7 @@
         .section-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.84pt;
+            font-size: 8pt; /* QC card 363: headings Avenir Next Medium 8 */
             line-height: 9.4pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
@@ -312,11 +314,13 @@
         .section-subtitle {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.5pt;
+            font-size: 8pt;
             line-height: 9pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin: -0.5mm 0 0.9mm 0;
+            /* QC card 317: "Change since" starts flush with the heading. */
+            display: block;
+            margin: 0.4mm 0 0.9mm 0.95mm;
         }
 
         /* === Two-column layout === */
@@ -337,12 +341,12 @@
            a placeholder fit for the half-width column pending
            Task 10's measurement loop.
            ===================================================== */
-        .ps-section { margin-bottom: 6.2mm; }
+        .ps-section { margin-bottom: 8.5mm; }
 
         .ps-header {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 1.85mm;
+            margin-bottom: 2.55mm;
         }
 
         .ps-header .ps-header-title { flex: 1; }
@@ -370,14 +374,15 @@
             white-space: nowrap;
         }
 
+        /* QC card 363: reference bars are 4.15mm tall in the 5.0mm pitch. */
         .ps-bar-container {
             flex: 0 0 18.5mm;
-            height: 2.4mm;
+            height: 4.15mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 2.4mm;
+            height: 4.15mm;
             background-color: var(--naartjie);
         }
 
@@ -502,11 +507,12 @@
             padding-top: 0.41mm;
             padding-bottom: 0.41mm;
         }
-        /* Reference rows run at ~5.3mm pitch (the sector bars alongside
-           sit at 5.0mm), and "% OF FUND" stays on one line. */
+        /* Reference rows run at ~4.97mm pitch so the table bottom lands
+           level with the last sector bar (QC card 317), and "% OF FUND"
+           stays on one line. */
         .top10-table .foord-table td {
-            padding-top: 0.95mm;
-            padding-bottom: 0.95mm;
+            padding-top: 0.79mm;
+            padding-bottom: 0.79mm;
         }
         .top10-table .foord-table th { white-space: nowrap; }
         .top10-table .foord-table td:first-child,
@@ -517,7 +523,7 @@
         .top10-table .foord-table tbody tr td { background-color: var(--row-grey-2); }
 
         .top10-table { margin-bottom: 5.2mm; }
-        .top10-table .foord-table { margin-top: 0.7mm; }
+        .top10-table .foord-table { margin-top: 1.2mm; }
 
         /* Performance table — name/cash/since-inception widths carried over
            from the 878 grid; the six period columns (3 YRS … THIS MONTH)
@@ -616,13 +622,15 @@
         .pfe-table .foord-table th { font-size: 6.96pt; padding-top: 0.4mm; padding-bottom: 0.1mm; }
         /* Reference: the two-line accrual row sets its label on the lower line. */
         .pfe-table .foord-table tbody tr:last-child td { vertical-align: bottom; }
-        .pfe-table .foord-table td {
-            font-size: 7.53pt;
+        /* QC card 364: performance fee table 7.5pt — outranks the global
+           partial's 8pt page-2 table rule. */
+        .page2-content .pfe-table .foord-table td {
+            font-size: 7.5pt !important;
             padding-top: 0.3mm;
             padding-bottom: 0.3mm;
         }
         .pfe-note {
-            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 6.92pt;
             line-height: 8.4pt;
@@ -660,10 +668,10 @@
         /* The reference sets the "100" axis label outside the column's left
            edge, so the canvas is widened into the gutter and the plot's left
            padding grows to match. */
-        .perf-wrapper { height: 54mm; margin-left: -3mm; }
+        .perf-wrapper { height: 43.6mm; margin-left: -3mm; } /* QC card 317: plot 38.4mm tall */
         /* Reference: 70mm from the chart headings to PORTFOLIO PERFORMANCE %. */
-        .charts-row { margin-bottom: 5.3mm; }
-        .perf-wrapper .chart-ytitle { left: -5.25mm; } /* QC card 291: caption ~0.9mm off the axis */
+        .charts-row { margin-bottom: 9.1mm; }
+        .perf-wrapper .chart-ytitle { left: -5.25mm; top: 8.8mm; } /* QC card 291: caption ~0.9mm off the axis; card 317: centred on the shorter plot */
 
         .chart-wrapper canvas {
             width: 100% !important;
@@ -704,7 +712,7 @@
             color: #4d585e;
         }
 
-        .perf-legend { padding-left: 10.38mm; margin-top: 0.2mm; }
+        .perf-legend { padding-left: 10.38mm; margin-top: 3.4mm; } /* QC card 363 */
 
         .chart-legend span {
             display: flex;
@@ -735,11 +743,12 @@
             margin-top: 2.1mm;
         }
 
+        /* QC card 363: notes under the performance table Avenir Next 7.5 */
         .footnote {
-            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7.59pt;
-            line-height: 9.35pt;
+            font-size: 7.5pt;
+            line-height: 9.2pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
             margin: 0;
@@ -855,7 +864,7 @@
         .page2-body {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
-            font-size: 7.65pt;
+            font-size: 7.7pt; /* QC card 364 */
             line-height: 8.79pt;
             letter-spacing: 0.01em;
             color: #000;
@@ -1209,7 +1218,7 @@
                                     {{-- Reference: the label is set ~13% larger than the
                                          other sidebar headings, same medium weight. --}}
                                     <div class="sidebar-section">
-                                        <h3 style="font-size: 8.9pt; line-height: 10.7pt;">{{ $label }}</h3>
+                                        <h3 style="font-size: 8.9pt !important; line-height: 10.7pt !important;">{{ $label }}</h3>
                                     </div>
                                 @elseif (!is_array($value))
                                     <div class="sidebar-section">
@@ -1970,8 +1979,9 @@
                 const { ctx } = chart;
                 const meta = chart.getDatasetMeta(0);
                 ctx.save();
-                ctx.font = '7.2px Avenir Next, Lato, sans-serif';
-                ctx.fillStyle = '#535353';
+                // QC card 317: reference labels are 6.75pt (9 CSS px) black.
+                ctx.font = '9px Avenir Next, Lato, sans-serif';
+                ctx.fillStyle = '#000';
 
                 // Task 10: measured against the 879 reference. A single
                 // width threshold reproduces the two genuinely long
@@ -1984,8 +1994,8 @@
                 // formula, so no single width value reproduces every
                 // line break. 62px is kept as the best-fit compromise;
                 // see FUND-ONBOARDING §5s.
-                const LABEL_MAX_WIDTH = 62;
-                const LINE_HEIGHT = 8.6;
+                const LABEL_MAX_WIDTH = 70;
+                const LINE_HEIGHT = 10.5;
 
                 const wrap = (text) => {
                     const words = text.split(' ');
@@ -2011,7 +2021,14 @@
                     const y = arc.y + Math.sin(mid) * r;
                     ctx.textAlign = Math.cos(mid) < -0.05 ? 'right' : (Math.cos(mid) > 0.05 ? 'left' : 'center');
                     ctx.textBaseline = 'middle';
-                    const lines = wrap(countryData[i].name + ' ' + Number(countryData[i].value).toFixed(1) + '%');
+                    const name = countryData[i].name;
+                    const pct = Number(countryData[i].value).toFixed(1) + '%';
+                    // QC card 317 reference: labels above the pie's
+                    // shoulder and on its right side stack the name over
+                    // the percentage ("Other / 12.7%", "China / 44.1%");
+                    // the rest run on one line, width-wrapped.
+                    const stacked = Math.sin(mid) < -0.4 || Math.cos(mid) > 0.05;
+                    const lines = stacked ? [...wrap(name), pct] : wrap(name + ' ' + pct);
                     lines.forEach((lineText, li) => {
                         ctx.fillText(lineText, x, y + (li - (lines.length - 1) / 2) * LINE_HEIGHT);
                     });
@@ -2063,7 +2080,11 @@
                 // 35.7mm — a sub-pixel, sub-0.3mm difference. The pie
                 // matches; left/right/top/bottom padding above is
                 // unchanged.
-                layout: { padding: { top: 16, bottom: 16, left: 68, right: 59 } }
+                // QC card 317: the larger 9px labels need more left-hand
+                // room; the pie centre moves ~4mm right, matching the
+                // reference (x ≈ 105.6mm). Total kept at 127 so the radius
+                // is unchanged.
+                layout: { padding: { top: 16, bottom: 16, left: 84, right: 43 } }
             }
         });
         @endif
@@ -2137,6 +2158,16 @@
                 ctx.moveTo(chartArea.left, chartArea.top);
                 ctx.lineTo(chartArea.left, chartArea.bottom);
                 ctx.stroke();
+                // QC card 317: the year tick marks hang off the 100 baseline
+                // (the reference's x axis), not the bottom of the plot.
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                scales.x.ticks.forEach(t => {
+                    const x = scales.x.getPixelForValue(t.value);
+                    ctx.moveTo(x, yHundred);
+                    ctx.lineTo(x, yHundred + 3);
+                });
+                ctx.stroke();
                 ctx.font = '7.9px Avenir Next, Lato, sans-serif';
                 ctx.fillStyle = '#535353';
                 ctx.textAlign = 'right';
@@ -2204,7 +2235,9 @@
                         display: true,
                         // Tick marks under each labelled month, no gridlines
                         // and no bottom rule (the 100 baseline is the axis).
-                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                        // Tick marks are drawn on the 100 baseline by
+                        // baselinePlugin (QC card 317).
+                        grid: { display: false, drawTicks: false },
                         border: { display: false },
                         // Reference ticks: Jul 21, Jul 22, … Jul 26 — every
                         // 12 months from the series' opening month (879
@@ -2212,11 +2245,12 @@
                         // series opens at Dec 2020 and so ticks off index 1).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 12 === 0); },
                         ticks: {
-                            font: { size: 7.9, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            // QC card 317: dates black (ref 6pt AvenirNext).
+                            font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },
+                            color: '#000',
                             maxRotation: 0,
                             autoSkip: false,
-                            padding: 3,
+                            padding: 2,
                             callback: function (value) {
                                 return formatChartDate(this.getLabelForValue(value));
                             }
@@ -2240,7 +2274,7 @@
                     }
                 },
                 layout: {
-                    padding: { right: 34, top: 4.2, left: 23.34 }
+                    padding: { right: 34, top: 6.5, left: 23.34 }
                 }
             }
         });

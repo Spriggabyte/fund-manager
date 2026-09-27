@@ -80,12 +80,13 @@
             justify-content: center;
             background-color: var(--dark-navy);
             color: var(--white);
-            font-family: 'Lato', 'Avenir Next', sans-serif;
-            font-weight: 400;
-            font-size: 8.7pt;
+            /* Trello 368: Avenir Next Medium 10pt, as on every other sheet. */
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-weight: 500;
+            font-size: 10pt;
             letter-spacing: 0.01em;
             text-align: center;
-            padding-top: 0.8mm;
+            padding-top: 0.3mm;
         }
         .logo { position: absolute; top: 8.4mm; right: 10.5mm; height: 11mm; }
         .logo img { height: 100%; width: auto; }
@@ -103,11 +104,13 @@
         .sheet-title {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 22.8pt;
+            font-size: 23pt;
             letter-spacing: 0.005em;
             text-transform: uppercase;
             line-height: 1.05;
-            margin: 0 0 4.5mm 0;
+            /* Trello 321: tighter title → body gap (reference: body cap
+               line 1mm under the title box). */
+            margin: 0 0 2.0mm 0;
         }
         .sheet-description {
             font-family: 'Merriweather', Georgia, serif;
@@ -191,7 +194,7 @@
             inset: 0;
             color: var(--naartjie);
             font-weight: 500;
-            font-size: 7.3pt;
+            font-size: 7.6pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             display: flex;
@@ -230,7 +233,8 @@
         .bullet-col h3 {
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 400;
-            font-size: 8.4pt;
+            /* Publisher sets these in Calibri 10pt; Lato 9.2pt matches its width. */
+            font-size: 9.2pt;
             line-height: 3.9mm;
             text-transform: uppercase;
             margin: 0 0 1.0mm 1.2mm;
@@ -290,10 +294,14 @@
             white-space: nowrap;
         }
         .geo .geo-title sup { font-size: 5pt; vertical-align: super; line-height: 0; }
-        .geo .geo-pie { position: absolute; top: 8.8mm; width: 42mm; height: 42mm; }
+        .geo .geo-pie { position: absolute; top: 8.5mm; width: 50mm; height: 46mm; margin-left: -4mm; }
+        /* Pies are Ø40mm (Trello 227: "a bit bigger" than the 36.6mm
+           reference) centred at y 31.5mm, low enough that a small slice's
+           outside label clears the title; the SVG box is larger than the pie
+           so outside-rim labels on small slices are not clipped. */
         .geo .geo-legend {
             position: absolute;
-            top: 51.6mm;
+            top: 54.0mm;
             list-style: none;
             font-size: 6.2pt;
             line-height: 3.2mm;
@@ -343,22 +351,23 @@
             font-weight: 500;
             text-transform: uppercase;
             align-items: flex-end;
-            justify-content: flex-end;
-            text-align: right;
+            /* Trello 228: table data centred in its column. */
+            justify-content: center;
+            text-align: center;
             line-height: 3.9mm;
-            padding: 0 3.2mm 0 0;
+            padding: 0;
             white-space: normal;
             height: 7.7mm;
         }
         .aa .head.head-label { justify-content: flex-start; text-align: left; padding-left: 1.2mm; }
         .aa .cell.label { padding-left: 1.2mm; }
-        .aa .cell.value { justify-content: flex-end; padding-right: 3.2mm; }
+        .aa .cell.value { justify-content: center; }
         .aa .row-total .cell { background-color: var(--naartjie); color: var(--white); font-weight: 500; text-transform: uppercase; }
         .aa .row-muted .cell { font-style: italic; }
         .row-contents { display: contents; }
 
         .sector-block { margin-left: 9.9mm; width: 190mm; margin-top: 2.6mm; }
-        #sectorChart { width: 190mm; height: 61.1mm; margin-top: 5.7mm; }
+        #sectorChart { width: 190mm; height: 70mm; margin-top: 4.5mm; }
 
         .rounding-note {
             position: absolute;
@@ -491,6 +500,16 @@
             return is_numeric($v) ? number_format((float) $v, $dp) : (string) $v;
         };
         $attr = fn ($v) => addslashes((string) ($v ?? ''));
+        // Rotated group labels wrap onto two lines before the last word
+        // ("BEST INVESTMENT / VIEW", "SPECIALIST / EQUITY") — Trello 226.
+        $wrapLast = function (string $label): string {
+            $words = preg_split('/\s+/', trim($label));
+            if (count($words) < 2) {
+                return e($label);
+            }
+            $last = array_pop($words);
+            return e(implode(' ', $words)).'<br>'.e($last);
+        };
         $columnKeys = $perf['columnKeys'] ?? ['20yrs', '15yrs', '10yrs', '5yrs', '3yrs', '1yr'];
         $headers = $perf['headers'] ?? ['20 YEARS', '15 YEARS', '10 YEARS', '5 YEARS', '3 YEARS', '1 YEAR'];
     @endphp
@@ -532,7 +551,7 @@
                 @if ($gi > 0)
                     <div class="spacer-group"></div>
                 @endif
-                <div class="group-label" style="grid-row: span {{ $span }};"><span x-data="editableField('mainContent.performanceTable.groups.{{ $gi }}.label', '{{ $attr($group['label'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $group['label'] ?? '' }}</span></div>
+                <div class="group-label" style="grid-row: span {{ $span }};"><span><span x-data="editableField('mainContent.performanceTable.groups.{{ $gi }}.label', '{{ $attr($group['label'] ?? '') }}', 'wrapLast')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $wrapLast($group['label'] ?? '') !!}</span></span></div>
                 @foreach ($group['funds'] ?? [] as $fi => $entry)
                     @php $base = "mainContent.performanceTable.groups.{$gi}.funds.{$fi}"; @endphp
                     @if ($fi > 0)
@@ -609,6 +628,28 @@
             $geo = $charts['geographicExposure'] ?? [];
             $pieLeft = ['875' => 8.2, '877' => 74.5, '879' => 142.0]; // relative to the .geo box (page x − 9.9mm)
             $sliceColours = ['#d25347', '#29363d', '#cccccc', '#7a9cb4', '#535353', '#e2cea4', '#bfc3c5', '#697277'];
+            // Trello 227: a region keeps one colour across the three pies
+            // (North America = the Asia pie's United States, etc.). Names not
+            // listed take the first palette colour not already claimed in that
+            // pie, in rank order.
+            $regionColours = [
+                'north america' => '#d25347',
+                'united states of america' => '#d25347',
+                'europe' => '#29363d',
+                'em asia' => '#cccccc',
+                'pacific' => '#7a9cb4',
+                'africa & middle east' => '#e2cea4',
+                'em latin america' => '#535353',
+            ];
+            $pieColours = [];
+            foreach ($geo['funds'] ?? [] as $gi => $pie) {
+                $names = array_map(fn ($sl) => mb_strtolower(trim($sl['name'] ?? '')), $pie['slices'] ?? []);
+                $taken = array_values(array_filter(array_map(fn ($n) => $regionColours[$n] ?? null, $names)));
+                $free = array_values(array_diff($sliceColours, $taken));
+                $pieColours[$gi] = array_map(function ($n) use ($regionColours, &$free, $sliceColours) {
+                    return $regionColours[$n] ?? (array_shift($free) ?? $sliceColours[0]);
+                }, $names);
+            }
         @endphp
         <div class="band" style="margin-top: 10.5mm;"><span x-data="editableField('mainContent.charts.geographicExposure.title', '{{ $attr($geo['title'] ?? 'GEOGRAPHIC EXPOSURE') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $geo['title'] ?? 'GEOGRAPHIC EXPOSURE' }}</span></div>
 
@@ -619,7 +660,7 @@
                 <div class="geo-pie" id="geoPie{{ $gi }}" style="left: {{ $left }}mm;"></div>
                 <ul class="geo-legend" style="left: {{ $left + 3.3 }}mm;">
                     @foreach ($pie['slices'] ?? [] as $si => $slice)
-                        <li style="--dot: {{ $sliceColours[$si % count($sliceColours)] }};">{{ $slice['name'] ?? '' }}</li>
+                        <li style="--dot: {{ $pieColours[$gi][$si] ?? $sliceColours[0] }};">{{ $slice['name'] ?? '' }}</li>
                     @endforeach
                 </ul>
             @endforeach
@@ -674,7 +715,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const pies = @json(array_values(array_map(fn ($p) => $p['slices'] ?? [], $geo['funds'] ?? [])));
             const sectorData = @json($sectors['sectors'] ?? []);
-            const sliceColours = @json($sliceColours);
+            const pieColours = @json($pieColours);
 
             const colors = { naartjie: '#d25347', darkNavy: '#29363d' };
 
@@ -685,10 +726,17 @@
             });
 
             // Geographic pies: Highcharts starts at 12 o'clock and draws
-            // clockwise in feed rank order with a positional palette (the
-            // colour belongs to the rank, not the region). Percentages sit
-            // inside the slice in white; slices under 5% get a black label
-            // just outside the rim, as the reference does.
+            // clockwise in feed rank order; colours are keyed by region
+            // (server-side $pieColours) so a region matches across pies.
+            // Percentages sit inside the slice — white on dark slices, black
+            // on light ones — and slices under 5% get a black label outside
+            // the rim joined by a short leader line, as the reference does.
+            const isLight = (hex) => {
+                const n = parseInt(hex.slice(1), 16);
+                const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+                return (0.299 * r + 0.587 * g + 0.114 * b) > 150;
+            };
+            const pieLabelStyle = (color) => ({ fontSize: '6.4pt', fontWeight: '500', color, textOutline: 'none' });
             pies.forEach((slices, i) => {
                 if (!slices.length) return;
                 Highcharts.chart('geoPie' + i, {
@@ -698,17 +746,16 @@
                     legend: { enabled: false },
                     plotOptions: {
                         pie: {
-                            size: 138,
+                            size: 151,
                             center: ['50%', '50%'],
                             borderWidth: 0.75, borderColor: '#ffffff',
                             startAngle: 0,
                             dataLabels: {
                                 enabled: true,
-                                distance: -22,
+                                distance: -24,
                                 connectorWidth: 0,
                                 allowOverlap: true,
                                 crop: false, overflow: 'allow',
-                                style: { fontSize: '6.3pt', fontWeight: 'normal', color: '#ffffff', textOutline: 'none' },
                                 formatter: function () { return this.y > 0 ? Number(this.y).toFixed(1) + '%' : null; },
                             },
                             animation: false,
@@ -716,8 +763,19 @@
                     },
                     series: [{
                         data: slices.map((s, k) => {
-                            const point = { name: s.name, y: Number(s.value ?? 0), color: sliceColours[k % sliceColours.length] };
-                            if (point.y < 5) point.dataLabels = { distance: 6, style: { color: '#000000', fontSize: '6.3pt', textOutline: 'none' } };
+                            const color = (pieColours[i] || [])[k] || '#d25347';
+                            const point = {
+                                name: s.name, y: Number(s.value ?? 0), color,
+                                dataLabels: { style: pieLabelStyle(isLight(color) ? '#000000' : '#ffffff') },
+                            };
+                            if (point.y < 5) {
+                                point.dataLabels = {
+                                    distance: 10,
+                                    connectorWidth: 0.6, connectorColor: '#7f7f7f', connectorPadding: 1,
+                                    connectorShape: 'straight',
+                                    style: pieLabelStyle('#000000'),
+                                };
+                            }
                             return point;
                         }),
                     }],
@@ -759,8 +817,11 @@
                     title: { text: null },
                     xAxis: {
                         categories: rows.map(r => r.name),
-                        lineWidth: 1, lineColor: '#000',
-                        tickWidth: 0,
+                        // Trello 229: light-grey axis with a small notch
+                        // between each sector.
+                        lineWidth: 1, lineColor: '#bfbfbf',
+                        tickWidth: 1, tickLength: 5, tickColor: '#bfbfbf',
+                        tickmarkPlacement: 'between',
                         labels: {
                             style: { fontSize: opts.labelSize, color: '#000', textAlign: 'center', whiteSpace: 'normal', textOverflow: 'none' },
                             useHTML: false,
@@ -776,7 +837,6 @@
                         gridLineWidth: 0,
                         lineWidth: 1, lineColor: '#000',
                         tickWidth: 1, tickLength: 3, tickColor: '#000',
-                        plotLines: [{ value: 0, color: '#000', width: 1, zIndex: 4 }],
                         labels: {
                             style: { fontSize: opts.axisSize, color: '#000' },
                             formatter: function () { return this.value + '%'; },
@@ -804,9 +864,10 @@
             renderGroupedColumns('sectorChart', sectorData, {
                 tickInterval: 5, minMax: 35,
                 spacing: [4, 2, 0, 0],
-                labelSize: '5.3pt', axisSize: '5.2pt', legendSize: '6pt',
-                legendGap: 37, legendMargin: 8, labelY: 20,
-                pointPadding: 0.02, groupPadding: 0.17,
+                labelSize: '5.5pt', axisSize: '6pt', legendSize: '6pt',
+                legendGap: 37, legendMargin: 8, labelY: 22,
+                // Trello 229: a clear gap between the Fund and Benchmark bars.
+                pointPadding: 0.09, groupPadding: 0.14,
             });
         });
     </script>
@@ -829,6 +890,11 @@
         const editableFormatters = {
             upper(value) { return String(value).toUpperCase(); },
             parens(value) { return '(' + value + ')'; },
+            wrapLast(value) {
+                const esc = String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+                const words = esc.trim().split(/\s+/);
+                return words.length < 2 ? esc : words.slice(0, -1).join(' ') + '<br>' + words[words.length - 1];
+            },
             raw(value) { return value === '' ? '-' : String(value); },
             num1(value) { return (value === '' || isNaN(Number(value))) ? (value === '' ? '—' : String(value)) : Number(value).toFixed(1); },
             num2(value) { return (value === '' || isNaN(Number(value))) ? (value === '' ? '-' : String(value)) : Number(value).toFixed(2); },

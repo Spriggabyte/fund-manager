@@ -354,6 +354,29 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-local-overview');
     }
 
+    public function test_local_overview_maturity_chart_uses_the_bond_fact_sheet_figures(): void
+    {
+        // Trello 220: the overview's maturity bars come from the Foord Bond
+        // Fund Class A record, not the overview feed's own 826_MATURITY_*.
+        Fund::factory()->create([
+            'template' => 'show-bond', 'fund_code' => '826', 'class_code' => 'A',
+            'chart_data' => ['maturityData' => ['categories' => [
+                ['name' => '3-7 Years', 'fund' => 41.5, 'benchmark' => 27.9, 'change' => '(+13.5%)'],
+            ]]],
+        ]);
+        $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create([
+            'template' => 'show-local-overview', 'fund_code' => 'LOC', 'class_code' => null,
+            'chart_data' => ['maturityData' => ['categories' => [
+                ['name' => '3-7 Years', 'fund' => 39, 'benchmark' => 30],
+            ]]],
+        ]);
+
+        $this->actingAs($user)->get(route('funds.show', $fund))
+            ->assertOk()
+            ->assertSee('const maturityData = [{"name":"3-7 Years","fund":41.5,"benchmark":27.9}];', false);
+    }
+
     public function test_internal_pdf_view_uses_global_overview_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-global-overview']);

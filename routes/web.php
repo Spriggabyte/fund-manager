@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FundController;
+use App\Http\Controllers\FundDataFeedController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,13 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Bulk SFTP data feed actions (registered before the resource so
+    // "data-feed" isn't captured as a {fund} id)
+    Route::post('funds/data-feed/download', [FundDataFeedController::class, 'download'])
+        ->name('funds.data-feed.download');
+    Route::post('funds/data-feed/import', [FundDataFeedController::class, 'importLatest'])
+        ->name('funds.data-feed.import');
 
     Route::resource('funds', FundController::class);
 

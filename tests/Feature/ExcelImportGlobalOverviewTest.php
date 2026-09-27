@@ -325,6 +325,49 @@ class ExcelImportGlobalOverviewTest extends TestCase
         $this->assertArrayNotHasKey('879', $rows['total']['values']);
     }
 
+    public function test_hedged_equities_is_a_memo_line_left_out_of_the_total(): void
+    {
+        $fund = $this->overviewFund();
+
+        (new GlobalOverviewImporter)->import($fund, $this->makeXlsx([
+            ['Code', 'Value'],
+            ['875_AA_TOTAL_EQ', '59.2'],
+            ['875_AA_TOTAL_HEQ', '10.1'],
+            ['875_AA_TOTAL_PROP', '6.0'],
+            ['875_AA_TOTAL_DEBT', '2.8'],
+            ['875_AA_TOTAL_BOND', '5.8'],
+            ['875_AA_TOTAL_COMM', '7.0'],
+            ['875_AA_TOTAL_CASH', '19.2'],
+        ], 'glb-aa-heq'));
+
+        $rows = $this->aaRows($fund);
+        $this->assertSame(10.1, $rows['hedgedEq']['values']['875']);
+        $this->assertEquals(100.0, $rows['total']['values']['875']);
+    }
+
+    public function test_asia_ex_japan_drops_the_five_year_column(): void
+    {
+        $fund = $this->overviewFund();
+
+        (new GlobalOverviewImporter)->import($fund, $this->makeXlsx([
+            ['Code', 'Value'],
+            ['879_FOORD_5Y_TO_D', '5.6'],
+            ['879_FOORD_3Y_TO_D', '15.8'],
+            ['879_FOORD_COMP_1_5Y_TO_D', '6.0'],
+            ['879_FOORD_COMP_1_3Y_TO_D', '21.3'],
+            ['879_FOORD_COMP_2_5Y_TO_D', '8.5'],
+            ['879_FOORD_COMP_2_3Y_TO_D', '24.6'],
+            ['877_FOORD_5Y_TO_D', '4.2'],
+        ], 'glb-perf-879'));
+
+        $funds = $this->perfFunds($fund);
+        $this->assertSame(['3yrs' => 15.8], $funds['879']['fund']);
+        $this->assertSame(['3yrs' => 21.3], $funds['879']['peer']);
+        $this->assertSame(['3yrs' => 24.6], $funds['879']['benchmark']);
+        // Other funds keep their 5-year figure.
+        $this->assertSame(['5yrs' => 4.2], $funds['877']['fund']);
+    }
+
     public function test_seeded_asset_allocation_labels_survive_an_import(): void
     {
         $fund = $this->overviewFund([
@@ -653,10 +696,20 @@ class ExcelImportGlobalOverviewTest extends TestCase
         $this->assertSame(5.2, $funds['875']['peer']['20yrs']);
         $this->assertSame(2.5, $funds['875']['benchmark']['20yrs']);
         $this->assertSame(94.6, $this->aaRows($fund)['netEq']['values']['877']);
-        $this->assertEquals(0.0, $this->aaRows($fund)['hedgedEq']['values']['875']);
+        // The 25 Sept re-export carries HEQ; it stays out of TOTAL.
+        $this->assertSame(10.1, $this->aaRows($fund)['hedgedEq']['values']['875']);
+        $this->assertEquals(100.0, $this->aaRows($fund)['total']['values']['875']);
+        $this->assertArrayNotHasKey('5yrs', $funds['879']['fund']);
+        $this->assertSame('Africa & Middle East', $this->pies($fund)['875']['slices'][4]['name']);
+        // Sector benchmarks arrive as _BM on this export.
+        $sectors = collect($fund->sector_allocation['sectors'])->keyBy('name');
+        $this->assertEquals(32, $sectors['Information technology']['benchmark']);
+        $this->assertEquals(4, $sectors['Energy']['benchmark']);
+        $this->assertEquals(17, $sectors['Financials']['benchmark']);
+        $this->assertCount(5, $this->pies($fund)['875']['slices']);
         $this->assertSame('Q2 2026', $fund->page2_content['synopsis']['quarter']);
         $this->assertCount(5, $fund->page2_content['synopsis']['asia']);
         $this->assertCount(5, $fund->page2_content['strategy']['world']);
-        $this->assertSame('Remain cautious on resources sector', $fund->page2_content['strategy']['asia'][0]);
+        $this->assertSame('Focused on high-quality Asian businesses offering value', $fund->page2_content['strategy']['asia'][0]);
     }
 }

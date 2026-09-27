@@ -31,8 +31,11 @@ class GlobalOverviewImporter extends AbstractOverviewImporter
     /**
      * Performance grid skeleton. `feederNote` is a fourth, prose-only row
      * naming the SA feeder fund; 879 has none and the key is omitted.
+     * `omitPeriods` are columns the published sheet leaves blank even when
+     * the feed exports a figure — 879's fact sheet stops at 3 years, and
+     * the reviewer wants the overview to match (Trello 224).
      *
-     * @var list<array{label: string, funds: list<array{code: string, name: string, className: string, peerLabel: string, benchmarkLabel: string, feederNote?: string}>}>
+     * @var list<array{label: string, funds: list<array{code: string, name: string, className: string, peerLabel: string, benchmarkLabel: string, feederNote?: string, omitPeriods?: list<string>}>}>
      */
     private const PERFORMANCE_GROUPS = [
         ['label' => 'BEST INVESTMENT VIEW', 'funds' => [
@@ -48,7 +51,8 @@ class GlobalOverviewImporter extends AbstractOverviewImporter
                 'feederNote' => '(SA Feeder Fund: Prescient Foord Global Equity Feeder Fund)'],
             ['code' => '879', 'name' => 'Foord Asia ex-Japan', 'className' => 'Class R in USD',
                 'peerLabel' => 'Peer group: Morningstar (Asia ex-Japan Equity)',
-                'benchmarkLabel' => 'Benchmark: MSCI Asia ex-Japan USD'],
+                'benchmarkLabel' => 'Benchmark: MSCI Asia ex-Japan USD',
+                'omitPeriods' => ['5yrs']],
         ]],
     ];
 
@@ -68,16 +72,16 @@ class GlobalOverviewImporter extends AbstractOverviewImporter
 
     /**
      * Asset-allocation rows in print order. `feed` is the {code}_AA_TOTAL_
-     * suffix. HEQ has been blank in every export so far and the reference
-     * prints 0.0, so a blank cell reads as zero for any fund that exported
-     * allocation keys at all (`blankAsZero`). TOTAL is the sum of the
-     * seven feed rows.
+     * suffix. A blank HEQ cell prints 0.0 for any fund that exported
+     * allocation keys at all (`blankAsZero`). Hedged equities is a subset
+     * of net equities (the italic memo line), so it is left out of TOTAL
+     * (`inTotal` false) — TOTAL is the sum of the other six feed rows.
      *
-     * @var list<array{key: string, label: string, feed: string, style?: string, blankAsZero?: bool}>
+     * @var list<array{key: string, label: string, feed: string, style?: string, blankAsZero?: bool, inTotal?: bool}>
      */
     private const AA_ROWS = [
         ['key' => 'netEq', 'label' => 'Net equities', 'feed' => 'EQ'],
-        ['key' => 'hedgedEq', 'label' => 'Hedged equities', 'feed' => 'HEQ', 'style' => 'muted', 'blankAsZero' => true],
+        ['key' => 'hedgedEq', 'label' => 'Hedged equities', 'feed' => 'HEQ', 'style' => 'muted', 'blankAsZero' => true, 'inTotal' => false],
         ['key' => 'prop', 'label' => 'Property', 'feed' => 'PROP'],
         ['key' => 'debt', 'label' => 'Corporate bonds', 'feed' => 'DEBT'],
         ['key' => 'bond', 'label' => 'Government bonds', 'feed' => 'BOND'],
@@ -173,9 +177,10 @@ class GlobalOverviewImporter extends AbstractOverviewImporter
                 if ($feederNote !== null) {
                     $entry['feederNote'] = $feederNote;
                 }
-                $entry['fund'] = $this->performanceValues($data, fn (int $n) => "{$code}_FOORD_{$n}Y_TO_D");
-                $entry['peer'] = $this->performanceValues($data, fn (int $n) => "{$code}_FOORD_COMP_1_{$n}Y_TO_D");
-                $entry['benchmark'] = $this->performanceValues($data, fn (int $n) => "{$code}_FOORD_COMP_2_{$n}Y_TO_D");
+                $omit = array_flip($def['omitPeriods'] ?? []);
+                $entry['fund'] = array_diff_key($this->performanceValues($data, fn (int $n) => "{$code}_FOORD_{$n}Y_TO_D"), $omit);
+                $entry['peer'] = array_diff_key($this->performanceValues($data, fn (int $n) => "{$code}_FOORD_COMP_1_{$n}Y_TO_D"), $omit);
+                $entry['benchmark'] = array_diff_key($this->performanceValues($data, fn (int $n) => "{$code}_FOORD_COMP_2_{$n}Y_TO_D"), $omit);
 
                 $funds[] = $entry;
             }
@@ -236,7 +241,9 @@ class GlobalOverviewImporter extends AbstractOverviewImporter
                     // Code-keyed: PHP turns '875' into int 875, so build the
                     // map by assignment rather than array_merge.
                     $values[$code] = $value;
-                    $totals[$code] = ($totals[$code] ?? 0.0) + $value;
+                    if ($def['inTotal'] ?? true) {
+                        $totals[$code] = ($totals[$code] ?? 0.0) + $value;
+                    }
                 }
             }
 
@@ -350,7 +357,8 @@ class GlobalOverviewImporter extends AbstractOverviewImporter
             }
 
             $slices[] = [
-                'name' => $name,
+                // The export spells "Africa + Middle East"; the sheet prints "&".
+                'name' => str_replace(' + ', ' & ', $name),
                 'value' => round($this->numeric($data["{$prefix}{$n}_CURRENT"] ?? null) ?? 0.0, 1),
             ];
         }

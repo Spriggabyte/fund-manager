@@ -424,9 +424,13 @@ class FactsheetImporter extends AbstractExcelImporter
             }
 
             if ($isIncome) {
+                // 825 is SA-only, so PS_SA_* and PS_TOTAL_* normally agree —
+                // but Foord applies its manual overrides (e.g. netting a
+                // negative cash-and-call into money market, Aug 2026) to the
+                // PS_SA_* cells only, so the SA column is the published one.
                 $rows[] = [
                     'name' => $name,
-                    'value' => $display($data["PS_TOTAL_{$key}"] ?? '-'),
+                    'value' => $display($data["PS_SA_{$key}"] ?? $data["PS_TOTAL_{$key}"] ?? '-'),
                     'change' => $changeDisplay,
                     'changeDirection' => $direction,
                 ];

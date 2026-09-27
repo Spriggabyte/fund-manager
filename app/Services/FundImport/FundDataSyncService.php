@@ -58,6 +58,18 @@ class FundDataSyncService
     }
 
     /**
+     * Newest YYYY-MM folder on the SFTP feed, or null when there is none.
+     */
+    public function latestRemoteMonth(): ?string
+    {
+        return collect(Storage::disk('sftp')->directories(''))
+            ->map(fn (string $dir): string => basename($dir))
+            ->filter(fn (string $dir): bool => (bool) preg_match('/^\d{4}-\d{2}$/', $dir))
+            ->sort()
+            ->last();
+    }
+
+    /**
      * @return array{months: string[], downloaded: string[], skipped: string[], errors: array<string, string>}
      */
     public function sync(?string $onlyMonth = null, bool $dryRun = false): array
