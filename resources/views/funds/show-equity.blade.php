@@ -219,6 +219,16 @@
             margin: 0;
         }
 
+        /* Cards 198/286: the global local-sidebar spec (6pt/6.8pt headings,
+           7pt/8.2pt body, 1.4mm gaps) packs this sheet's sidebar tighter than
+           the reference, which measures heading->body baselines 2.92mm, body
+           lines 3.0mm and last line->next heading 4.49mm. The extra
+           .sidebar class out-specifies partials/global-fixes. */
+        .sidebar .sidebar-section .sidebar-heading { line-height: 2.85mm !important; }
+        .sidebar .sidebar-section .sidebar-text { line-height: 3mm !important; }
+        .sidebar .sidebar-section { margin-bottom: 1.64mm !important; }
+        .sidebar .sidebar-section:last-child { margin-bottom: 0 !important; }
+
         /* Equity Indicator Dots — inline SVG circles, NOT border-radius spans:
            Chromium's print-to-PDF engine rasterises border-radius + background-color
            as a rounded rect (squashed dots in the exported PDF), while SVG circles
@@ -227,10 +237,11 @@
         .sidebar-heading-with-dots {
             display: flex;
             align-items: center;
-            gap: 1.6mm;
+            gap: 1.45mm;
         }
-        .equity-indicator { display: flex; gap: 0.5mm; }
-        .equity-dot { width: 1.4mm; height: 1.4mm; display: inline-block; flex: 0 0 1.4mm; overflow: visible; }
+        /* Reference: 1.32mm dots on a 1.655mm pitch */
+        .equity-indicator { display: flex; gap: 0.33mm; }
+        .equity-dot { width: 1.32mm; height: 1.32mm; display: inline-block; flex: 0 0 1.32mm; overflow: visible; }
         .equity-dot.filled circle { fill: var(--naartjie); }
         /* Reference: the unfilled dots are SOLID grey, not outlined */
         .equity-dot.empty circle { fill: var(--medium-grey); }
@@ -339,9 +350,11 @@
             padding-right: 1.5mm;
             white-space: nowrap;
         }
+        /* Card 287: reference bars are 3.49mm on the 4.03mm pitch (0.54mm
+           gap), not 3.05mm. */
         .sector-bar-track {
             flex: 1;
-            height: 3.05mm;
+            height: 3.49mm;
             position: relative;
         }
         .sector-bar-fill {
@@ -383,12 +396,15 @@
             font-size: 6.5pt;
             padding: 0.7mm 1.5mm;
         }
+        /* Card 287: Avenir's caps sit ~0.3mm above the middle of the line
+           box, so the padding is shifted down to centre the text in the
+           row (same 4.5mm row height). */
         .asset-table table td {
-            padding: 0.65mm 1.5mm;
+            padding: 0.96mm 1.5mm 0.34mm;
         }
+        /* Card 287: sub-rows use the same text colour as the other rows */
         .asset-table .indent td:first-child {
             padding-left: 3.5mm;
-            color: var(--dark-navy-70);
         }
 
         /* ── Chart containers ── */
@@ -511,11 +527,23 @@
         /* Page-2 headings sit further off their tables than page 1 */
         .page-2 .section-heading { margin-bottom: 2.6mm; }
 
+        /* Card 204: page-2 table data and column headings Avenir Next 7.5pt
+           (reference), overriding the global 8pt page-2 rule; padding is
+           shifted down ~0.33mm so the caps sit in the middle of each row. */
+        .page-2 table th {
+            font-size: 7.5pt !important;
+            line-height: 7.5pt;
+            padding: 0.81mm 1.5mm 0.65mm;
+        }
+        .page-2 .fee-table table td,
+        .page-2 .examples-table table td {
+            font-size: 7.5pt !important;
+        }
         .fee-table table td {
             text-align: left;
             font-size: 7.5pt;
             line-height: 2.85mm;
-            padding: 0.65mm 2mm;
+            padding: 0.98mm 2mm 0.32mm;
             background-color: var(--cell-standard);
         }
         .fee-table table td:first-child {
@@ -523,7 +551,8 @@
         }
 
         /* TIC table: main rows white, the "—" sub-rows shaded. */
-        .tic-table table td { padding: 0.85mm 2mm; font-size: 7.5pt; }
+        /* Reference rows are 4.47mm */
+        .tic-table table td { padding: 1.01mm 2mm 0.35mm; font-size: 7.5pt; }
         .tic-table tbody td { background-color: var(--white); }
         .tic-table tbody .row-sub td { background-color: var(--cell-standard); }
 
@@ -531,7 +560,7 @@
            grey, remaining rows standard grey (mirrors the page-1 table). */
         .examples-table table th { text-align: right; padding-right: 2mm; }
         .examples-table table th:first-child { text-align: left; }
-        .examples-table table td { padding: 0.8mm 2mm; font-size: 7.5pt; background-color: var(--cell-standard); }
+        .examples-table table td { padding: 1.01mm 2mm 0.35mm; font-size: 7.5pt; background-color: var(--cell-standard); }
         .examples-table .row-foord td { background-color: var(--naartjie-20); }
         .examples-table .row-bench td { background-color: var(--cell-benchmark-2); }
 

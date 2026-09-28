@@ -90,7 +90,8 @@
        7.5pt/9pt sizing; only the paragraph-spacing rules apply to it. ---- */
 @if($__gfTemplate !== 'show-australian-feeder')
     .sidebar-section h3,
-    .sidebar-heading {
+    .sidebar-heading,
+    .sidebar-section .sidebar-heading {
         font-family: 'Avenir Next', 'Lato', sans-serif !important;
         font-weight: 500 !important;
         font-size: 8pt !important;
@@ -140,8 +141,13 @@
 @else
     /* ---- 292 + 300: local sidebar — body Avenir Next 7pt at 0.85 line
        spacing (8.2pt, matches the signed-off balanced design), 1pt before /
-       3pt after each paragraph (4pt = 1.4mm between sections) ---- */
-    .sidebar-heading {
+       3pt after each paragraph (4pt = 1.4mm between sections).
+       `.sidebar-section .sidebar-heading` is needed because the equity
+       sheet's headings are <p>s: `.sidebar-section p` below would otherwise
+       out-specify a bare `.sidebar-heading` and set them 7pt Regular
+       (card 198). ---- */
+    .sidebar-heading,
+    .sidebar-section .sidebar-heading {
         font-family: 'Avenir Next', 'Lato', sans-serif !important;
         font-weight: 500 !important;
         font-size: 6pt !important;
