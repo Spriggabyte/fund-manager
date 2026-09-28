@@ -108,6 +108,18 @@
         margin: 1pt 0 2.1pt 0 !important;
     }
 @endif
+@if($__gfTemplate === 'show-australian-feeder')
+    /* Card 318: 880 sidebar — 0.85sp lines (9pt, set in the template)
+       with 4pt after every paragraph, the Marketing communication label
+       included (reference: 4.53–4.57mm heading-to-heading gaps). */
+    .sidebar-section,
+    .sidebar-section:first-child {
+        margin-bottom: 4pt !important;
+    }
+    .sidebar-section:last-child {
+        margin-bottom: 0 !important;
+    }
+@else
     .sidebar-section {
         margin-bottom: 0 !important;
     }
@@ -116,6 +128,7 @@
     .sidebar-section:first-child {
         margin-bottom: 1.8mm !important;
     }
+@endif
 
     /* ---- 298: international disclaimer column — Lato Light 8.5pt ---- */
     .info-sidebar-content p,

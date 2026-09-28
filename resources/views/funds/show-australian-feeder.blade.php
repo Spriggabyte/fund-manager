@@ -174,7 +174,9 @@
             letter-spacing: 0.01em;
             text-transform: uppercase;
             white-space: nowrap;
-            margin: 0 0 3.48mm 0;
+            /* Card 369: standfirst baseline 6.14mm under the title's
+               (reference 36.12 → 42.26mm). */
+            margin: 0 0 1.29mm 0;
             line-height: 1.05;
         }
 
@@ -334,9 +336,11 @@
            ===================================================== */
         .ps-section { margin-bottom: 9.0mm; }
 
-        /* Zenith ratings mark, centred under the sidebar (880 reference). */
+        /* Zenith ratings mark, centred under the sidebar (880 reference):
+           top edge 4.05mm below the last baseline, after the 4pt section
+           gap global-fixes adds (card 318). */
         .zenith-mark {
-            margin-top: 3.6mm;
+            margin-top: 2.0mm;
             text-align: center;
         }
 
@@ -615,6 +619,10 @@
             padding: 0.65mm 1.15mm 0.1mm 1.15mm;
             vertical-align: bottom;
         }
+        /* Card 365: header cells top-aligned, so the one-line YTD sits on
+           the first header line rather than centred in the two-line band.
+           Beats the global table-cell centring (partials/global-fixes). */
+        .perf-table thead th { vertical-align: top !important; }
         .perf-table th:first-child {
             text-align: left;
             width: 24.91mm;
@@ -755,7 +763,7 @@
             vertical-align: super;
         }
 
-        /* 877 reference: hairline swatches and lighter slate legend text. */
+        /* Hairline swatches; legend text black as in the 880 reference (card 318). */
         /* The reference legends are left-aligned under their plots and wrap
            (the performance legend runs onto a second line). */
         .chart-legend {
@@ -767,7 +775,7 @@
             margin-top: 1.4mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 6pt;
-            color: #4d585e;
+            color: #000;
         }
 
         .geo-legend { padding-left: 20.97mm; margin-top: 1.65mm; column-gap: 9.42mm; }
@@ -898,7 +906,10 @@
         /* The unit-pricing block sits in a narrower Publisher text box than
            MORE ABOUT (its lines stop at 199.3mm, MORE ABOUT's at 203.6mm). */
         .page2-section.share-pricing { margin-bottom: 12.62mm; padding-right: 4.3mm; }
-        .page2-section.more-about { margin-bottom: 18.63mm; }
+        /* Card 366: 6pt after each MORE ABOUT paragraph; the section's
+           bottom margin gives the two gaps back so NOTES stays at 126.09mm. */
+        .page2-section.more-about { margin-bottom: 14.40mm; }
+        .page2-section.more-about .page2-body:not(:last-child) { margin-bottom: 6pt !important; }
         .page2-section.notes { padding-right: 0.8mm; }
 
         /* The reference's prose runs to x=204mm while its tables stop at
@@ -1826,6 +1837,8 @@
     @if(isset($fund->data['mainContent']['charts']) || !empty($fund->data['mainContent']['assetAllocation']['geographicEquityExposure']))
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Card 318: every axis label, the "100" and the legend text are
+        // black (0x000000 in the 880 reference), not the old #535353 grey.
         const colors = {
             naartjie: '#d25347',
             darkNavy: '#29363d',
@@ -1902,7 +1915,7 @@
                         border: { color: '#a5a5a5' },
                         ticks: {
                             font: { size: 7.2, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            color: '#000',
                             maxRotation: 0,
                             autoSkip: false,
                             padding: 3.03
@@ -1915,7 +1928,7 @@
                         border: { color: '#a5a5a5' },
                         ticks: {
                             font: { size: 7.8, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            color: '#000',
                             stepSize: 10,
                             padding: 4,
                             callback: (value) => value + '%'
@@ -1988,7 +2001,7 @@
                 });
                 ctx.stroke();
                 ctx.font = '7.9px Avenir Next, Lato, sans-serif';
-                ctx.fillStyle = '#535353';
+                ctx.fillStyle = '#000';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('100', chartArea.left - 2.5, yHundred - 5);
@@ -2056,7 +2069,7 @@
                         border: { display: false },
                         ticks: {
                             font: { size: 7.9, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            color: '#000',
                             maxRotation: 0,
                             autoSkip: false,
                             padding: 6.84,
