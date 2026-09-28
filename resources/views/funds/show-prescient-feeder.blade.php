@@ -336,7 +336,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 4mm;
+            line-height: 4.03mm;
             color: #000;
         }
 
@@ -352,15 +352,16 @@
             font-weight: 400;
         }
 
-        /* QC card 246: reference bars are ~3.1mm thick on the 4mm pitch. */
+        /* House bar spec (equity sector bars, fund 11): 3.05mm bars on a
+           4.03mm pitch. */
         .alloc-bar-container {
             flex: 1;
-            height: 3.1mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .alloc-bar {
-            height: 3.1mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 
@@ -408,7 +409,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 4mm;
+            line-height: 4.03mm;
             color: #000;
         }
 
@@ -423,12 +424,12 @@
 
         .sector-bar-container {
             flex: 1;
-            height: 3.1mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .sector-bar {
-            height: 3.1mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 

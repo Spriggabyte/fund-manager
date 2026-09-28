@@ -352,7 +352,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 4.4mm;
+            line-height: 4.03mm;
             color: #000;
         }
 
@@ -367,12 +367,12 @@
 
         .alloc-bar-container {
             flex: 1;
-            height: 2.4mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .alloc-bar {
-            height: 2.4mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 
@@ -421,9 +421,9 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            /* Reference row pitch (Consumer staples → Communication services
-               spans 40.5mm over nine intervals). */
-            line-height: 4.5mm;
+            /* House bar spec (equity sector bars, fund 11): 3.05mm bars on a
+               4.03mm pitch. */
+            line-height: 4.03mm;
             color: #000;
         }
 
@@ -437,12 +437,12 @@
 
         .sector-bar-container {
             flex: 1;
-            height: 2.4mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .sector-bar {
-            height: 2.4mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 

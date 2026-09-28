@@ -342,7 +342,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8pt;
-            line-height: 4.57mm;
+            line-height: 4.03mm;
             color: var(--dark-navy);
         }
 
@@ -356,12 +356,12 @@
 
         .alloc-bar-container {
             flex: 1;
-            height: 3.7mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .alloc-bar {
-            height: 3.7mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 
@@ -389,7 +389,7 @@
         .change-down::before { content: '▼ '; font-size: 7.5pt; color: var(--light-blue); vertical-align: middle; }
 
         /* === Equity sector bars ===
-           874 reference: 8pt rows on a 4.57mm pitch, bars from x=98.3mm, the
+           874 reference: 8pt rows on the house 4.03mm pitch, bars from x=98.3mm, the
            longest ending ~2.5mm short of its value; values end at 132.7mm,
            clear of the chart's y-axis caption (QC card 130). */
         .sector-row {
@@ -398,7 +398,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8pt;
-            line-height: 4.57mm;
+            line-height: 4.03mm;
             color: var(--dark-navy);
         }
 
@@ -412,12 +412,12 @@
 
         .sector-bar-container {
             flex: 1;
-            height: 3.7mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .sector-bar {
-            height: 3.7mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 

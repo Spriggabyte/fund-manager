@@ -362,10 +362,10 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8.03pt;
-            /* Fixed 4.0mm rows: the inline-block change columns would
+            /* Fixed 4.03mm rows (house bar spec: 3.05mm bars): the inline-block change columns would
                otherwise inflate the line box. */
-            height: 4.0mm;
-            line-height: 4.0mm;
+            height: 4.03mm;
+            line-height: 4.03mm;
             color: #000;
         }
 
@@ -380,12 +380,12 @@
 
         .ps-bar-container {
             flex: 0 0 36.2mm;
-            height: 2.4mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 2.4mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 

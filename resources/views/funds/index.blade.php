@@ -13,7 +13,7 @@
                     </button>
                 </form>
                 <form method="POST" action="{{ route('funds.data-feed.import') }}"
-                      @submit="if (! confirm('Import the latest downloaded data into every fund with a fund code? A revision is saved before each import; funds already imported for their latest month are skipped.')) { $event.preventDefault(); return; } busy = 'import'">
+                      @submit="if (! confirm('Import the latest downloaded data into every fund with a fund code? Existing values will be overwritten; a revision is saved before each import.')) { $event.preventDefault(); return; } busy = 'import'">
                     @csrf
                     <button type="submit" :disabled="busy" class="bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
                             title="Import each fund's newest downloaded month">

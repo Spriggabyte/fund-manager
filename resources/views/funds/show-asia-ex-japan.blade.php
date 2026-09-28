@@ -357,10 +357,10 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8.03pt;
-            /* Fixed 5.0mm rows (reference pitch): the inline-block change
+            /* Fixed 4.03mm rows (house bar spec): the inline-block change
                columns would otherwise inflate the line box. */
-            height: 5.0mm;
-            line-height: 5.0mm;
+            height: 4.03mm;
+            line-height: 4.03mm;
             color: #000;
         }
 
@@ -374,15 +374,16 @@
             white-space: nowrap;
         }
 
-        /* QC card 363: reference bars are 4.15mm tall in the 5.0mm pitch. */
+        /* House bar spec (equity sector bars, fund 11): 3.05mm bars on a
+           4.03mm pitch — supersedes QC card 363's 4.15mm on 5.0mm. */
         .ps-bar-container {
             flex: 0 0 18.5mm;
-            height: 4.15mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 4.15mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 

@@ -347,12 +347,13 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8pt;
-            line-height: 4.0mm;
+            line-height: 4.03mm;
             color: #000;
         }
 
         /* QC card 354: reference bars start at x=100.2mm, run 33.5mm for
-           the largest sector and are 3.3mm thick (smaller row gaps). */
+           the largest sector. Thickness/pitch follow the house bar spec
+           (equity sector bars, fund 11): 3.05mm bars on 4.03mm rows. */
         .ps-label {
             width: 35.2mm;
             text-align: left;
@@ -363,12 +364,12 @@
 
         .ps-bar-container {
             flex: 0 0 34.2mm;
-            height: 3.3mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 3.3mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 

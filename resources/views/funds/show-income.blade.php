@@ -495,11 +495,9 @@
         .maturity-spread-row {
             display: flex;
             align-items: center;
-            /* 825 reference row pitch ~6.4mm (five buckets share the credit
-               tables' height). */
-            /* QC cards 288/331: thicker bars on a tighter 6.0mm pitch
-               (reference bars 4.9mm on 6.0mm). */
-            margin-bottom: 1.1mm;
+            /* House bar spec (equity sector bars, fund 11): 4.03mm pitch =
+               3.05mm bar + 0.98mm gap (was 4.9mm on 6.0mm, QC cards 288/331). */
+            margin-bottom: 0.98mm;
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -507,7 +505,7 @@
             min-width: 17mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 3.45mm;
+            line-height: 3.05mm;
             color: #000;
         }
         .maturity-spread-track {
@@ -515,10 +513,11 @@
             min-width: 0;
         }
         .maturity-spread-bar {
-            height: 4.9mm; /* design bars fill the row — QC cards 304/288 */
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
         .maturity-spread-value {
+            line-height: 3.05mm;
             width: 8mm;
             min-width: 8mm;
             text-align: right;

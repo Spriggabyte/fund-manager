@@ -376,7 +376,7 @@
             padding-left: 0.8mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 4mm;
+            line-height: 4.03mm;
             color: #000;
         }
 
@@ -392,12 +392,12 @@
            32.1mm container, i.e. the longest bar reaches 92%. */
         .ps-bar-container {
             flex: 0 0 32.1mm;
-            height: 2.4mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 2.4mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 

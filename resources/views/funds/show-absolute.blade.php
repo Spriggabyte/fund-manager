@@ -430,7 +430,7 @@
         .alloc-row {
             display: flex;
             align-items: center;
-            height: 4.47mm;
+            height: 4.03mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 7.5pt;
@@ -449,21 +449,19 @@
         .alloc-row .alloc-bar-cell { width: 24.2mm; }
 
         .alloc-row .alloc-bar {
-            height: 3.6mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 
         .alloc-row .alloc-value { width: 6.58mm; text-align: right; }
 
-        /* Arrows match the table change-cells: black up, steel-blue down, and
-           nothing at all when the holding did not move. */
+        /* Change triangles are the global-fixes SVGs (.change-up/.change-down,
+           1.7 x 1.55mm — Trello 273 "increase size of triangles"; the ▲/▼
+           glyphs fell back to a tiny Type3 font), centred in this 5mm slot.
+           Nothing at all when the holding did not move. */
         .alloc-row .alloc-arrow {
             width: 5mm;
-            text-align: right;
-            font-size: 5.1pt;
         }
-        .alloc-row .alloc-arrow.up { color: #000; }
-        .alloc-row .alloc-arrow.down { color: #7A9CB4; }
 
         .alloc-row .alloc-change { width: 6mm; text-align: right; }
 
@@ -660,15 +658,18 @@
         }
 
         /* Performance-fees narrative — 7.5pt navy, continuous line rhythm */
+        /* Trello 273 "increase spacing between paragraphs": design (816,
+           Jun 2026) has 15.0mm from the TER note's last line to PERFORMANCE
+           FEES and 15.3mm from "sharing rate." to the examples heading. */
         .performance-fees-section {
-            margin: 6.3mm 0 0 0;
+            margin: 11.8mm 0 0 0;
         }
 
         .tic-section {
             margin-top: 6mm;
         }
         .pfe-section {
-            margin-top: 7.5mm;
+            margin-top: 12.25mm;
         }
         .performance-fees-text {
             font-size: 7.5pt;
@@ -882,10 +883,12 @@
             width: 50.9%;
         }
 
+        /* Trello 273: more air left of the value column — design text sits
+           ~4mm right of its column break (137.95mm on the page). */
         .fee-rates-table td:last-child:not([colspan]) {
             text-align: left;
             font-weight: 500;
-            padding-left: 1.6mm;
+            padding-left: 2.3mm;
         }
 
         /* "Foord global funds:" — white background, then two pink rows (black text).
@@ -936,8 +939,10 @@
            ===================================================== */
         /* Footer — short naartjie rule (like the reference "______"), then
            Merriweather body and Avenir Next Medium contact lines, all naartjie. */
+        /* Trello 273 "move the footer down": design "Please visit…" line at
+           y≈259mm, ~25.6mm under "* Minimum fees apply". */
         .footer {
-            margin-top: 8mm;
+            margin-top: 17mm;
             padding-top: 5.5mm;
             border-top: none;
             position: relative;
@@ -1049,6 +1054,15 @@
         [x-cloak] { display: none !important; }
     </style>
     @include('funds.partials.global-fixes')
+    <style>
+        /* Trello 273 "increase spacing in left block": design (816, Jun 2026)
+           section pitch is 7.07mm for a one-line entry (global 1.4mm gap gave
+           6.61mm) and its text is set wide enough, so "…each year." and
+           "…strategy employed." stay on one line. */
+        .sidebar { padding-right: 3mm; }
+        .sidebar-section { margin-bottom: 1.78mm !important; }
+        .sidebar-section:last-child { margin-bottom: 0 !important; }
+    </style>
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1301,6 +1315,7 @@
                                             $arrowChar = '';
                                         }
                                         $dir = $row['changeDirection'] ?? '';
+                                        $isDown = $dir !== '' ? $dir === 'down' : $arrowChar === "\u{25BC}";
                                     @endphp
                                     <div class="alloc-row">
                                         <span class="alloc-name"><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['name'] }}</span></span>
@@ -1308,7 +1323,7 @@
                                             <span class="alloc-bar" style="display:block; width: {{ round($value / $allocMax * 95, 2) }}%;"></span>
                                         </span>
                                         <span class="alloc-value">{{ $fmt($value, 0) }}</span>
-                                        <span class="alloc-arrow {{ $dir === 'down' ? 'down' : 'up' }}">{{ $arrowChar }}</span>
+                                        <span class="alloc-arrow {{ $arrowChar === '' ? '' : ($isDown ? 'change-down' : 'change-up') }}"></span>
                                         <span class="alloc-change">{{ $changeNum }}</span>
                                     </div>
                                 @endforeach
@@ -1857,6 +1872,16 @@
                     (m, d) => Math.max(m, d.fund ?? 0, d.benchmark ?? 0), 1);
                 const axisMax = Math.pow(10, Math.ceil(Math.log10(seriesMax)));
 
+                // Trello 273: the y-axis runs on BELOW the 100 baseline (the
+                // x-axis crosses at 100, Excel style) so the early dip under 100
+                // shows. Design (816, Jun 2026): axis 182.8→220.1mm with 100 at
+                // 216.7mm, i.e. 100 sits 9.2% of the plot height above the foot.
+                const seriesMin = portfolioData.reduce(
+                    (m, d) => Math.min(m, d.fund ?? Infinity, d.benchmark ?? Infinity), 100);
+                const axisMin = Math.min(
+                    100 * Math.pow(100 / axisMax, 0.101),
+                    seriesMin * 0.98);
+
                 // Both series finish within a percent of each other, so the
                 // reference separates their end labels vertically (~2.4mm each
                 // side of the point) instead of letting them collide.
@@ -1890,8 +1915,12 @@
                     return positions;
                 })();
 
-                Highcharts.chart('portfolioChart', {
-                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 34, 4, 0], animation: false },
+                const portfolioChart = Highcharts.chart('portfolioChart', {
+                    // Fixed marginBottom: lifting the x-axis to 100 (below) would
+                    // otherwise make Highcharts reserve the lift again under the
+                    // plot. 37px puts the y-axis foot 1.5mm above the date labels
+                    // (design: foot 220.1mm, labels 221.6mm).
+                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 34, 4, 0], marginBottom: 37, animation: false },
                     title: { text: null },
                     xAxis: {
                         categories: portfolioDates,
@@ -1928,7 +1957,7 @@
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
-                        min: 100,
+                        min: axisMin,
                         max: axisMax,
                         endOnTick: false,
                         startOnTick: false,
@@ -1980,6 +2009,15 @@
                         },
                     ],
                 });
+
+                // Lift the x-axis line + ticks so they cross the y-axis at 100
+                // while the date labels stay under the axis foot (design: label
+                // tops 1.5mm below it). Twice so the plot height settles after
+                // the labels move (same pass as show-conservative).
+                for (let pass = 0; pass < 2; pass++) {
+                    const lift = portfolioChart.yAxis[0].toPixels(100, true) - portfolioChart.plotHeight;
+                    portfolioChart.xAxis[0].update({ offset: lift, labels: { y: -lift + 13.8 } }, true);
+                }
             }
         });
     </script>

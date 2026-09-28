@@ -344,7 +344,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8pt;
-            line-height: 4.5mm;
+            line-height: 4.03mm;
             color: var(--dark-navy);
         }
 
@@ -359,12 +359,12 @@
 
         .alloc-bar-container {
             flex: 1;
-            height: 3.7mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .alloc-bar {
-            height: 3.7mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 
@@ -398,7 +398,7 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8pt;
-            line-height: 4.5mm;
+            line-height: 4.03mm;
             color: var(--dark-navy);
         }
 
@@ -414,12 +414,12 @@
 
         .sector-bar-container {
             flex: 1;
-            height: 3.7mm;
+            height: 3.05mm;
             position: relative;
         }
 
         .sector-bar {
-            height: 3.7mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
 

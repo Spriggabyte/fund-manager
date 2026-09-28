@@ -470,9 +470,9 @@
         .maturity-spread-row {
             display: flex;
             align-items: center;
-            /* QC card 340 (thicker bars, smaller gap): reference row pitch
-               5.34mm = 4.17mm bar + 1.17mm gap (was 4.3 + 1.9 = 6.2mm). */
-            margin-bottom: 1.17mm;
+            /* House bar spec (equity sector bars, fund 11): 4.03mm pitch =
+               3.05mm bar + 0.98mm gap (was 4.17 + 1.17mm, QC card 340). */
+            margin-bottom: 0.98mm;
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -480,7 +480,7 @@
             min-width: 17mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 3.45mm;
+            line-height: 3.05mm;
             color: #000;
         }
         .maturity-spread-track {
@@ -488,10 +488,11 @@
             min-width: 0;
         }
         .maturity-spread-bar {
-            height: 4.17mm;
+            height: 3.05mm;
             background-color: var(--naartjie);
         }
         .maturity-spread-value {
+            line-height: 3.05mm;
             width: 6.5mm;
             min-width: 6.5mm;
             text-align: right;

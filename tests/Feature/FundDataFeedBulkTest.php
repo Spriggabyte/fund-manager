@@ -68,7 +68,7 @@ class FundDataFeedBulkTest extends TestCase
             ->assertSessionHas('error');
     }
 
-    public function test_import_uses_each_funds_newest_month_and_skips_repeat_imports(): void
+    public function test_import_uses_each_funds_newest_month_and_overwrites_on_repeat(): void
     {
         $user = User::factory()->create();
         $fund = Fund::factory()->create([
@@ -88,9 +88,13 @@ class FundDataFeedBulkTest extends TestCase
         $this->assertSame('Before data feed import (2026-08)', $fund->revisions()->first()->change_summary);
         $this->assertCount(0, $uncoded->revisions);
 
-        // Second click: already imported for 2026-08, so no new revision.
+        // The feed re-exports 2026-08 with corrected figures; a second click
+        // must overwrite with them rather than skip.
+        $this->seedFactsheet('2026-08', '817', '88');
         $this->actingAs($user)->post(route('funds.data-feed.import'));
-        $this->assertCount(1, $fund->fresh()->revisions);
+        $fund->refresh();
+        $this->assertSame('88', $fund->asset_allocation['rows'][0]['current']);
+        $this->assertCount(2, $fund->revisions);
     }
 
     public function test_bulk_actions_require_authentication(): void

@@ -60,16 +60,15 @@ class FundDataFeedController extends Controller
     }
 
     /**
-     * Import each fund's newest downloaded month. Funds already imported for
-     * that month (a "Before data feed import (YYYY-MM)" revision exists) are
-     * skipped so hand-set post-import values aren't clobbered on a re-click.
+     * Import each fund's newest downloaded month, always overwriting — the
+     * feed can be re-exported mid-month, so a repeat click must pull the
+     * corrected files through. A revision is snapshotted before each import.
      */
     public function importLatest(FundDataSyncService $syncService, FundImportManager $manager): RedirectResponse
     {
         set_time_limit(600);
 
         $imported = [];
-        $alreadyDone = [];
         $noData = [];
         $failed = [];
 
@@ -85,18 +84,11 @@ class FundDataFeedController extends Controller
                 continue;
             }
 
-            $revisionSummary = "Before data feed import ({$month})";
-            if ($fund->revisions()->where('change_summary', $revisionSummary)->exists()) {
-                $alreadyDone[] = $label;
-
-                continue;
-            }
-
             try {
                 $result = $manager->importDirectoryWithSnapshot(
                     $fund,
                     Storage::disk('local')->path(FundDataSyncService::LOCAL_ROOT."/{$month}/{$fund->fund_code}"),
-                    $revisionSummary
+                    "Before data feed import ({$month})"
                 );
 
                 if ($result['imported']) {
@@ -111,9 +103,6 @@ class FundDataFeedController extends Controller
         }
 
         $parts = [count($imported).' fund(s) imported'.($imported ? ': '.implode(', ', $imported) : '').'.'];
-        if ($alreadyDone) {
-            $parts[] = count($alreadyDone).' already imported for their latest month (skipped).';
-        }
         if ($noData) {
             $parts[] = 'No downloaded data: '.implode(', ', $noData).'.';
         }
