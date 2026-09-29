@@ -349,6 +349,18 @@ class Fund extends Model
     }
 
     /**
+     * The label shown in the fund lists' Class column: the share class
+     * (`class_code`), falling back to the legacy `class` column for the
+     * class-less overview sheets ("Overview").
+     */
+    public function displayClass(): ?string
+    {
+        $code = trim((string) ($this->class_code ?? ''));
+
+        return $code !== '' ? $code : ($this->class ?: null);
+    }
+
+    /**
      * The file name a fact-sheet PDF is exported under, following the
      * structure of Foord's published documents:
      *

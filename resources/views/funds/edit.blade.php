@@ -78,7 +78,8 @@
                 </div>
             </div>
 
-            <!-- Excel Import Section -->
+            {{-- Excel Import Section — hidden; the SFTP data feed import above replaces it.
+                 The funds.import route is still registered; remove this comment wrapper to restore.
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6" x-data="{ factsheetName: '', priceGraphName: '', inflationGraphName: '', alsiGraphName: '' }">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
@@ -133,6 +134,7 @@
                     </form>
                 </div>
             </div>
+            --}}
 
             <!-- Main Edit Form -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

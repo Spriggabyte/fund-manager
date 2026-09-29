@@ -732,7 +732,10 @@
             position: relative;
         }
 
-        .geo-wrapper { height: 41.37mm; }
+        /* Card 376: the reviewer wants the 0% baseline level with the
+           performance chart's 100 baseline (the reference has it 3mm
+           higher), so the plot grows downwards by the 2.89mm difference. */
+        .geo-wrapper { height: 44.26mm; }
         /* The reference sets the "100" axis label outside the column's left
            edge, so the canvas is widened into the gutter and the plot's left
            padding grows to match. */
@@ -1092,6 +1095,7 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    @include('funds.partials.screen-centre')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->
@@ -1127,6 +1131,12 @@
                 <span x-show="editMode" style="color: var(--naartjie-50); font-size: 13px;">Edit mode active - Click any text to edit</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
+                <a href="{{ route('funds.edit', $fund) }}" class="btn-grey">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Fund
+                </a>
                 <a href="{{ route('funds.revisions', $fund) }}" class="btn-grey">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -1868,7 +1878,7 @@
                 if (!n) return;
                 const step = (x.right - x.left) / n;
                 ctx.save();
-                ctx.strokeStyle = '#a5a5a5';
+                ctx.strokeStyle = '#000';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 for (let k = 0; k <= n; k++) {
@@ -1912,7 +1922,8 @@
                 scales: {
                     x: {
                         grid: { display: false, drawTicks: false, tickLength: 0 },
-                        border: { color: '#a5a5a5' },
+                        // Card 376: axis rules black at the perf chart's 1.2px.
+                        border: { color: '#000', width: 1.2 },
                         ticks: {
                             font: { size: 7.2, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#000',
@@ -1924,8 +1935,8 @@
                     y: {
                         min: 0,
                         max: 70,
-                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#a5a5a5' },
-                        border: { color: '#a5a5a5' },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                        border: { color: '#000', width: 1.2 },
                         ticks: {
                             font: { size: 7.8, family: 'Avenir Next, Lato, sans-serif' },
                             color: '#000',
@@ -1936,7 +1947,7 @@
                     }
                 },
                 /* Plot box measured off the 880 reference: x 70.02–128.35mm,
-                   0% baseline at y=172.30mm. */
+                   0% baseline at y=172.30mm (now 175.19mm, card 376). */
                 layout: { padding: { top: 18.34, left: 8, right: 0.5 } }
             }
         });

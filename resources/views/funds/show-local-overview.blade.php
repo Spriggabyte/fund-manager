@@ -307,19 +307,22 @@
             font-weight: 500;
             text-transform: uppercase;
             align-items: flex-end;
-            /* Trello 320: table data centred in its column (as the global sheet). */
-            justify-content: center;
-            text-align: center;
+            /* Trello 375: headers + figures right-aligned on one edge (the
+               reference; reverts Trello 320's centring). */
+            justify-content: flex-end;
+            text-align: right;
             line-height: 3.9mm;
-            padding: 0;
+            padding: 0 1.95mm 0 0;
             white-space: normal;
         }
+        .aa .head { padding-right: 3.2mm; }
         .stats .head { height: 11.5mm; }
         .aa .head { height: 11.56mm; }
         .stats .head.head-label, .aa .head.head-label { justify-content: flex-start; text-align: left; padding-left: 1.2mm; }
         .stats .cell:not(.head), .aa .cell:not(.head) { padding-top: 0.6mm; }
         .stats .cell.label, .aa .cell.label { padding-left: 1.2mm; }
-        .stats .cell.value, .aa .cell.value { justify-content: center; }
+        .stats .cell.value { justify-content: flex-end; padding-right: 1.95mm; }
+        .aa .cell.value { justify-content: flex-end; padding-right: 3.2mm; }
         .stats .row-total .cell, .aa .row-total .cell { background-color: var(--naartjie); color: var(--white); font-weight: 500; text-transform: uppercase; }
         .aa .row-subtotal .cell { background-color: var(--naartjie-20); font-weight: 500; text-transform: uppercase; }
         .row-contents { display: contents; }
@@ -419,6 +422,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.screen-centre')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -446,6 +450,7 @@
             <span x-show="editMode" x-cloak style="color: #e9a9a3; font-size: 13px;">Edit mode active &mdash; click any text to edit</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
+            <a href="{{ route('funds.edit', $fund) }}" class="btn-grey">Edit Fund</a>
             <a href="{{ route('funds.revisions', $fund) }}" class="btn-grey">Revisions</a>
             <a href="{{ route('funds.pdf', $fund) }}" class="btn-naartjie">Export PDF</a>
             <a href="{{ route('funds.index') }}" class="btn-muted">Back to Funds</a>

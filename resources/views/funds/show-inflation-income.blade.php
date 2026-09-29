@@ -1086,6 +1086,7 @@
             vertical-align: bottom !important;
         }
     </style>
+    @include('funds.partials.screen-centre')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -1113,6 +1114,7 @@
             <span x-show="editMode" x-cloak style="color: #e9a9a3; font-size: 13px;">Edit mode active &mdash; click any text to edit</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
+            <a href="{{ route('funds.edit', $fund) }}" class="btn-grey">Edit Fund</a>
             <a href="{{ route('funds.revisions', $fund) }}" class="btn-grey">Revisions</a>
             <a href="{{ route('funds.pdf', $fund) }}" class="btn-naartjie">Export PDF</a>
             <a href="{{ route('funds.index') }}" class="btn-muted">Back to Funds</a>

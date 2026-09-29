@@ -341,12 +341,14 @@
            a placeholder fit for the half-width column pending
            Task 10's measurement loop.
            ===================================================== */
-        .ps-section { margin-bottom: 8.5mm; }
+        /* +1.06mm offsets the tighter .ps-header gap so the chart row below stays put. */
+        .ps-section { margin-bottom: 9.56mm; }
 
         .ps-header {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 2.55mm;
+            /* Lands the last bar's bottom edge on the Top 10 table's last grey row (card 317). */
+            margin-bottom: 1.02mm;
         }
 
         .ps-header .ps-header-title { flex: 1; }
@@ -357,10 +359,11 @@
             gap: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 8.03pt;
-            /* Fixed 4.03mm rows (house bar spec): the inline-block change
-               columns would otherwise inflate the line box. */
-            height: 4.03mm;
-            line-height: 4.03mm;
+            /* Fixed 5.0mm rows (879 reference pitch, QC card 317 round 3):
+               the inline-block change columns would otherwise inflate the
+               line box. */
+            height: 5.0mm;
+            line-height: 5.0mm;
             color: #000;
         }
 
@@ -374,16 +377,17 @@
             white-space: nowrap;
         }
 
-        /* House bar spec (equity sector bars, fund 11): 3.05mm bars on a
-           4.03mm pitch — supersedes QC card 363's 4.15mm on 5.0mm. */
+        /* 879 reference bars: 4.21mm on a 5.0mm pitch. The reviewer asked
+           for thicker, more widely spaced bars than the house 3.05/4.03 spec
+           so the last bar lands level with the Top 10 table (card 317). */
         .ps-bar-container {
             flex: 0 0 18.5mm;
-            height: 3.05mm;
+            height: 4.21mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 3.05mm;
+            height: 4.21mm;
             background-color: var(--naartjie);
         }
 
@@ -598,7 +602,9 @@
         .cost-table .foord-table td:nth-child(2) { width: 24.45%; }
         .cost-table .foord-table th:not(:first-child),
         .cost-table .foord-table td:not(:first-child) { text-align: center; padding-right: 3.1mm; }
-        .cost-table .foord-table th { font-size: 8.01pt; padding-top: 0.3mm; }
+        /* Caps centred in the dark header cell (card 377): 0.73/0.17mm
+           keeps the 3.97mm cell height but drops the text 0.43mm. */
+        .cost-table .foord-table th { font-size: 8.01pt; padding-top: 0.73mm; padding-bottom: 0.17mm; }
         .cost-table .foord-table td {
             font-size: 8.01pt;
             padding-top: 0.65mm;
@@ -999,6 +1005,7 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    @include('funds.partials.screen-centre')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->
@@ -1034,6 +1041,12 @@
                 <span x-show="editMode" style="color: var(--naartjie-50); font-size: 13px;">Edit mode active - Click any text to edit</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
+                <a href="{{ route('funds.edit', $fund) }}" class="btn-grey">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Fund
+                </a>
                 <a href="{{ route('funds.revisions', $fund) }}" class="btn-grey">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

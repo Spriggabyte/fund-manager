@@ -71,44 +71,35 @@
             </div> --}}
 
             <!-- Funds Table -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-white rounded-lg shadow-md">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex justify-between items-center">
                         <h3 class="text-lg font-medium text-gray-900">Your Funds</h3>
-                        <div class="flex space-x-2">
-                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm transition duration-150">
-                                Filter
-                            </button>
-                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm transition duration-150">
-                                Export
-                            </button>
-                        </div>
                     </div>
                 </div>
 
                 @if ($funds->count() > 0)
+                    <x-fund-filters :funds="$funds">
                     <!-- Desktop Table View -->
                     <div class="hidden md:block">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fund Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach ($funds as $fund)
-                                    <tr class="hover:bg-gray-50">
+                                    <tr class="hover:bg-gray-50" x-show="matches(@js($fund->name), @js($fund->displayClass() ?? ''))">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-10 w-10">
                                                     <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                                        <span class="text-indigo-600 font-medium text-sm">{{ substr($fund->name, 0, 2) }}</span>
+                                                        <span class="text-indigo-600 font-medium text-sm" title="Fund code (SFTP data feed)">{{ $fund->fund_code ?: substr($fund->name, 0, 2) }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="ml-4">
@@ -118,51 +109,24 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($fund->class)
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                    @if($fund->class === 'Equity') bg-green-100 text-green-800
-                                                    @elseif($fund->class === 'Bond') bg-blue-100 text-blue-800
-                                                    @else bg-purple-100 text-purple-800 @endif">
-                                                    {{ $fund->class }}
+                                            @if($fund->displayClass())
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                    {{ $fund->displayClass() }}
                                                 </span>
                                             @else
                                                 <span class="text-gray-400 text-sm">-</span>
                                             @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                            @if(isset($fund->data['value']))
-                                                ${{ number_format($fund->data['value'], 2) }}
-                                            @else
-                                                <span class="text-gray-400">-</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if(isset($fund->data['performance']) && is_string($fund->data['performance']))
-                                                <span class="text-sm font-medium text-green-600">{{ $fund->data['performance'] }}</span>
-                                            @else
-                                                <span class="text-gray-400 text-sm">-</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $fund->updated_at->format('Y-m-d') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                                 Active
                                             </span>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <x-fund-updated :fund="$fund" />
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex space-x-2">
-                                                <a href="{{ route('funds.show', $fund) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
-                                                <a href="{{ route('funds.edit', $fund) }}" class="text-gray-600 hover:text-gray-900">Edit</a>
-                                                @can('delete', $fund)
-                                                    <form method="POST" action="{{ route('funds.destroy', $fund) }}" class="inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
-                                                    </form>
-                                                @endcan
-                                            </div>
+                                            <x-fund-actions :fund="$fund" />
                                         </td>
                                     </tr>
                                 @endforeach
@@ -174,49 +138,25 @@
                     <div class="md:hidden">
                         <div class="space-y-4 p-4">
                             @foreach ($funds as $fund)
-                                <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="bg-gray-50 rounded-lg p-4" x-show="matches(@js($fund->name), @js($fund->displayClass() ?? ''))">
                                     <div class="flex justify-between items-start mb-3">
                                         <div>
                                             <h4 class="font-medium text-gray-900">{{ $fund->name }}</h4>
-                                            <p class="text-sm text-gray-500">{{ $fund->class ?? 'Unclassified' }} • ID: {{ $fund->id }}</p>
+                                            <p class="text-sm text-gray-500">{{ $fund->displayClass() ? 'Class '.$fund->displayClass() : 'Unclassified' }} • ID: {{ $fund->id }}</p>
                                         </div>
                                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                             Active
                                         </span>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-4 mb-3">
-                                        <div>
-                                            <p class="text-sm text-gray-500">Value</p>
-                                            <p class="font-medium text-gray-900">
-                                                @if(isset($fund->data['value']))
-                                                    ${{ number_format($fund->data['value'], 2) }}
-                                                @else
-                                                    <span class="text-gray-400">-</span>
-                                                @endif
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-500">Performance</p>
-                                            <p class="font-medium text-green-600">
-                                                @if(isset($fund->data['performance']) && is_string($fund->data['performance']))
-                                                    {{ $fund->data['performance'] }}
-                                                @else
-                                                    <span class="text-gray-400">-</span>
-                                                @endif
-                                            </p>
-                                        </div>
-                                    </div>
                                     <div class="flex justify-between items-center">
-                                        <p class="text-sm text-gray-500">Updated: {{ $fund->updated_at->format('Y-m-d') }}</p>
-                                        <div class="flex space-x-2">
-                                            <a href="{{ route('funds.show', $fund) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">View</a>
-                                            <a href="{{ route('funds.edit', $fund) }}" class="text-gray-600 hover:text-gray-900 text-sm">Edit</a>
-                                        </div>
+                                        <x-fund-updated :fund="$fund" inline />
+                                        <x-fund-actions :fund="$fund" />
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     </div>
+                    </x-fund-filters>
                 @else
                     <!-- Empty State -->
                     <div class="text-center py-12">

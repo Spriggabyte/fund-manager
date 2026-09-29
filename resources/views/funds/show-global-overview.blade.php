@@ -158,6 +158,9 @@
             overflow: hidden;
             white-space: nowrap;
             height: 8.7mm;
+            /* Trello 373: centre the text top to bottom — flex-centred
+               Avenir leaves more space below the ink than above. */
+            padding-top: 0.55mm;
         }
         .perf .head {
             background-color: var(--dark-navy);
@@ -294,11 +297,14 @@
             white-space: nowrap;
         }
         .geo .geo-title sup { font-size: 5pt; vertical-align: super; line-height: 0; }
-        .geo .geo-pie { position: absolute; top: 8.5mm; width: 50mm; height: 46mm; margin-left: -4mm; }
+        .geo .geo-pie { position: absolute; top: 8.5mm; width: 60mm; height: 46mm; margin-left: -9mm; }
         /* Pies are Ø40mm (Trello 227: "a bit bigger" than the 36.6mm
            reference) centred at y 31.5mm, low enough that a small slice's
            outside label clears the title; the SVG box is larger than the pie
-           so outside-rim labels on small slices are not clipped. */
+           so outside-rim labels on small slices are not clipped. It is
+           60mm wide (pie centre unchanged): Highcharts ellipsis-truncates an
+           outside label that overflows the plot box, and a 50mm box cut the
+           Asia pie's left-flank "4.9%" (Hong Kong) down to "%" (Trello 374). */
         .geo .geo-legend {
             position: absolute;
             top: 54.0mm;
@@ -350,18 +356,22 @@
             color: var(--white);
             font-weight: 500;
             text-transform: uppercase;
-            align-items: flex-end;
-            /* Trello 228: table data centred in its column. */
-            justify-content: center;
-            text-align: center;
+            /* Trello 374: the three fund columns are right-aligned (headers
+               and values 3.4mm in from the column edge, as the reference)
+               and every cell's text is centred top to bottom. */
+            justify-content: flex-end;
+            text-align: right;
             line-height: 3.9mm;
-            padding: 0;
+            padding: 0.5mm 3.4mm 0 0;
             white-space: normal;
             height: 7.7mm;
         }
         .aa .head.head-label { justify-content: flex-start; text-align: left; padding-left: 1.2mm; }
+        /* Avenir's line box sits the cap-to-baseline ink ~0.3mm above the
+           cell centre; the top padding re-centres it (Trello 374). */
+        .aa .cell:not(.head) { padding-top: 0.64mm; }
         .aa .cell.label { padding-left: 1.2mm; }
-        .aa .cell.value { justify-content: center; }
+        .aa .cell.value { justify-content: flex-end; padding-right: 3.4mm; }
         .aa .row-total .cell { background-color: var(--naartjie); color: var(--white); font-weight: 500; text-transform: uppercase; }
         .aa .row-muted .cell { font-style: italic; }
         .row-contents { display: contents; }
@@ -449,6 +459,7 @@
         }
         [x-cloak] { display: none !important; }
     </style>
+    @include('funds.partials.screen-centre')
 </head>
 <body x-data="fundEditor()">
     <!-- Notification (edit mode) -->
@@ -476,6 +487,7 @@
             <span x-show="editMode" x-cloak style="color: #e9a9a3; font-size: 13px;">Edit mode active &mdash; click any text to edit</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
+            <a href="{{ route('funds.edit', $fund) }}" class="btn-grey">Edit Fund</a>
             <a href="{{ route('funds.revisions', $fund) }}" class="btn-grey">Revisions</a>
             <a href="{{ route('funds.pdf', $fund) }}" class="btn-naartjie">Export PDF</a>
             <a href="{{ route('funds.index') }}" class="btn-muted">Back to Funds</a>
@@ -626,8 +638,19 @@
 
         @php
             $geo = $charts['geographicExposure'] ?? [];
+            // Trello 374: a region with no exposure (the reference's 0.0%
+            // "EM Latin America") gets neither a slice nor a legend key.
+            foreach ($geo['funds'] ?? [] as $gi => $pie) {
+                $geo['funds'][$gi]['slices'] = array_values(array_filter(
+                    $pie['slices'] ?? [],
+                    fn ($sl) => is_numeric($sl['value'] ?? null) && (float) $sl['value'] > 0
+                ));
+            }
             $pieLeft = ['875' => 8.2, '877' => 74.5, '879' => 142.0]; // relative to the .geo box (page x − 9.9mm)
-            $sliceColours = ['#d25347', '#29363d', '#cccccc', '#7a9cb4', '#535353', '#e2cea4', '#bfc3c5', '#697277'];
+            // Slate (#697277) comes before pale grey: the Asia pie uses seven
+            // colours and pale grey next to light grey made "Other" and
+            // Korea/Taiwan indistinguishable (Trello 227, 28 Sept).
+            $sliceColours = ['#d25347', '#29363d', '#cccccc', '#7a9cb4', '#535353', '#e2cea4', '#697277', '#bfc3c5'];
             // Trello 227: a region keeps one colour across the three pies
             // (North America = the Asia pie's United States, etc.). Names not
             // listed take the first palette colour not already claimed in that

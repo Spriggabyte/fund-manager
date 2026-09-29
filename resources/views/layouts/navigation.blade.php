@@ -18,9 +18,9 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    {{-- <x-nav-link :href="route('funds.index')" :active="request()->routeIs('funds.*')">
-                        {{ __('Funds') }}
-                    </x-nav-link> --}}
+                    <x-nav-link :href="route('funds.index')" :active="request()->routeIs('funds.*') && ! request()->routeIs('funds.create')">
+                        {{ __('Manage Funds') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('funds.create')" :active="request()->routeIs('funds.create')">
                         {{ __('Create Fund') }}
                     </x-nav-link>
@@ -84,8 +84,8 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('funds.index')" :active="request()->routeIs('funds.*')">
-                {{ __('Funds') }}
+            <x-responsive-nav-link :href="route('funds.index')" :active="request()->routeIs('funds.*') && ! request()->routeIs('funds.create')">
+                {{ __('Manage Funds') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('funds.create')" :active="request()->routeIs('funds.create')">
                 {{ __('Create Fund') }}

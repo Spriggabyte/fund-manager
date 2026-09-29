@@ -612,7 +612,11 @@
         .cost-table .foord-table td:nth-child(2) { width: 24.45%; }
         .cost-table .foord-table th:not(:first-child),
         .cost-table .foord-table td:not(:first-child) { text-align: center; padding-left: 0; padding-right: 0; } /* QC card 361: centred in the cell */
-        .cost-table .foord-table th { font-size: 8.01pt; padding-top: 0.3mm; }
+        /* QC cards 361/380: caps vertically centred in the navy bar
+           (reference 0.97mm clear above and below). Chrome snaps the row and
+           baseline to whole px, so this lands at 0.89 / 0.97mm — the closest
+           step; the old 0.3 / 0.6mm padding sat the caps 0.6mm high. */
+        .cost-table .foord-table th { font-size: 8.01pt; padding-top: 0.5mm; padding-bottom: 0.3mm; }
         .cost-table .foord-table td {
             font-size: 8.01pt;
             padding-top: 0.65mm;
@@ -1034,6 +1038,7 @@
            row, level with YRS / MONTH. */
         .perf-table th { vertical-align: bottom !important; }
     </style>
+    @include('funds.partials.screen-centre')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
     <!-- Notification -->
@@ -1069,6 +1074,12 @@
                 <span x-show="editMode" style="color: var(--naartjie-50); font-size: 13px;">Edit mode active - Click any text to edit</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
+                <a href="{{ route('funds.edit', $fund) }}" class="btn-grey">
+                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Fund
+                </a>
                 <a href="{{ route('funds.revisions', $fund) }}" class="btn-grey">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -1299,6 +1310,14 @@
                             // holds nothing in (ESAOT ranks 11-13 come through blank),
                             // so the reference's zero-weight tail is seeded static and
                             // appended here — see FUND-ONBOARDING.md §5p.
+                            // Data imported before the importer learned to skip the
+                            // feed's named 0 / "+0.0" placeholder rows still carries
+                            // them, so drop any seeded name from the feed rows here
+                            // too (QC card 378: listed twice). Keys are kept so the
+                            // remaining rows still edit their own sectors.N path.
+                            $psZeroNames = array_column($psData['zeroWeightSectors'] ?? [], 'name');
+                            $psSectors = array_filter($psSectors, fn ($row) => ! (in_array($row['name'] ?? null, $psZeroNames, true)
+                                && is_numeric($row['value'] ?? null) && (float) $row['value'] == 0.0));
                             foreach (($psData['zeroWeightSectors'] ?? []) as $zeroRow) {
                                 $psSectors[] = $zeroRow + ['value' => '-', 'change' => '-'];
                             }
@@ -1994,7 +2013,8 @@
                 scales: {
                     x: {
                         grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000', offset: true },
-                        border: { color: '#a5a5a5' },
+                        // QC card 379: ref axes are solid black (was #a5a5a5).
+                        border: { color: '#000', width: 1.2 },
                         ticks: {
                             // QC cards 315/360: ref 5.52pt dark navy, set
                             // 3.4mm below the axis.
@@ -2008,8 +2028,8 @@
                     y: {
                         min: 0,
                         max: 60,
-                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#a5a5a5' },
-                        border: { color: '#a5a5a5' },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                        border: { color: '#000', width: 1.2 },
                         ticks: {
                             // QC card 315: values darker (ref 6pt black).
                             font: { size: 8, family: 'Avenir Next, Lato, sans-serif' },

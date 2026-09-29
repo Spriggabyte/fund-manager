@@ -7,8 +7,10 @@ use App\Http\Controllers\FundDataFeedController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+// No public landing page: guests go to the login screen, signed-in users to
+// the dashboard.
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
 
 // Internal PDF render target hit by Puppeteer. It bypasses session auth (the
