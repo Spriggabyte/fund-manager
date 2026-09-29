@@ -904,8 +904,12 @@
            so the two tables' column breaks align vertically (per Paul's
            red-line annotation on the SKM scan); 7pt labels, 7pt medium values. */
         .fee-rates-table td {
-            /* QC card 255: label indent 1.2mm like the reference. */
-            padding: 0.3mm 1mm 0.3mm 1.1mm;
+            /* QC card 255: label indent 1.2mm like the reference.
+               Trello 388: cap-centred — Avenir Next's line box put the
+               caps 0.34mm high; shifting padding to the top lands them
+               0.91mm / 1.05mm from the row edges (the nearest Chrome px
+               step to centre; row pitch unchanged). */
+            padding: 0.47mm 1mm 0.13mm 1.1mm;
             /* Reference sets this table ~14% larger than the old 7pt
                ("Initial, exit and switching fees" measures 217px at 150dpi);
                row pitch unchanged (line-height still 9.4pt). */
@@ -1502,7 +1506,7 @@
                                 {{-- 827 display rules (per the published reference): only the
                                      Fund and Benchmark rows print — the import still stores the
                                      highest/lowest rows, but the published sheet omits them.
-                                     Footnotes: Fund⁶; the Benchmark row carries no marker. --}}
+                                     Footnotes: Fund⁶, Benchmark⁷ (Stats SA note, Trello 387). --}}
                                 @php
                                     $perfRows = $fund->data['mainContent']['performanceTable']['rows'] ?? [];
                                     $perfMainRows = array_values(array_filter($perfRows, fn ($row) =>
@@ -1514,6 +1518,10 @@
                                         }
                                         if (stripos($plain, 'fund') === 0) {
                                             return $name.'<sup>6</sup>';
+                                        }
+                                        // Trello 387: Benchmark⁷ pairs with the Stats SA note.
+                                        if (stripos($plain, 'benchmark') === 0) {
+                                            return $name.'<sup>7</sup>';
                                         }
                                         return $name;
                                     };
@@ -1728,6 +1736,12 @@
                     title: { text: null },
                     xAxis: {
                         categories: dates,
+                        // Trello 387: category axes pad half a category either
+                        // side, leaving a gap between the y-axis and the first
+                        // point. 'on' (with pointPlacement below) starts the
+                        // lines in the corner at Nov 24 and puts ticks under
+                        // their labels.
+                        tickmarkPlacement: 'on',
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
@@ -1789,7 +1803,7 @@
                     tooltip: { enabled: false },
                     plotOptions: {
                         line: { marker: { enabled: false }, lineWidth: 1.75, clip: false },
-                        series: { animation: false, clip: false },
+                        series: { animation: false, clip: false, pointPlacement: 'on' },
                     },
                     series: seriesDefs.map(s => ({
                         name: s.name, data: data.map(d => d[s.key]), color: s.color,

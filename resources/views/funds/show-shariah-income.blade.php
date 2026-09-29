@@ -477,7 +477,18 @@
            right-aligned value column at the block's right edge). */
         /* 1.04mm indent: the reference sets the bucket labels at x=137.48mm
            against the block's own 136.42mm left edge. */
-        .maturity-spread-rows { margin-top: 2.65mm; padding-left: 1.04mm; }
+        .maturity-spread-rows { margin-top: 2.65mm; padding-left: 1.04mm; position: relative; }
+        /* Bar column = the track: after the 1.04mm indent + 16.6mm label,
+           before the 8mm value column. */
+        .maturity-spread-svg {
+            position: absolute;
+            top: 0;
+            left: calc(1.04mm + 16.6mm);
+            width: calc(100% - 1.04mm - 16.6mm - 8mm);
+            height: 100%;
+            overflow: visible;
+            fill: var(--naartjie);
+        }
         .maturity-spread-row {
             display: flex;
             align-items: center;
@@ -497,10 +508,7 @@
             flex: 1;
             min-width: 0;
         }
-        .maturity-spread-bar {
-            height: 3.05mm;
-            background-color: var(--naartjie);
-        }
+        .maturity-spread-track { height: 3.05mm; }
         .maturity-spread-value {
             line-height: 3.05mm;
             width: 8mm;
@@ -1551,12 +1559,20 @@
                             <div class="maturity-spread-block">
                                 <h3 class="section-heading">{{ $spread['title'] ?? 'MATURITY SPREAD %' }}</h3>
                                 <div class="maturity-spread-rows">
+                                    {{-- Trello 382: one SVG for every bar. Separate 3.05mm divs on
+                                         the 4.03mm pitch sat at different sub-pixel offsets, so
+                                         Chrome snapped some to 11px and others to 12px (bars
+                                         looked unequal in the preview); SVG rects anti-alias
+                                         instead of snapping. --}}
+                                    <svg class="maturity-spread-svg" aria-hidden="true">
+                                        @foreach ($spread['categories'] ?? [] as $i => $bucket)
+                                            <rect x="0" y="{{ round($i * 4.03, 2) }}mm" height="3.05mm" width="{{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%" />
+                                        @endforeach
+                                    </svg>
                                     @foreach ($spread['categories'] ?? [] as $bucket)
                                         <div class="maturity-spread-row">
                                             <div class="maturity-spread-label">{{ $bucket['name'] }}</div>
-                                            <div class="maturity-spread-track">
-                                                <div class="maturity-spread-bar" style="width: {{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%"></div>
-                                            </div>
+                                            <div class="maturity-spread-track"></div>
                                             <div class="maturity-spread-value">{{ $bucket['label'] ?? '' }}</div>
                                         </div>
                                     @endforeach
@@ -1902,6 +1918,11 @@
                 // sheet's round-up-to-hundreds rule flattens this fund's
                 // 100–110 series against the floor.
                 const yMax = Math.ceil(maxVal / 2) * 2;
+                // Trello 348: the first plotted month-end is ~100.5, not 100,
+                // so a floor of exactly 100 left the curves starting above the
+                // x-axis. The reference axis meets the curves' start point
+                // (labelled "100"), so the floor is the lowest opening value.
+                const yMin = Math.min(...seriesDefs.map(s => data[0][s.key] ?? 100));
 
                 const dates = data.map(d => d.date);
                 const tickPositions = (function () {
@@ -1956,17 +1977,17 @@
                         tickColor: '#000',
                         // Axis crosses at the 100 baseline like the reference (the
                         // curve's first point sits ON the x-axis line).
-                        min: 100,
+                        min: yMin,
                         max: yMax,
                         endOnTick: false,
                         startOnTick: false,
-                        tickPositions: [100],
+                        tickPositions: [yMin],
                         labels: {
                             distance: 2,
                             y: -3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
-                                return this.value === 100 ? '100' : '';
+                                return this.isFirst ? '100' : '';
                             },
                         },
                     },

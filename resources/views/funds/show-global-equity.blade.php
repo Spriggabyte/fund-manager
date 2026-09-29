@@ -352,8 +352,10 @@
         }
 
         /* QC card 354: reference bars start at x=100.2mm, run 33.5mm for
-           the largest sector. Thickness/pitch follow the house bar spec
-           (equity sector bars, fund 11): 3.05mm bars on 4.03mm rows. */
+           the largest sector. Pitch follows the house bar spec (4.03mm
+           rows); card 354 (28 Sept) asked for the bars "a bit bigger" than
+           the house 3.05mm, so they return to the reference's 3.16-3.43mm
+           (3.3mm, Chrome snaps to 12/13px). */
         .ps-label {
             width: 35.2mm;
             text-align: left;
@@ -364,12 +366,12 @@
 
         .ps-bar-container {
             flex: 0 0 34.2mm;
-            height: 3.05mm;
+            height: 3.3mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 3.05mm;
+            height: 3.3mm;
             background-color: var(--naartjie);
         }
 
@@ -485,8 +487,9 @@
             font-size: 0;
         }
 
-        /* Top 10 — SECURITY 34.9%, SECTOR 35.3% (left), MARKET left,
-           % OF FUND left; uniform row grey (877 reference). */
+        /* Top 10 — SECURITY 34.9%, SECTOR 35.3% (left); MARKET and
+           % OF FUND centred (card 381: matches the other global funds,
+           not the 877 reference); uniform row grey. */
         .top10-table .foord-table td,
         .top10-table .foord-table th {
             padding-top: 0.45mm;
@@ -505,14 +508,14 @@
         }
         .top10-table .foord-table td:nth-child(3),
         .top10-table .foord-table th:nth-child(3) {
-            text-align: left;
+            text-align: center;
             width: 13.6%;
-            padding-left: 2.9mm;
+            padding-left: 1.4mm;
         }
         .top10-table .foord-table td:nth-child(4),
         .top10-table .foord-table th:nth-child(4) {
-            text-align: left;
-            padding-left: 2.9mm;
+            text-align: center;
+            padding-left: 1.4mm;
         }
         .top10-table .foord-table tbody tr td { background-color: var(--row-grey-2); }
 
@@ -627,10 +630,10 @@
             position: relative;
         }
 
-        /* QC card 355: the geographic plot is shorter than the performance
-           plot in the reference (x-axis 167.2mm vs 169.9mm), which lifts
-           its legend to 175.4mm. */
-        .chart-wrapper.geo-wrapper { height: 42.1mm; }
+        /* QC card 381: the reviewer wants the two charts in line — the
+           geographic plot grows so its x-axis sits level with the
+           performance chart's (overrides the reference's shorter plot). */
+        .chart-wrapper.geo-wrapper { height: 45mm; }
 
         .chart-wrapper canvas {
             width: 100% !important;
@@ -991,6 +994,10 @@
             font-size: 8.9pt !important;
             line-height: 10.4pt !important;
         }
+
+        /* Card 381: global-fixes centres header cells vertically; the
+           one-line YTD must sit on the second header line (reference). */
+        .perf-table th { vertical-align: bottom !important; }
 
         /* Cards 313/354: triangles further left of the change figure
            (reference: triangle at 162.8mm, number at 167.7mm). */

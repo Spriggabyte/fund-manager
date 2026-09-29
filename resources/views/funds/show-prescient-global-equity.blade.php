@@ -42,9 +42,8 @@
              - performance table: SINCE INCEPTION is wider than the
                other period columns and the sixth reads LAST 6
                MONTHS; rows are Fund / Benchmark / Peer group
-             - page 2 opens with an ASSET ALLOCATION % table (the
-               823 export carries no allocation keys — it is seeded
-               static and needs a manual monthly update)
+             - page 2 opens with an ASSET ALLOCATION % table (fed
+               from AA_TOTAL_EQ/_CASH/_PROP since the Aug 2026 export)
            ===================================================== */
 
         /* Foord Brand Colors — greys measured from the published reference PDF.
@@ -403,14 +402,17 @@
 
         /* Bars run 97.7mm → 127.3mm at full scale: a 29.6mm span on a
            32.1mm container, i.e. the longest bar reaches 92%. */
+        /* QC card 281 (24 Sept): bars thicker — the reference draws them
+           3.16mm. 3.175mm is exactly 12 CSS px, so Chrome no longer snaps
+           alternate rows to 2.91mm / 3.17mm as the house 3.05mm did. */
         .ps-bar-container {
             flex: 0 0 32.1mm;
-            height: 3.05mm;
+            height: 3.175mm;
             position: relative;
         }
 
         .ps-bar {
-            height: 3.05mm;
+            height: 3.175mm;
             background-color: var(--naartjie);
         }
 
@@ -424,10 +426,12 @@
             font-weight: 400;
         }
 
+        /* Reference change figures right-align at x=169.2mm (1.1mm inside
+           the variance column's gutter). */
         .ps-change {
             flex: 1;
             text-align: right;
-            padding-right: 0.3mm;
+            padding-right: 1.4mm;
         }
 
         .ps-variance {
@@ -437,12 +441,13 @@
         }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
-           stays black. Zero changes carry no arrow. The arrow sits 8.5mm left
-           of the change value, so it is padded rather than butted against it. */
+           stays black. Zero changes carry no arrow. QC card 281 (24 Sept):
+           the arrow sits 3.0mm clear of the change value (reference), not
+           the earlier 6.4mm. global-fixes draws the SVG and repeats the gap. */
         .change-up { color: #000; }
         .change-down { color: #000; }
-        .change-up::before { content: '▲'; font-size: 5.1pt; color: #000; margin-right: 6.4mm; }
-        .change-down::before { content: '▼'; font-size: 5.1pt; color: var(--light-blue); margin-right: 6.4mm; }
+        .change-up::before { content: '▲'; font-size: 5.1pt; color: #000; margin-right: 3mm; }
+        .change-down::before { content: '▼'; font-size: 5.1pt; color: var(--light-blue); margin-right: 3mm; }
 
         /* =====================================================
            TABLES — signed-off styling: 1.1pt white separators,
@@ -532,10 +537,15 @@
         /* GEOGRAPHIC EQUITY EXPOSURE — the 823 sheet draws a grouped
            Fund vs MSCI ACWI column chart here (822 prints a table). Bars
            measured at 3.73mm wide on a 13.72mm group pitch, 0-70% axis. */
+        /* QC card 384: the plot box matches the performance chart beside it
+           — same top, same floor, region labels on the date line — and the
+           canvas ends where the performance canvas does (+1mm, as there) so
+           the two legends stay level. */
         .geo-chart-wrapper {
-            height: 40.46mm;
+            height: 42.78mm;
             position: relative;
-            margin-top: 2.14mm;
+            margin-top: -2.7mm;
+            margin-bottom: 1mm;
         }
 
         /* Top 10 — the 823 reference splits the 139.0mm table into
@@ -645,9 +655,10 @@
             padding-top: 0.52mm;
             padding-bottom: 0.52mm;
         }
+        /* Reference: the unshaded "Foord global funds:" label lines up with
+           the row labels above it (x=65.6mm), not the table edge. */
         .fee-rates-table .foord-table tr.global-funds-header td {
             background-color: var(--white);
-            padding-left: 0;
         }
         .fee-rates-table .foord-table tr.sub-item td {
             background-color: var(--naartjie-20);
@@ -923,8 +934,8 @@
            the midline and the figure right-aligns at x=140.6mm, i.e. 62.4mm
            short of the table's right edge — a Publisher quirk reproduced
            with padding rather than a third column. Row pitch 4.24mm.
-           NOTE: the 823 export carries no allocation keys, so these three
-           rows are seeded static and need a manual monthly update. */
+           Fed from AA_TOTAL_EQ / _CASH / _PROP since the August 2026
+           export (QC card 33; FactsheetImporter). */
         .asset-alloc-table .foord-table th:first-child,
         .asset-alloc-table .foord-table td:first-child { width: 50%; }
         .asset-alloc-table .foord-table td {
@@ -1139,6 +1150,46 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    <style>
+        /* QC card 385: the sidebar ran to the page foot (ISIN at y=293mm vs
+           282mm on the reference). Tighter section gap than the global
+           1.4mm, and no tracking on the body copy, which was forcing extra
+           wraps (Distributions / Income characteristics ran a line long). */
+        .sidebar-section { margin-bottom: 1mm !important; }
+        .sidebar-section:last-child { margin-bottom: 0 !important; }
+        .sidebar-section p,
+        .sidebar-section .sidebar-value { letter-spacing: 0; }
+
+        /* QC card 281 (24 Sept): page-2 type too dark — the reference sets
+           the allocation, contributors, policy and fee-rate copy in dark
+           navy (#29363d); only the pink Foord-fund row and the TIC body
+           stay black, and the red TIC total row is Regular, not Medium. */
+        .asset-alloc-table .foord-table td,
+        .contributors-table .foord-table td,
+        .policy-objective-section .page2-body,
+        .fee-rates-table .foord-table tr:not(.sub-item) td { color: var(--dark-navy); }
+        .tic-table .foord-table tr.total-row td { font-weight: 400; }
+
+        /* Reference value columns start 3.5mm (fees) / 2.65mm (names) inside
+           their cells rather than on the cell edge. */
+        .fee-rates-table .foord-table td:nth-child(2) { padding-left: 3.95mm; }
+        .contributors-table td:nth-child(2) { padding-left: 3.95mm; }
+
+        /* QC card 386: fee + TIC text read top-aligned. Chrome snapped the
+           rows to 15 or 16 px with the text pinned 0.91mm under the top, so
+           the spare pixel always fell below it. Whole-pixel row heights
+           (fees 16px = 4.23mm, TIC 17px = 4.50mm — reference 4.2–4.4mm /
+           4.47mm). vertical-align: middle centres the line box, but Avenir
+           Next's cap height sits high in it, so a top pad (which the fixed
+           height absorbs) drops the caps onto the cell's centre line. */
+        .fee-rates-table .foord-table td,
+        .tic-table .foord-table td {
+            padding-bottom: 0 !important;
+            line-height: 1 !important;
+        }
+        .fee-rates-table .foord-table td { height: 16px; padding-top: 2px !important; }
+        .tic-table .foord-table td { height: 17px; padding-top: 1.5px !important; }
+    </style>
     @include('funds.partials.screen-centre')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
@@ -1688,7 +1739,7 @@
 
                 <!-- Right Content -->
                 <div class="page2-content">
-                    <!-- Asset Allocation % — static (no feed keys for 823) -->
+                    <!-- Asset Allocation % — AA_TOTAL_* (823 export from Aug 2026) -->
                     {{-- QC card 160: values print to one decimal (reference 94.6 / 4.7 / 0.7). --}}
                     @if(!empty($fund->data['page2Content']['assetAllocation']['rows']))
                         <div class="page2-section asset-alloc-table">
@@ -2104,10 +2155,18 @@
                     x: {
                         grid: { drawOnChartArea: false, drawTicks: true, tickLength: 4, tickColor: '#444' },
                         border: { color: '#444' },
+                        // Pin the label band to the performance chart's
+                        // (tick 4 + padding 2 + one 7.9px line); Chart.js
+                        // otherwise adds ~2px and lifts the floor.
+                        afterFit: (scale) => { scale.height = 13.9; },
+                        // QC card 384: region labels match the performance
+                        // chart's dates (7.9px = 5.9pt) and share their line.
                         ticks: {
-                            font: { size: 6.7, family: 'Avenir Next, Lato, sans-serif' },
+                            font: { size: 7.9, lineHeight: 1, family: 'Avenir Next, Lato, sans-serif' },
                             color: colors.darkNavy,
-                            padding: 1
+                            padding: 2,
+                            maxRotation: 0,
+                            autoSkip: false
                         }
                     },
                     y: {
@@ -2130,7 +2189,7 @@
                 // Reference plot box: x 73.1mm → 128.0mm, 0% baseline at
                 // y=217.8mm with the 70% gridline at 185.3mm.
                 // top/bottom: 70% line at y=185.6mm, axis at 217.9mm (reference).
-                layout: { padding: { right: 14, top: 3, bottom: 6.4 } }
+                layout: { padding: { right: 14, top: 3, bottom: 0 } }
             }
         });
         @endif

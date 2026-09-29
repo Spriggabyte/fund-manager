@@ -218,7 +218,7 @@
     .ps-change.change-down::before { margin-right: 2.7mm; }
 @elseif($__gfTemplate === 'show-prescient-global-equity')
     .ps-change.change-up::before,
-    .ps-change.change-down::before { margin-right: 6.4mm; }
+    .ps-change.change-down::before { margin-right: 3mm; }
 @endif
 
     /* The balanced-family tables already draw inline-SVG arrows; bring them

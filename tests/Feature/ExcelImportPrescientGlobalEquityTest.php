@@ -245,4 +245,36 @@ class ExcelImportPrescientGlobalEquityTest extends TestCase
 
         $this->assertSame('Change since 30 June 2026', $fund->fresh()->sector_allocation['subtitle']);
     }
+
+    /**
+     * QC card 33: from August 2026 the 823 export carries AA_TOTAL_EQ /
+     * AA_TOTAL_PROP / AA_TOTAL_CASH. They feed the page-2 ASSET ALLOCATION %
+     * table (in the published row order), not the domestic SA/change table
+     * that bare AA_TOTAL_* keys map to on the 820 sheet.
+     */
+    public function test_asset_allocation_totals_feed_the_page_two_table(): void
+    {
+        $fund = Fund::factory()->create([
+            'template' => 'show-prescient-global-equity',
+            'page2_content' => ['assetAllocation' => ['title' => 'ASSET ALLOCATION %', 'rows' => []]],
+            'asset_allocation' => ['geographicEquityExposure' => [['name' => 'Europe', 'fund' => 31, 'benchmark' => 15]]],
+        ]);
+
+        $path = $this->makeXlsx($this->factsheetRows([
+            ['AA_TOTAL_EQ', '94.6'],
+            ['AA_TOTAL_PROP', '0.7'],
+            ['AA_TOTAL_CASH', '4.7'],
+        ]), 'pge_factsheet_aa');
+        (new FactsheetImporter)->import($fund, $path);
+        $fund->save();
+        $fund = $fund->fresh();
+
+        $this->assertSame([
+            ['name' => 'Equity securities', 'value' => '94.6'],
+            ['name' => 'Money market', 'value' => '4.7'],
+            ['name' => 'Property', 'value' => '0.7'],
+        ], $fund->page2_content['assetAllocation']['rows']);
+        $this->assertSame('ASSET ALLOCATION %', $fund->page2_content['assetAllocation']['title']);
+        $this->assertSame(['geographicEquityExposure'], array_keys($fund->asset_allocation));
+    }
 }

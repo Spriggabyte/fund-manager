@@ -298,7 +298,11 @@ class FactsheetImporter extends AbstractExcelImporter
         // The Shariah income fund (841) exports PS_SA_EQUITY too, but publishes
         // the flex-income SA/FOREIGN/TOTAL/CHANGE portfolio structure rather
         // than the 840 asset allocation, so it is excluded by template.
-        if (isset($data['AA_SHARE_CURRENT'])) {
+        if (($fund->template ?? '') === 'show-prescient-global-equity') {
+            // 823 exports bare AA_TOTAL_* too, but they feed its page-2
+            // ASSET ALLOCATION % table, not the domestic branch below.
+            $this->mapPrescientGlobalEquityAssetAllocation($fund, $data);
+        } elseif (isset($data['AA_SHARE_CURRENT'])) {
             $this->mapEquityAssetAllocation($fund, $data);
         } elseif (isset($data['AA_DOM_EQ']) || isset($data['AA_DOM_TOTAL'])) {
             $this->mapSaAssetAllocation($fund, $data);
@@ -314,10 +318,8 @@ class FactsheetImporter extends AbstractExcelImporter
             // The 827 export switched from the PS_SA_*/PS_TOTAL_* schema
             // (still current on the June 2026 export) to a numbered
             // PS_ITEM_NAME_n/PS_ITEM_WEIGHT_n list from July 2026 onward.
-            // mapPortfolioStructure's inflation-income branch ignores the
-            // PS_ITEM_* values (still placeholders, not the published
-            // buckets — see its docblock) but needs to run for the
-            // "Change since <quarter end>" subtitle fix.
+            // mapPortfolioStructure's inflation-income branch maps the
+            // PS_ITEM_* rows and the "Change since <quarter end>" subtitle.
             $this->mapPortfolioStructure($fund, $data);
         }
     }
@@ -337,23 +339,73 @@ class FactsheetImporter extends AbstractExcelImporter
      * negative effective exposures ("-5") print as-is. Change signs come from
      * the PS_TOTAL_CHANGE_SIGN_* keys; rows without a sign print a bare "-".
      */
+    /**
+     * 827 portfolio-structure rows from the numbered PS_ITEM_* list, in feed
+     * order. Names follow the published typography: "1-2 years" prints with
+     * an em dash ("1—2 years") and "Money Market" in sentence case. Values
+     * and changes print to one decimal; the triangle comes from the sign key
+     * (a "-" sign is a down triangle even on a 0.0 change, as published).
+     *
+     * @return list<array{name: string, value: string, change: string, changeDirection: string}>
+     */
+    private function inflationStructureRows(array $data): array
+    {
+        $rows = [];
+        for ($i = 1; isset($data["PS_ITEM_NAME_{$i}"]); $i++) {
+            $name = trim((string) $data["PS_ITEM_NAME_{$i}"]);
+            if ($name === '' || $name === '-') {
+                continue;
+            }
+
+            $name = preg_replace('/(\d)\s*[-–—]\s*(\d)/u', '$1—$2', $name);
+            $name = preg_replace('/^Money Market$/i', 'Money market', $name);
+
+            $weight = $data["PS_ITEM_WEIGHT_{$i}"] ?? '-';
+            $change = $data["PS_TOTAL_CHANGE_{$i}"] ?? '-';
+            $sign = trim((string) ($data["PS_TOTAL_CHANGE_SIGN_{$i}"] ?? ''));
+
+            if ($sign === '' || ! is_numeric($change)) {
+                $changeDisplay = '-';
+                $direction = '';
+            } else {
+                $changeDisplay = ($sign === '-' ? '▼ ' : '▲ ').number_format(abs((float) $change), 1);
+                $direction = $sign === '-' ? 'down' : 'up';
+            }
+
+            $rows[] = [
+                'name' => $name,
+                'value' => is_numeric($weight) ? number_format((float) $weight, 1) : '-',
+                'change' => $changeDisplay,
+                'changeDirection' => $direction,
+            ];
+        }
+
+        return $rows;
+    }
+
     private function mapPortfolioStructure(Fund $fund, array $data): void
     {
         // The inflation linked income fund (827) publishes ILB maturity
-        // buckets ("RSA ILB 2—3 years", …). The July/August 2026 exports do
-        // carry PS_ITEM_NAME_n / PS_ITEM_WEIGHT_n / PS_TOTAL_CHANGE_n keys,
-        // but both months exported the SAME eight values and changes (a
-        // duplicated "Replica ILB 3-5 years" label included) that match
-        // neither published sheet — placeholders, not live data. The stored
-        // rows therefore stay hand-maintained from the reference (inline
-        // edit, like the bond fund's ALBI benchmark bars); only the
-        // "Change since <quarter end>" subtitle tracks the feed.
+        // buckets ("RSA ILB 2—3 years", …). From July 2026 the export carries
+        // them as a numbered PS_ITEM_NAME_n / PS_ITEM_WEIGHT_n /
+        // PS_TOTAL_CHANGE_n / PS_TOTAL_CHANGE_SIGN_n list; the re-exported
+        // August 2026 feed ties up with the published sheet row for row
+        // (Trello 110). The June-style PS_SA_* export has no bucket rows, so
+        // the stored (inline-edited) rows are kept and only the subtitle
+        // tracks the feed.
         if (($fund->template ?? '') === 'show-inflation-income') {
+            $assetAllocation = $fund->asset_allocation ?? [];
             if ($this->formatChangeDate($data) !== '') {
-                $assetAllocation = $fund->asset_allocation ?? [];
                 $assetAllocation['subtitle'] = 'Change since '.$this->formatChangeDate($data);
-                $fund->asset_allocation = $assetAllocation;
             }
+
+            $rows = $this->inflationStructureRows($data);
+            if ($rows) {
+                $assetAllocation['rows'] = $rows;
+                $assetAllocation['total'] = ['name' => 'TOTAL', 'value' => '100.0', 'change' => ''];
+            }
+
+            $fund->asset_allocation = $assetAllocation;
 
             return;
         }
@@ -691,6 +743,39 @@ class FactsheetImporter extends AbstractExcelImporter
             ];
             $fund->asset_allocation = $assetAllocation;
         }
+    }
+
+    /**
+     * Prescient Foord Global Equity Feeder (823): the page-2 ASSET ALLOCATION %
+     * table — three label/value rows in the published order. The export only
+     * carries AA_TOTAL_EQ / _CASH / _PROP from August 2026 (QC card 33); an
+     * export without them leaves the stored rows untouched.
+     */
+    private function mapPrescientGlobalEquityAssetAllocation(Fund $fund, array $data): void
+    {
+        $categories = [
+            'EQ' => 'Equity securities',
+            'CASH' => 'Money market',
+            'PROP' => 'Property',
+        ];
+
+        $rows = [];
+        foreach ($categories as $key => $name) {
+            $value = $data["AA_TOTAL_{$key}"] ?? null;
+            // Missing / blank / ERR cells keep the stored table.
+            if ($value === null || ! is_numeric(trim((string) $value))) {
+                return;
+            }
+            $rows[] = ['name' => $name, 'value' => number_format((float) $value, 1, '.', '')];
+        }
+
+        $page2 = $fund->page2_content ?? [];
+        $page2['assetAllocation'] = array_merge(
+            ['title' => 'ASSET ALLOCATION %'],
+            $page2['assetAllocation'] ?? [],
+            ['rows' => $rows],
+        );
+        $fund->page2_content = $page2;
     }
 
     /**
@@ -1196,10 +1281,11 @@ class FactsheetImporter extends AbstractExcelImporter
      * Bond-fund maturity breakdown (MATURITY_*) → chart_data['maturityData']
      * for the grouped Fund-vs-Benchmark bar chart.
      *
-     * The feed only carries the fund's buckets — the ALBI benchmark
-     * composition is maintained by hand and preserved across imports. The
-     * per-bucket change labels (MAT_CHANGE_*) export as ERR some months, in
-     * which case the previously stored label is kept.
+     * The ALBI benchmark buckets come from MATURITY_BM_* ("28.0%") when the
+     * export carries them (from the 29 Sept 2026 re-export of August);
+     * older exports have none, so the hand-maintained bars are preserved.
+     * The per-bucket change labels (MAT_CHANGE_*) export as ERR some months,
+     * in which case the previously stored label is kept.
      */
     private function mapMaturityBreakdown(Fund $fund, array $data): void
     {
@@ -1233,11 +1319,14 @@ class FactsheetImporter extends AbstractExcelImporter
         foreach ($buckets as $key => [$label, $changeKey]) {
             $prior = $previous->get($label) ?? [];
             $change = $data[$changeKey] ?? null;
+            $benchmark = $data[str_replace('MATURITY_', 'MATURITY_BM_', $key)] ?? null;
 
             $categories[] = [
                 'name' => $label,
                 'fund' => $this->dashToZero((string) ($data[$key] ?? '-')),
-                'benchmark' => $prior['benchmark'] ?? null,
+                'benchmark' => $this->isUsableStat($benchmark)
+                    ? $this->dashToZero(rtrim(trim((string) $benchmark), '%'))
+                    : ($prior['benchmark'] ?? null),
                 // The 826 feed exports a bare "%" (number dropped) for every
                 // MAT_CHANGE_ key some months — a label needs a digit.
                 'change' => $this->isUsableStat($change) && $change !== '-'
@@ -1317,7 +1406,8 @@ class FactsheetImporter extends AbstractExcelImporter
             return sprintf('(%s%s%%)', $change >= 0 ? '+' : '', $change + 0);
         }
 
-        $change = trim((string) $change);
+        // The re-exported August 826 feed signs with a space ("+ 13.5%").
+        $change = preg_replace('/^([+-])\s+/', '$1', trim((string) $change));
 
         return str_starts_with($change, '(') ? $change : "({$change})";
     }
@@ -1781,6 +1871,23 @@ class FactsheetImporter extends AbstractExcelImporter
         // ("… performance as calculated by Foord (estimated for March 2026)");
         // keep the month in step with the sheet, like the TER footnote.
         $monthLabel = $data['MONTH_END_DATE_MMMM_YYYY'] ?? null;
+
+        // Trello 387: the inflation linked income sheet (827) prints
+        // Benchmark⁷ with the same Stats SA note; add it ahead of the
+        // rounding note on funds seeded before the note existed.
+        if (($fund->template ?? '') === 'show-inflation-income' && isset($performanceTable['footnotes'])) {
+            $hasStatsNote = collect($performanceTable['footnotes'])
+                ->contains(fn (string $note) => str_contains($note, 'Stats SA'));
+            if (! $hasStatsNote) {
+                $statsNote = '⁷ Source: Stats SA, performance as calculated by Foord'
+                    .($monthLabel ? " (estimated for {$monthLabel})" : '');
+                $notes = array_values($performanceTable['footnotes']);
+                $roundingIndex = collect($notes)->search(fn (string $note) => str_starts_with($note, 'Note:'));
+                array_splice($notes, $roundingIndex === false ? count($notes) : $roundingIndex, 0, [$statsNote]);
+                $performanceTable['footnotes'] = $notes;
+            }
+        }
+
         if ($monthLabel && isset($performanceTable['footnotes'])) {
             $performanceTable['footnotes'] = array_map(
                 fn (string $note) => preg_replace('/\(estimated for [A-Za-z]+ \d{4}\)/', "(estimated for {$monthLabel})", $note),

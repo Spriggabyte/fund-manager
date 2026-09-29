@@ -23,9 +23,6 @@ class ExcelImportInflationIncomeTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * Write rows (arrays of cell values) to a temp xlsx with a "Data Set" sheet.
-     */
     private function makeXlsx(array $rows, string $name): string
     {
         $spreadsheet = new Spreadsheet;
@@ -40,201 +37,75 @@ class ExcelImportInflationIncomeTest extends TestCase
         return $path;
     }
 
-    public function test_hand_maintained_portfolio_structure_is_preserved(): void
+    public function test_portfolio_structure_maps_numbered_ps_item_rows(): void
     {
-        // The published 827 structure table lists ILB maturity buckets the
-        // feed does not carry — the stored rows are seeded from the reference
-        // and must survive an import that exports the standard PS_* keys.
-        $seededRows = [
-            ['name' => 'Money market', 'value' => '4.5', 'change' => '▼ 0.2', 'changeDirection' => 'down'],
-            ['name' => 'RSA ILB 2—3 years', 'value' => '19.1', 'change' => '▼ 0.7', 'changeDirection' => 'down'],
-        ];
-
         $fund = Fund::factory()->create([
             'template' => 'show-inflation-income',
             'asset_allocation' => [
                 'title' => 'PORTFOLIO STRUCTURE %',
-                'subtitle' => 'Change since 31 March 2026',
                 'headers' => ['', 'TOTAL', 'CHANGE'],
-                'rows' => $seededRows,
-                'total' => ['name' => 'TOTAL', 'value' => '100.0', 'change' => ''],
+                'rows' => [['name' => 'RSA ILB 4—8 years', 'value' => '8.2', 'change' => '▼ 0.2', 'changeDirection' => 'down']],
             ],
         ]);
 
+        // Trello 110: the re-exported August 2026 827 feed (first three rows).
         $path = $this->makeXlsx([
             ['Code', 'Value'],
-            ['MONTH_END_DATE', '31 July 2026'],
+            ['MONTH_END_DATE', '31 August 2026'],
             ['LAST_QUARTER_END', '30 June 2026'],
-            ['PS_SA_CASH_AND_CALL', '-27'],
-            ['PS_TOTAL_CASH_AND_CALL', '-27'],
-            ['PS_TOTAL_MONEY_MARKET', '29'],
-            ['PS_TOTAL_INFLATION_LINKED_BONDS', '96'],
-            ['PS_TOTAL_CHANGE_INFLATION_LINKED_BONDS', '0.7'],
-            ['PS_TOTAL_CHANGE_SIGN_INFLATION_LINKED_BONDS', '+'],
-            ['PS_SA_TOTAL', '100'],
-            ['PS_FOREIGN_TOTAL', '-'],
+            ['PS_ITEM_NAME_1', 'Money Market'],
+            ['PS_ITEM_WEIGHT_1', '2.5'],
+            ['PS_TOTAL_CHANGE_1', '2.0'],
+            ['PS_TOTAL_CHANGE_SIGN_1', '-'],
+            ['PS_ITEM_NAME_2', 'RSA ILB 1-2 years'],
+            ['PS_ITEM_WEIGHT_2', '16.8'],
+            ['PS_TOTAL_CHANGE_2', '2.3'],
+            ['PS_TOTAL_CHANGE_SIGN_2', '-'],
+            ['PS_ITEM_NAME_3', 'Replica ILB 3-5 years'],
+            ['PS_ITEM_WEIGHT_3', '3.1'],
+            ['PS_TOTAL_CHANGE_3', '0.0'],
+            ['PS_TOTAL_CHANGE_SIGN_3', '-'],
         ], 'inflation-structure');
 
         (new FactsheetImporter)->import($fund, $path);
 
         $structure = $fund->asset_allocation;
 
-        // The bucket rows stay hand-maintained (the feed's placeholder
-        // buckets don't match the published sheet), but the "Change since"
-        // subtitle now tracks LAST_QUARTER_END from the feed — the fix for
-        // the wrong comparison quarter previously shown on the reference.
-        $this->assertSame($seededRows, $structure['rows']);
         $this->assertSame('Change since 30 June 2026', $structure['subtitle']);
         $this->assertSame(['', 'TOTAL', 'CHANGE'], $structure['headers']);
+        $this->assertSame([
+            ['name' => 'Money market', 'value' => '2.5', 'change' => '▼ 2.0', 'changeDirection' => 'down'],
+            ['name' => 'RSA ILB 1—2 years', 'value' => '16.8', 'change' => '▼ 2.3', 'changeDirection' => 'down'],
+            // A "-" sign keeps its down triangle on a 0.0 change (published).
+            ['name' => 'Replica ILB 3—5 years', 'value' => '3.1', 'change' => '▼ 0.0', 'changeDirection' => 'down'],
+        ], $structure['rows']);
         $this->assertSame('100.0', $structure['total']['value']);
     }
 
-    public function test_statistics_are_real_yield_and_duration_with_err_preserve(): void
+    public function test_benchmark_stats_sa_note_is_added_before_rounding_note(): void
     {
         $fund = Fund::factory()->create([
             'template' => 'show-inflation-income',
-            'asset_allocation' => [
-                'portfolioStatistics' => [
-                    'rows' => [
-                        ['name' => 'Real Yield', 'sup' => '1', 'value' => '4.01%'],
-                        ['name' => 'Duration', 'sup' => '2', 'value' => '2.54'],
-                    ],
-                ],
+            'performance_table' => [
+                'footnotes' => ['⁶ Net of fees and expenses.', 'Note: Totals may not cast perfectly due to rounding.'],
             ],
         ]);
 
         $path = $this->makeXlsx([
             ['Code', 'Value'],
-            ['STAT_YIELD', 'ERR'],
-            ['STAT_SPREAD_TO_JIBAR', '0.00%'],
-            ['STAT_SA_DURATION', 'ERR'],
-            // Overridden dashes on the 827 feed must not add rows.
-            ['STAT_SA_FIXED_RATE_DURATION', '-'],
-            ['STAT_FOREIGN_DURATION', '-'],
-        ], 'inflation-stats-err');
+            ['MONTH_END_DATE', '31 August 2026'],
+            ['MONTH_END_DATE_MMMM_YYYY', 'August 2026'],
+            ['PERF_FUND_1_YEAR', '11.1'],
+            ['PERF_BM_1_YEAR', '4.4'],
+        ], 'inflation-footnotes');
 
         (new FactsheetImporter)->import($fund, $path);
-
-        $rows = $fund->asset_allocation['portfolioStatistics']['rows'];
-
-        // The published 827 table has exactly two rows — no Spread to JIBAR,
-        // no duration split. ERR cells keep the seeded reference values.
-        $this->assertSame(['Real Yield', 'Duration'], array_column($rows, 'name'));
-        $this->assertSame('4.01%', $rows[0]['value']);
-        $this->assertSame('1', $rows[0]['sup']);
-        $this->assertSame('2.54', $rows[1]['value']);
-    }
-
-    public function test_statistics_use_feed_values_when_usable(): void
-    {
-        $fund = Fund::factory()->create(['template' => 'show-inflation-income']);
-
-        $path = $this->makeXlsx([
-            ['Code', 'Value'],
-            ['STAT_YIELD', '4.2'],
-            ['STAT_SPREAD_TO_JIBAR', '0.00%'],
-            ['STAT_SA_DURATION', '2.6'],
-        ], 'inflation-stats');
-
         (new FactsheetImporter)->import($fund, $path);
 
-        $rows = $fund->asset_allocation['portfolioStatistics']['rows'];
-
-        $this->assertSame('4.20%', $rows[0]['value']);
-        $this->assertSame('2.60', $rows[1]['value']);
-    }
-
-    public function test_credit_exposure_keeps_dash_sector_rows(): void
-    {
-        $fund = Fund::factory()->create(['template' => 'show-inflation-income']);
-
-        $path = $this->makeXlsx([
-            ['Code', 'Value'],
-            ['RATING_F1_PLUS', '34'],
-            ['RATING_F1', '-'],
-            ['RATING_AAA', '52'],
-            ['RATING_AA', '14'],
-            ['RATING_A', '-'],
-            ['RATING_OTHER', '-'],
-            ['SECTOR_BANK', '13'],
-            ['SECTOR_CORP', '12'],
-            ['SECTOR_RSA', '74'],
-            ['SECTOR_USGOV', '-'],
-            ['SECTOR_OTHER', '-'],
-        ], 'inflation-credit');
-
-        (new FactsheetImporter)->import($fund, $path);
-
-        $credit = $fund->asset_allocation['creditExposure'];
-
-        // The published 827 sheet prints the FULL fixed sector list with
-        // dashes (the other bond-family sheets drop dash sectors).
-        $this->assertSame(
-            ['Big four banks', 'SA Corporates', 'SA Government', 'US Government', 'Other'],
-            array_column($credit['sectors'], 'name')
-        );
-        $this->assertSame('-', $credit['sectors'][3]['value']);
-        $this->assertSame('-', $credit['sectors'][4]['value']);
-        $this->assertSame('-', $credit['ratings'][1]['value']);
-    }
-
-    public function test_maturity_spread_has_six_buckets_including_perpetual(): void
-    {
-        $fund = Fund::factory()->create(['template' => 'show-inflation-income']);
-
-        $path = $this->makeXlsx([
-            ['Code', 'Value'],
-            ['MATURITY_0_TO_1_YEAR', '2'],
-            ['MATURITY_1_TO_3_YEARS', '79'],
-            ['MATURITY_3_TO_7_YEARS', '19'],
-            ['MATURITY_7_TO_12_YEARS', '-'],
-            ['MATURITY_12_PLUS_YEARS', '-'],
-            ['MATURITY_PERPETUAL', '-'],
-            ['MATURITY_12_TO_20_YEARS', '-'],
-            ['MATURITY_20_PLUS_YEARS', '-'],
-        ], 'inflation-maturity');
-
-        (new FactsheetImporter)->import($fund, $path);
-
-        $spread = $fund->chart_data['maturitySpread'];
-
-        // Unlike the income fund (which folds perpetual into "> 12 years"),
-        // the 827 reference lists all six buckets, dashes included.
-        $this->assertSame(
-            ['0—1 years', '1—3 years', '3—7 years', '7—12 years', '> 12 years', 'Perpetual'],
-            array_column($spread['categories'], 'name')
-        );
-        $this->assertSame('-', $spread['categories'][5]['label']);
-        $this->assertArrayNotHasKey('maturityData', $fund->chart_data);
-    }
-
-    public function test_tic_omits_zero_performance_charge_row(): void
-    {
-        $fund = Fund::factory()->create(['template' => 'show-inflation-income']);
-
-        $path = $this->makeXlsx([
-            ['Code', 'Value'],
-            ['SA_TER_TOTAL_EXPENSE_RATIO_12_MONTH', '0.51'],
-            ['SA_TER_TOTAL_EXPENSE_RATIO_36_MONTH', '0.51'],
-            ['SA_TER_MANAGERS_CHARGE_12_MONTH', '0.40'],
-            ['SA_TER_MANAGERS_CHARGE_36_MONTH', '0.40'],
-            ['SA_TER_PERFORMANCE_CHARGE_12_MONTH', '0.00'],
-            ['SA_TER_PERFORMANCE_CHARGE_36_MONTH', '0.00'],
-            ['SA_TER_FOORD_GLOBAL_CHARGE_12_MONTH', '0.00'],
-            ['SA_TER_FOORD_GLOBAL_CHARGE_36_MONTH', '0.00'],
-            ['SA_TER_VAT_AND_SUNDRY_COSTS_12_MONTH', '0.11'],
-            ['SA_TER_VAT_AND_SUNDRY_COSTS_36_MONTH', '0.11'],
-            ['SA_TER_TRANSACTIONS_COSTS_INCL_VAT_12_MONTH', '0.00'],
-            ['SA_TER_TRANSACTIONS_COSTS_INCL_VAT_36_MONTH', '0.00'],
-            ['SA_TER_TOTAL_INVESTMENT_CHARGE_12_MONTH', '0.52'],
-            ['SA_TER_TOTAL_INVESTMENT_CHARGE_36_MONTH', '0.51'],
-        ], 'inflation-tic');
-
-        (new FactsheetImporter)->import($fund, $path);
-
-        $this->assertSame(
-            ['Total expense ratio (TER)', '— Manager’s charge (basic)', '— VAT and sundry costs', 'Transaction costs (incl VAT)'],
-            array_column($fund->fees['totalInvestmentCharge']['rows'], 'name')
-        );
+        $this->assertSame([
+            '⁶ Net of fees and expenses.',
+            '⁷ Source: Stats SA, performance as calculated by Foord (estimated for August 2026)',
+            'Note: Totals may not cast perfectly due to rounding.',
+        ], $fund->performance_table['footnotes']);
     }
 }

@@ -969,27 +969,27 @@
             height: 49mm;
         }
 
-        /* QC card 344: the eight quarterly x labels ran together ("Sep 24Dec
-           24…") at the reference's 51.2% width / 51mm plot. The chart takes
-           61.5% of the column (the rest of the row is empty) so the labels
-           clear each other by ~1.5mm; longer histories step the labels out
-           to 6/12 months in the chart script. */
+        /* QC cards 344/383: the eight quarterly x labels ran together ("Sep
+           24Dec 24…") at the reference's 51.2% width / 51mm plot. The client
+           wants the reference width kept and fewer labels instead: the chart
+           script labels every 6 months (quarterly ticks stay). */
         .perf-chart-container {
-            max-width: 61.5%;
+            max-width: 51.2%;
         }
 
         /* QC card 289: the reference's y caption is Avenir Next 7pt (6pt
            here), and the reviewer asked for it slightly higher. Its box is
            sized explicitly — `.chart-wrapper > div` stretches every child to
            the wrapper, which tied the caption's rotated position to the chart
-           width. Rotated about its centre: x ≈ 1.8–4.4mm, centred 12.3mm
+           width. Rotated about its centre: x ≈ 2.4–5.0mm (≈2mm clear of the
+           axis, QC 383), centred 12.3mm
            below the wrapper top (axis runs 2.4 → 37.3mm). */
         .chart-wrapper > .chart-ytitle {
             font-size: 7pt;
             line-height: 3mm;
             width: 26mm !important;
             height: 3mm !important;
-            left: -9.9mm;
+            left: -9.3mm;
             top: 10.8mm;
         }
 
@@ -1914,19 +1914,20 @@
                 const portfolioMaxVal = Math.max(
                     ...portfolioData.map(d => Math.max(d.fund || 0, d.benchmark || 0))
                 );
-                // Headroom above the peak, measured off the reference: its R 120
-                // end label sits 26.6mm above the 100 baseline over a 37.2mm plot,
-                // which puts the axis top ~4 index points above the series peak.
-                const portfolioYMax = Math.ceil(portfolioMaxVal) + 4;
+                // Headroom above the peak, measured off the August reference: the
+                // y-axis tops out 2.0mm above the fund's peak on a 35.0mm axis
+                // (peak 33.0mm above the 100 baseline). QC card 289 (28 Sept): the
+                // old ceil(peak) + 4 ran the axis visibly past the lines.
+                const portfolioYMax = 100 + (portfolioMaxVal - 100) * 35.0 / 33.0;
 
                 // Calendar ticks every three months anchored on the first data
                 // point — the 840 reference labels Sep 24, Dec 24, … Jun 26, and the
                 // series opens at the September 2024 inception.
                 const portfolioDates = portfolioData.map(d => d.date);
                 const portfolioTickPositions = (function () {
-                    // QC card 344: the widened plot fits nine labels without
-                    // them touching; beyond that, label every 6 or 12 months.
-                    const step = portfolioDates.length <= 27 ? 3 : (portfolioDates.length <= 54 ? 6 : 12);
+                    // Quarterly ticks like the reference; the x formatter labels
+                    // every second one (QC card 383). Long histories step out.
+                    const step = portfolioDates.length <= 54 ? 3 : 12;
                     const positions = [];
                     for (let i = 0; i < portfolioDates.length; i += step) positions.push(i);
                     // The reference stops one tick short of the final month rather
@@ -1938,10 +1939,17 @@
                 Highcharts.chart('portfolioChart', {
                     // Top spacing 9px (QC card 289): the reference leaves 3.3mm
                     // between the heading and the y-axis top; the x-axis stays put.
-                    chart: { type: 'line', backgroundColor: 'transparent', spacing: [9, 46, 4, 5], animation: false },
+                    // Left 6.8 / right 48.8 + "100" distance 6.3 (QC card 383): with pointPlacement 'on' the plot
+                    // loses its half-category padding; these land the y-axis at 72.5mm
+                    // and the x-axis end at 123.3mm as on the August reference.
+                    chart: { type: 'line', backgroundColor: 'transparent', spacing: [9, 48.8, 4, 6.8], animation: false },
                     title: { text: null },
                     xAxis: {
                         categories: portfolioDates,
+                        // QC card 383: 'on' (with pointPlacement below) starts the
+                        // lines ON the y-axis as in the reference; the default
+                        // 'between' left half a category of gap before them.
+                        tickmarkPlacement: 'on',
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
@@ -1954,7 +1962,12 @@
                             // run together ("Sep 24Dec 24").
                             style: { fontSize: '8px', color: '#000', textOverflow: 'none', whiteSpace: 'nowrap' },
                             allowOverlap: true,
-                            formatter: function () { return formatXTickPortfolio(this.value); },
+                            // QC card 383: label every 6 months (every second
+                            // quarterly tick) so the labels no longer touch.
+                            formatter: function () {
+                                const i = portfolioDates.indexOf(this.value);
+                                return (portfolioDates.length > 54 || i % 6 === 0) ? formatXTickPortfolio(this.value) : '';
+                            },
                             rotation: 0,
                             autoRotation: false,
                             // The 840 reference drops its tick labels well below the
@@ -1983,7 +1996,7 @@
                         startOnTick: false,
                         tickPositions: [100],
                         labels: {
-                            distance: 2,
+                            distance: 6.3,
                             y: -3,
                             style: { fontSize: '8px', color: '#000' },
                             formatter: function () {
@@ -2009,7 +2022,7 @@
                         line: { marker: { enabled: false }, lineWidth: 1.1 },
                         // 'rectangle' collapses to a dot at symbolHeight 1;
                         // 'lineMarker' with markers off draws the reference's rule.
-                        series: { animation: false, legendSymbol: 'lineMarker' },
+                        series: { animation: false, legendSymbol: 'lineMarker', pointPlacement: 'on' },
                     },
                     series: [
                         {

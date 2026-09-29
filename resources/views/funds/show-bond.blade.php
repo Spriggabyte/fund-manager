@@ -1883,15 +1883,26 @@
                 const matTicks = [];
                 for (let t = matMin; t <= matMax; t += 10) matTicks.push(t);
 
+                // Aug 2026 reference geometry (PyMuPDF, card 25): plot 78.4 →
+                // 115.1mm, axis ends at 200.4mm, hairline (0.25pt) axes, 10%
+                // y ticks only (no minor ticks), 1.05mm category-boundary
+                // ticks under the x-axis, 6.7pt labels 1.6mm below the axis.
+                const matAxis = { color: '#000', width: 0.35 };
+                const matFont = { fontSize: '8.9px', color: '#000' };
                 Highcharts.chart('maturityChart', {
-                    chart: { type: 'column', backgroundColor: 'transparent', spacing: [4, 4, 2, 0], animation: false },
+                    chart: {
+                        type: 'column', backgroundColor: 'transparent', animation: false,
+                        spacing: [0, 0, 0, 0], marginTop: 18.4, marginBottom: 39.6, marginRight: 13.7, marginLeft: 31.8,
+                    },
                     title: { text: null },
                     xAxis: {
                         categories: maturityData.map(d => d.name),
-                        lineWidth: 0,
-                        tickWidth: 0,
+                        lineWidth: matAxis.width, lineColor: matAxis.color,
+                        tickWidth: matAxis.width, tickColor: matAxis.color, tickLength: 4,
+                        tickmarkPlacement: 'between',
                         labels: {
-                            style: { fontSize: '8px', color: '#000', textAlign: 'center' },
+                            style: { ...matFont, textAlign: 'center' },
+                            y: 14,
                             formatter: function () {
                                 const entry = maturityData[this.pos] || {};
                                 return entry.change ? this.value + '<br>' + entry.change : this.value;
@@ -1905,20 +1916,18 @@
                         min: matTicks[0], max: matTicks[matTicks.length - 1],
                         tickPositions: matTicks,
                         gridLineWidth: 0,
-                        lineWidth: 1, lineColor: '#000',
-                        tickWidth: 1, tickLength: 3, tickColor: '#000',
-                        minorTickInterval: 5, minorTickWidth: 1, minorTickLength: 3,
-                        minorTickColor: '#000', minorGridLineWidth: 0,
-                        plotLines: [{ value: 0, color: '#000', width: 1, zIndex: 4 }],
+                        lineWidth: matAxis.width, lineColor: matAxis.color,
+                        tickWidth: matAxis.width, tickLength: 3, tickColor: matAxis.color,
                         labels: {
-                            style: { fontSize: '8px', color: '#000' },
+                            style: matFont,
+                            distance: 7,
                             formatter: function () { return this.value + '%'; },
                         },
                     },
                     legend: {
-                        itemStyle: { fontSize: '8px', fontWeight: 'normal', color: '#000' },
-                        symbolWidth: 8, symbolHeight: 8, symbolRadius: 0,
-                        itemDistance: 24, margin: 8, padding: 0,
+                        itemStyle: { ...matFont, fontWeight: 'normal' },
+                        symbolWidth: 4.6, symbolHeight: 4.6, symbolPadding: 8.7, symbolRadius: 0,
+                        itemDistance: 33.4, margin: 0, padding: 0, x: 5, y: 3,
                         squareSymbol: true,
                     },
                     tooltip: { enabled: false },

@@ -408,4 +408,56 @@ class ExcelImportBondTest extends TestCase
         $this->assertSame('(-12.3%)', $categories['7-12 Years']['change']);
         $this->assertSame('(+0.3%)', $categories['12-20 Years']['change']);
     }
+
+    public function test_maturity_maps_feed_benchmark_bars_and_spaced_change_labels(): void
+    {
+        // The 29 Sept 2026 re-export of the August 826 feed carries the ALBI
+        // buckets (MATURITY_BM_*, "28.0%") and signs the change labels with a
+        // space ("+ 13.5%", "- 12.3%").
+        $fund = Fund::factory()->create([
+            'template' => 'show-bond',
+            'chart_data' => [
+                'maturityData' => [
+                    'title' => 'MATURITY BREAKDOWN',
+                    'categories' => [
+                        ['name' => '0-1 Year', 'fund' => -17, 'benchmark' => 0, 'change' => ''],
+                        ['name' => '20+ Years', 'fund' => 16, 'benchmark' => 17.2, 'change' => ''],
+                    ],
+                ],
+            ],
+        ]);
+
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['MONTH_END_DATE', '31 August 2026'],
+            ['LAST_QUARTER_END', '30 June 2026'],
+            ['MATURITY_0_TO_1_YEAR', '0'],
+            ['MATURITY_BM_0_TO_1_YEAR', '0.0%'],
+            ['MAT_CHANGE_0_TO_1_YEARS', '+ 0.0%'],
+            ['MATURITY_3_TO_7_YEARS', '42'],
+            ['MATURITY_BM_3_TO_7_YEARS', '28.0%'],
+            ['MAT_CHANGE_3_TO_7_YEARS', '+ 13.5%'],
+            ['MATURITY_7_TO_12_YEARS', '15'],
+            ['MATURITY_BM_7_TO_12_YEARS', '28.0%'],
+            ['MAT_CHANGE_7_TO_12_YEARS', '- 12.3%'],
+            ['MATURITY_20_PLUS_YEARS', '16'],
+            ['MAT_CHANGE_20_PLUS_YEARS', '- 1.5%'],
+        ], 'bond-maturity-bm');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $categories = collect($fund->chart_data['maturityData']['categories'])->keyBy('name');
+
+        $this->assertSame(0, $categories['0-1 Year']['fund']);
+        $this->assertEquals(0.0, $categories['0-1 Year']['benchmark']);
+        $this->assertEquals(28.0, $categories['3-7 Years']['benchmark']);
+        $this->assertEquals(28.0, $categories['7-12 Years']['benchmark']);
+        // No MATURITY_BM_ key for this bucket — the stored bar survives.
+        $this->assertSame(17.2, $categories['20+ Years']['benchmark']);
+
+        $this->assertSame('(+0.0%)', $categories['0-1 Year']['change']);
+        $this->assertSame('(+13.5%)', $categories['3-7 Years']['change']);
+        $this->assertSame('(-12.3%)', $categories['7-12 Years']['change']);
+        $this->assertSame('(-1.5%)', $categories['20+ Years']['change']);
+    }
 }

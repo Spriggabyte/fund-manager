@@ -491,13 +491,28 @@
 
         /* Maturity spread — CSS bar list (labels left, naartjie bars,
            right-aligned value column at the block's right edge). */
-        .maturity-spread-rows { margin-top: 2mm; }
+        /* QC card 288 round 3 (29 Sept): "thicker bars and more spacing
+           below each heading" / "bigger spacing between year periods" —
+           back to the 825 reference geometry (overrides the house bar spec):
+           4.91mm bars on a 5.97mm pitch, first bar 5.7mm below the heading
+           top. */
+        .maturity-spread-rows { margin-top: 2.47mm; position: relative; }
+        /* Bars are rects in one SVG over the track column (label 17mm, value
+           8mm): separate divs snapped to different px heights (3.17 vs
+           2.88mm in the export). */
+        .maturity-spread-svg {
+            position: absolute;
+            top: 0;
+            left: 17mm;
+            width: calc(100% - 17mm - 8mm);
+            height: 100%;
+            overflow: visible;
+            fill: var(--naartjie);
+        }
         .maturity-spread-row {
             display: flex;
             align-items: center;
-            /* House bar spec (equity sector bars, fund 11): 4.03mm pitch =
-               3.05mm bar + 0.98mm gap (was 4.9mm on 6.0mm, QC cards 288/331). */
-            margin-bottom: 0.98mm;
+            margin-bottom: 1.06mm;
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -505,19 +520,16 @@
             min-width: 17mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 3.05mm;
+            line-height: 4.91mm;
             color: #000;
         }
         .maturity-spread-track {
             flex: 1;
             min-width: 0;
-        }
-        .maturity-spread-bar {
-            height: 3.05mm;
-            background-color: var(--naartjie);
+            height: 4.91mm;
         }
         .maturity-spread-value {
-            line-height: 3.05mm;
+            line-height: 4.91mm;
             width: 8mm;
             min-width: 8mm;
             text-align: right;
@@ -535,17 +547,19 @@
             margin-bottom: 0;
         }
         /* QC card 288: RATING and SECTOR read as one table in the reference —
-           the gap between them is a single cell separator, not two. */
+           the gap between them is a single cell separator, not two. Round 3
+           (28 Sept, "needs a split between % and sector"): the old -1.1pt
+           overlap closed that separator completely; the reference keeps one
+           white rule between % and SECTOR. -0.26mm (not 0) because each
+           table's own border-spacing edge adds one rule already — this
+           prints the same 0.26mm gap as the other cell separators. */
         .credit-tables .table-container + .table-container {
-            margin-left: -1.1pt;
+            margin-left: -0.26mm;
         }
+        /* Fixed row height (border-box: includes the cell padding) so both
+           tables' rows — padding rows included — and TOTALs stay level; the
+           "Other" row snapped 0.26mm short of its SECTOR neighbour. */
         .credit-tables table td {
-            padding-top: 0.62mm;
-            padding-bottom: 0.62mm;
-        }
-        /* Padding rows (no content) keep the full row pitch so both TOTAL
-           rows sit level (border-box: height includes the cell padding). */
-        .credit-tables table td:empty {
             height: 4.25mm;
         }
         /* % value column — narrow, right-aligned like the reference. */
@@ -824,7 +838,10 @@
             width: 22mm !important;
             height: 4mm !important;
             left: -7.9mm;
-            top: 12mm;
+            /* QC card 288 round 3: caption moved up — its top now sits
+               level with the top of the y-axis like the reference (was
+               3.6mm lower). */
+            top: 8.4mm;
         }
 
         .chart-explanation {
@@ -960,6 +977,37 @@
             text-align: left;
             font-weight: 500;
             padding-left: 1.6mm;
+        }
+
+        /* QC cards 288/335 round 3 (29 Sept): "text still looks top aligned,
+           please center align vertically". vertical-align: middle centres
+           Avenir Next's line box, whose ascent is taller than its descent,
+           so the digits printed 0.3–0.45mm above centre (0.68mm in fee
+           rates). The padding here is weighted towards the top so the ink
+           sits in the middle; row pitch is unchanged apart from fee rates.
+           Card 335: fee-rate rows now use the TIC row height (8.5pt line +
+           1.24mm padding = 4.24mm; they were 3.94mm and looked squashed). */
+        .fee-rates-table td {
+            line-height: 8.5pt;
+            padding-top: 0.86mm;
+            padding-bottom: 0.38mm;
+        }
+        .tic-table table td,
+        .tic-table table tr.total-row td {
+            padding-top: 0.82mm;
+            padding-bottom: 0.42mm;
+        }
+        .credit-tables table th {
+            padding-top: 0.75mm;
+            padding-bottom: 0.45mm;
+        }
+        .credit-tables table td {
+            padding-top: 0.76mm;
+            padding-bottom: 0.48mm;
+        }
+        .performance-table table td {
+            padding-top: 0.62mm;
+            padding-bottom: 0.28mm;
         }
 
         .fee-description {
@@ -1406,12 +1454,15 @@
                             <div class="maturity-spread-block">
                                 <h3 class="section-heading">{{ $spread['title'] ?? 'MATURITY SPREAD %' }}</h3>
                                 <div class="maturity-spread-rows">
+                                    <svg class="maturity-spread-svg" aria-hidden="true">
+                                        @foreach ($spread['categories'] ?? [] as $i => $bucket)
+                                            <rect x="0" y="{{ round($i * 5.97, 2) }}mm" height="4.91mm" width="{{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%" />
+                                        @endforeach
+                                    </svg>
                                     @foreach ($spread['categories'] ?? [] as $bucket)
                                         <div class="maturity-spread-row">
                                             <div class="maturity-spread-label">{{ $bucket['name'] }}</div>
-                                            <div class="maturity-spread-track">
-                                                <div class="maturity-spread-bar" style="width: {{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%"></div>
-                                            </div>
+                                            <div class="maturity-spread-track"></div>
                                             <div class="maturity-spread-value">{{ $bucket['label'] ?? '' }}</div>
                                         </div>
                                     @endforeach
