@@ -5,7 +5,7 @@
                 {{ __('Dashboard') }}
             </h2>
             <div class="flex space-x-3">
-                <a href="{{ route('funds.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+                <a href="{{ route('funds.create') }}" class="bg-naartjie-600 hover:bg-naartjie-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
                     Create New Fund
                 </a>
                 <a href="{{ route('funds.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
@@ -18,10 +18,10 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Welcome Banner -->
-            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg">
+            <div class="bg-navy-700 rounded shadow-sm border-l-8 border-naartjie-600">
                 <div class="p-6 text-white">
-                    <h3 class="text-2xl font-bold mb-2">Welcome back, {{ Auth::user()->name }}!</h3>
-                    <p class="text-indigo-100">Create and manage unit trusts below</p>
+                    <h3 class="text-2xl font-medium mb-2">Welcome back, {{ Auth::user()->name }}!</h3>
+                    <p class="font-serif italic text-navy-100">Create and manage unit trusts below</p>
                 </div>
             </div>
 
@@ -43,8 +43,8 @@
 
                 {{-- <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center">
-                        <div class="bg-blue-100 rounded-lg p-3">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="bg-navy-100 rounded-lg p-3">
+                            <svg class="w-6 h-6 text-navy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                         </div>
@@ -57,8 +57,8 @@
 
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center">
-                        <div class="bg-purple-100 rounded-lg p-3">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="bg-sky-100 rounded-lg p-3">
+                            <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                             </svg>
                         </div>
@@ -98,8 +98,8 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-10 w-10">
-                                                    <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                                        <span class="text-indigo-600 font-medium text-sm" title="Fund code (SFTP data feed)">{{ $fund->fund_code ?: substr($fund->name, 0, 2) }}</span>
+                                                    <div class="h-10 w-10 rounded-full bg-navy-700 flex items-center justify-center">
+                                                        <span class="text-white font-medium text-sm" title="Fund code (SFTP data feed)">{{ $fund->fund_code ?: substr($fund->name, 0, 2) }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="ml-4">
@@ -110,7 +110,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($fund->displayClass())
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 text-sky-800">
                                                     {{ $fund->displayClass() }}
                                                 </span>
                                             @else
@@ -166,7 +166,7 @@
                         <h3 class="mt-4 text-lg font-medium text-gray-900">No funds yet</h3>
                         <p class="mt-2 text-sm text-gray-500">Get started by creating your first fund.</p>
                         <div class="mt-6">
-                            <a href="{{ route('funds.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+                            <a href="{{ route('funds.create') }}" class="bg-naartjie-600 hover:bg-naartjie-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
                                 Create Your First Fund
                             </a>
                         </div>

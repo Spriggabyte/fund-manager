@@ -2,7 +2,7 @@
 
 <x-input-label for="data" :value="__('Fund Data (Optional JSON)')" />
 <textarea id="data" name="data" rows="10"
-    class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm font-mono text-sm"
+    class="block mt-1 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm font-mono text-sm"
     placeholder='&#123;
   "value": 100000.00,
   "performance": "+5.2%",

@@ -143,7 +143,9 @@
         .header-logo {
             position: absolute;
             top: 9mm;
-            right: 5.5mm;
+            /* Trello 429: the logo's right edge (the "D") lines up with
+               the right edge of the tables (203.45mm); it overhung by 1mm. */
+            right: 6.55mm;
             height: 13mm;
         }
 
@@ -202,7 +204,9 @@
             min-width: 60mm;
             max-width: 60mm;
             background-color: transparent;
-            padding: 5.7mm 4mm 4mm 8mm;
+            /* Trello 429: top of the first line of copy level with the
+               right-hand column's (cap tops aligned across the two columns). */
+            padding: 5.38mm 4mm 4mm 8mm;
             overflow: hidden;
         }
 
@@ -585,9 +589,12 @@
            name column takes the 31mm balance. */
         .perf-table th {
             font-size: 7pt;
-            line-height: 8.7pt;
+            /* Trello 429: two-line headers set tighter (fund 39 ratio, 1.09 x
+               the size); the space goes to the padding so the bar keeps its
+               height. */
+            line-height: 7.6pt;
             text-align: right;
-            padding: 0.35mm 0.5mm;
+            padding: 0.74mm 0.5mm;
             vertical-align: bottom;
         }
         .perf-table th:first-child {
@@ -774,7 +781,9 @@
             align-items: center;
             justify-content: center;
             padding: 0 2mm;
-            margin: 10mm 5.2mm 0 9.15mm;
+            /* Trello 429: the bar spans exactly the disclaimer copy
+               column below it (9mm → 60mm − 4mm). */
+            margin: 10mm 4mm 0 9mm;
             text-align: center;
         }
 
@@ -782,7 +791,9 @@
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
             font-size: 8pt;
-            line-height: 10.9pt;
+            /* Trello 429: two-line headline set tighter (8pt on 8.7pt, as
+               the performance headers). */
+            line-height: 8.7pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             margin: 0;

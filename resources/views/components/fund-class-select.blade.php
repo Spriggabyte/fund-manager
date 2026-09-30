@@ -1,7 +1,7 @@
 @props(['selected' => ''])
 
 <x-input-label for="class" :value="__('Fund Class (Optional)')" />
-<select id="class" name="class" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+<select id="class" name="class" class="block mt-1 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm">
     <option value="">Select a fund class...</option>
     @foreach (['Equity', 'Bond', 'Mixed', 'Money Market', 'Real Estate', 'Commodities'] as $class)
         <option value="{{ $class }}" {{ old('class', $selected) === $class ? 'selected' : '' }}>{{ $class }}</option>

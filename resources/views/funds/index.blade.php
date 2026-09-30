@@ -7,7 +7,7 @@
             <div class="flex space-x-3" x-data="{ busy: null }">
                 <form method="POST" action="{{ route('funds.data-feed.download') }}" @submit="busy = 'download'">
                     @csrf
-                    <button type="submit" :disabled="busy" class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
+                    <button type="submit" :disabled="busy" class="bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
                             title="Download the newest month of fund data from the SFTP server">
                         <span x-text="busy === 'download' ? 'Downloading…' : 'Download Latest Data'">Download Latest Data</span>
                     </button>
@@ -15,12 +15,12 @@
                 <form method="POST" action="{{ route('funds.data-feed.import') }}"
                       @submit="if (! confirm('Import the latest downloaded data into every fund with a fund code? Existing values will be overwritten; a revision is saved before each import.')) { $event.preventDefault(); return; } busy = 'import'">
                     @csrf
-                    <button type="submit" :disabled="busy" class="bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
+                    <button type="submit" :disabled="busy" class="bg-navy-500 hover:bg-navy-600 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out"
                             title="Import each fund's newest downloaded month">
                         <span x-text="busy === 'import' ? 'Importing…' : 'Import Latest Data'">Import Latest Data</span>
                     </button>
                 </form>
-                <a href="{{ route('funds.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+                <a href="{{ route('funds.create') }}" class="bg-naartjie-600 hover:bg-naartjie-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
                     Create New Fund
                 </a>
                 <a href="{{ route('dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
@@ -58,8 +58,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center">
-                        <div class="bg-blue-100 rounded-lg p-3">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="bg-navy-100 rounded-lg p-3">
+                            <svg class="w-6 h-6 text-navy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                         </div>
@@ -72,8 +72,8 @@
 
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center">
-                        <div class="bg-purple-100 rounded-lg p-3">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="bg-sky-100 rounded-lg p-3">
+                            <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                             </svg>
                         </div>
@@ -112,13 +112,13 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 h-10 w-10">
-                                                    <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                                        <span class="text-indigo-600 font-medium text-sm" title="Fund code (SFTP data feed)">{{ $fund->fund_code ?: substr($fund->name, 0, 2) }}</span>
+                                                    <div class="h-10 w-10 rounded-full bg-navy-700 flex items-center justify-center">
+                                                        <span class="text-white font-medium text-sm" title="Fund code (SFTP data feed)">{{ $fund->fund_code ?: substr($fund->name, 0, 2) }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="ml-4">
                                                     <div class="text-sm font-medium text-gray-900">
-                                                        <a href="{{ route('funds.show', $fund) }}" class="hover:text-indigo-600">{{ $fund->name }}</a>
+                                                        <a href="{{ route('funds.show', $fund) }}" class="hover:text-naartjie-600">{{ $fund->name }}</a>
                                                     </div>
                                                     <div class="text-sm text-gray-500">ID: {{ $fund->id }}</div>
                                                 </div>
@@ -126,7 +126,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($fund->displayClass())
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-sky-100 text-sky-800">
                                                     {{ $fund->displayClass() }}
                                                 </span>
                                             @else
@@ -153,7 +153,7 @@
                                     <div class="flex justify-between items-start mb-3">
                                         <div>
                                             <h4 class="font-medium text-gray-900">
-                                                <a href="{{ route('funds.show', $fund) }}" class="hover:text-indigo-600">{{ $fund->name }}</a>
+                                                <a href="{{ route('funds.show', $fund) }}" class="hover:text-naartjie-600">{{ $fund->name }}</a>
                                             </h4>
                                             <p class="text-sm text-gray-500">{{ $fund->displayClass() ? 'Class '.$fund->displayClass() : 'Unclassified' }} • ID: {{ $fund->id }}</p>
                                         </div>
@@ -176,7 +176,7 @@
                         <h3 class="mt-4 text-lg font-medium text-gray-900">No funds yet</h3>
                         <p class="mt-2 text-sm text-gray-500">Get started by creating your first fund.</p>
                         <div class="mt-6">
-                            <a href="{{ route('funds.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+                            <a href="{{ route('funds.create') }}" class="bg-naartjie-600 hover:bg-naartjie-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
                                 Create Your First Fund
                             </a>
                         </div>

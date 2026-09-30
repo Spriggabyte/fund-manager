@@ -34,6 +34,17 @@ class Fund extends Model
 
     public const GLOBAL_EQUITY_FEEDER_TEMPLATE = 'show-global-equity-feeder';
 
+    /**
+     * The six global fact sheets the Foord QC reviewer treats as
+     * "international" (875, 874, 877, 878, 880, 879). Every other fact sheet,
+     * the rand feeders included, follows the local-fund typography spec in
+     * funds/partials/global-fixes.blade.php.
+     */
+    public const INTERNATIONAL_TEMPLATES = [
+        'show-international', 'show-international-trust', 'show-global-equity',
+        'show-hassen-shariah', 'show-australian-feeder', 'show-asia-ex-japan',
+    ];
+
     use HasFactory;
 
     protected $fillable = [

@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Users') }}
             </h2>
-            <a href="{{ route('admin.users.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+            <a href="{{ route('admin.users.create') }}" class="bg-naartjie-600 hover:bg-naartjie-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
                 Add User
             </a>
         </div>
@@ -43,7 +43,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $user->email }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if ($user->isAdmin())
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">Admin</span>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-naartjie-100 text-naartjie-800">Admin</span>
                                         @else
                                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">User</span>
                                         @endif
@@ -60,7 +60,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $user->funds_count }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-3">
-                                            <a href="{{ route('admin.users.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                            <a href="{{ route('admin.users.edit', $user) }}" class="text-naartjie-600 hover:text-naartjie-900">Edit</a>
                                             @can('disable', $user)
                                                 @if ($user->isDisabled())
                                                     <form method="POST" action="{{ route('admin.users.enable', $user) }}" class="inline">

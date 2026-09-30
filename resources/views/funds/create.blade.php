@@ -28,7 +28,7 @@
                         <!-- Fund Class -->
                         <div>
                             <x-input-label for="class" :value="__('Fund Class (Optional)')" />
-                            <select id="class" name="class" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <select id="class" name="class" class="block mt-1 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm">
                                 <option value="">Select a fund class...</option>
                                 <option value="Equity" {{ old('class') === 'Equity' ? 'selected' : '' }}>Equity</option>
                                 <option value="Bond" {{ old('class') === 'Bond' ? 'selected' : '' }}>Bond</option>
@@ -45,7 +45,7 @@
                         <div>
                             <x-input-label for="data" :value="__('Fund Data (Optional JSON)')" />
                             <textarea id="data" name="data" rows="10" 
-                                class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm font-mono text-sm"
+                                class="block mt-1 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm font-mono text-sm"
                                 placeholder='&#123;
   "value": 100000.00,
   "performance": "+5.2%",
@@ -72,15 +72,15 @@
                         </div>
 
                         <!-- JSON Validation Helper -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="bg-navy-50 border border-navy-200 rounded-lg p-4">
                             <div class="flex">
                                 <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg class="h-5 w-5 text-navy-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="ml-3">
-                                    <p class="text-sm text-blue-800">
+                                    <p class="text-sm text-navy-800">
                                         <strong>JSON Tips:</strong> Make sure your JSON is properly formatted with matching brackets and quotes around string values. 
                                         You can validate your JSON using online tools before saving.
                                     </p>

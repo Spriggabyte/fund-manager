@@ -122,7 +122,9 @@
             display: flex;
             justify-content: flex-end;
             align-items: flex-start;
-            padding: 7mm 1.5mm 0 4mm;
+            /* Trello 429: 6.53mm right lands the logo's right edge on the
+               tables' right edge (203.45mm); at 1.5mm it overhung by 5mm. */
+            padding: 7mm 6.53mm 0 4mm;
         }
 
         .date-badge {
@@ -219,15 +221,9 @@
             margin: 0;
         }
 
-        /* Cards 198/286: the global local-sidebar spec (6pt/6.8pt headings,
-           7pt/8.2pt body, 1.4mm gaps) packs this sheet's sidebar tighter than
-           the reference, which measures heading->body baselines 2.92mm, body
-           lines 3.0mm and last line->next heading 4.49mm. The extra
-           .sidebar class out-specifies partials/global-fixes. */
-        .sidebar .sidebar-section .sidebar-heading { line-height: 2.85mm !important; }
-        .sidebar .sidebar-section .sidebar-text { line-height: 3mm !important; }
-        .sidebar .sidebar-section { margin-bottom: 1.64mm !important; }
-        .sidebar .sidebar-section:last-child { margin-bottom: 0 !important; }
+        /* Trello 429 supersedes cards 198/286's looser equity sidebar
+           (2.85mm / 3mm lines, 1.64mm gaps): every local sheet now takes the
+           fund-35 setting in partials/global-fixes. */
 
         /* Equity Indicator Dots — inline SVG circles, NOT border-radius spans:
            Chromium's print-to-PDF engine rasterises border-radius + background-color
@@ -249,7 +245,9 @@
         /* ── Main Content ── */
         .main-content {
             flex: 1;
-            padding: 4.1mm 6.6mm 0 4.5mm;
+            /* Trello 429: top of the first line of copy level with the
+               grey column's (cap tops aligned across the two columns). */
+            padding: 5.27mm 6.6mm 0 4.5mm;
             min-width: 0;
             overflow: hidden;
         }
@@ -436,8 +434,11 @@
         .perf-table table td { background-color: var(--cell-perf); }
         .perf-table table th {
             font-size: 6pt;
-            line-height: 7pt;
-            padding: 1mm 1mm;
+            /* Trello 429: two-line headers set tighter (fund 39 ratio, 1.09 x
+               the size); the space goes to the padding so the bar keeps its
+               height. */
+            line-height: 6.5pt;
+            padding: 1.18mm 1mm;
             text-align: right;
         }
         .perf-table table th:first-child { text-align: left; width: 20%; }
@@ -501,7 +502,9 @@
             margin-bottom: 6.3mm;
             font-weight: 500;
             font-size: 8pt;
-            line-height: 10.9pt;
+            /* Trello 429: two-line headline set tighter (8pt on 8.7pt, as
+               the performance headers). */
+            line-height: 8.7pt;
             text-transform: uppercase;
             letter-spacing: 0.02em;
         }
@@ -1420,7 +1423,7 @@
                             <span x-data="editableField('footer.info', '{{ $fund->data['footer']['info'] }}')"
                                   @click="editMode && startEdit()"
                                   :class="editMode ? 'editable' : ''"
-                                  x-text="value"></span>
+                                  x-html="String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/,\s+(the Foord team)/, ',<br>$1')"></span>
                         </p>
                         <p class="footer-free">
                             <span x-data="editableField('footer.freeOfCharge', '{{ $fund->data['footer']['freeOfCharge'] }}')"

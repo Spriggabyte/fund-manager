@@ -5,20 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $fund->name }} - Revisions</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-50 text-gray-900">
     <div class="max-w-7xl mx-auto bg-white shadow-lg">
         <!-- Header -->
-        <div class="bg-gray-800 text-white p-6 flex justify-between items-center">
+        <div class="bg-navy-700 text-white p-6 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold">{{ $fund->name }} - Revisions</h1>
                 <p class="text-gray-300 text-sm mt-2">View and restore previous versions of this fund</p>
             </div>
             <div class="flex items-center space-x-3">
                 <a href="{{ route('funds.show', $fund) }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out">
+                   class="bg-navy-600 hover:bg-navy-700 text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out">
                     Back to Fund
                 </a>
                 <a href="{{ route('funds.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
@@ -35,14 +34,14 @@
         @endif
 
         <!-- Current Version Info -->
-        <div class="p-6 border-b border-gray-200 bg-blue-50">
-            <h2 class="text-lg font-semibold text-blue-800 mb-2">Current Version</h2>
+        <div class="p-6 border-b border-gray-200 bg-navy-50">
+            <h2 class="text-lg font-semibold text-navy-800 mb-2">Current Version</h2>
             <div class="flex justify-between items-center">
                 <div>
                     <p class="text-sm text-gray-600">Last updated: {{ $fund->updated_at->format('M d, Y H:i:s') }}</p>
                     <p class="text-sm text-gray-600">Total revisions: {{ $revisions->total() }}</p>
                 </div>
-                <span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">Current</span>
+                <span class="bg-navy-200 text-navy-800 px-3 py-1 rounded-full text-sm font-medium">Current</span>
             </div>
         </div>
 
@@ -85,7 +84,7 @@
                             
                             <div class="flex space-x-2 ml-4">
                                 <a href="{{ route('funds.revisions.show', [$fund, $revision]) }}" 
-                                   class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition duration-150">
+                                   class="bg-navy-600 hover:bg-navy-700 text-white px-3 py-1 rounded text-sm transition duration-150">
                                     View
                                 </a>
                                 <form method="POST" action="{{ route('funds.revisions.restore', [$fund, $revision]) }}" 

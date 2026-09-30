@@ -131,7 +131,9 @@
         .logo {
             position: absolute;
             top: 9mm;
-            right: 5.5mm;
+            /* Trello 429: the logo's right edge (the "D") lines up with
+               the right edge of the tables (203.45mm); it overhung by 1mm. */
+            right: 6.55mm;
             height: 13mm;
         }
 
@@ -275,7 +277,9 @@
            heading left edge at x≈65.3mm, measured 387px @150dpi). */
         .main-content {
             flex: 1;
-            padding: 5.4mm 6mm 4mm 5.35mm;
+            /* Trello 429: top of the first line of copy level with the
+               grey column's (cap tops aligned across the two columns). */
+            padding: 5.24mm 6mm 4mm 5.35mm;
             min-width: 0;
             overflow: hidden;
         }
@@ -398,9 +402,12 @@
             color: var(--white);
             font-weight: 500;
             font-size: 7pt;
-            line-height: 8.7pt;
+            /* Trello 429: two-line headers set tighter (fund 39 ratio, 1.09 x
+               the size); the space goes to the padding so the bar keeps its
+               height. */
+            line-height: 7.6pt;
             text-align: right;
-            padding: 0.35mm 0.5mm;
+            padding: 0.74mm 0.5mm;
         }
         .performance-table table th:first-child {
             text-align: left;
@@ -715,7 +722,9 @@
             align-items: center;
             justify-content: center;
             padding: 0 2mm;
-            margin: 10mm 5.2mm 0 9.15mm;
+            /* Trello 429: the bar spans exactly the disclaimer copy
+               column below it (9mm → 60mm − 5.1mm). */
+            margin: 10mm 5.1mm 0 9mm;
             text-align: center;
         }
 
@@ -723,7 +732,9 @@
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
             font-size: 8pt;
-            line-height: 10.9pt;
+            /* Trello 429: two-line headline set tighter (8pt on 8.7pt, as
+               the performance headers). */
+            line-height: 8.7pt;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             margin: 0;
@@ -1852,7 +1863,8 @@
                 <!-- Footer -->
                 @if(isset($fund->data['footer']))
                     <div class="footer">
-                        <p class="footer-text">{{ $fund->data['footer']['info'] ?? 'Please visit our website for more information regarding our investment track record, the Foord team, current and archived news items, or forms and documents.' }}</p>
+                        {{-- Trello 429: "the Foord team" starts the second line so the list reads cleanly. --}}
+                        <p class="footer-text">{!! preg_replace('/,\s+(the Foord team)/u', ',<br>$1', e($fund->data['footer']['info'] ?? 'Please visit our website for more information regarding our investment track record, the Foord team, current and archived news items, or forms and documents.')) !!}</p>
                         <p class="footer-text">{{ $fund->data['footer']['freeOfCharge'] ?? 'This information is provided free of charge.' }}</p>
                         <div class="footer-contact">
                             <p>T. {{ $fund->data['footer']['contact']['phone'] ?? '+27 21 532 6969' }}</p>

@@ -459,9 +459,10 @@
             letter-spacing: 0;
             text-transform: uppercase;
             text-align: right;
-            /* Avenir's caps sit high in the line box: ~0.15mm more top
-               than bottom padding centres them optically (QC card 256). */
-            padding: 0.62mm 1.4mm 0.42mm 1.5mm;
+            /* Card 430: equal top/bottom padding — the cap-centred face
+               (partials/global-intl-fixes) now centres the caps; the old
+               0.2mm top-heavy optical offset (QC card 256) is dropped. */
+            padding: 0.52mm 1.4mm 0.52mm 1.5mm;
         }
 
         .foord-table th:first-child { text-align: left; }
@@ -472,7 +473,7 @@
             font-weight: 400;
             font-size: 8pt;
             line-height: 8.5pt;
-            padding: 0.6mm 1.4mm 0.42mm 1.5mm;
+            padding: 0.51mm 1.4mm 0.51mm 1.5mm;
             text-align: right;
             overflow: hidden;
         }
@@ -524,13 +525,13 @@
 
         /* Top 10 — SECURITY 40.1%, ASSET CLASS 28.3% (left), MARKET and
            % OF FUND centred; row backgrounds fade in pairs. */
-        /* QC card 256: text optically centred in the cell (more top than
-           bottom padding) and MARKET / % OF FUND trimmed to the reference's
-           18.5mm columns (36.3 / 36.3 / 13.3 / 13.3%). */
+        /* QC card 256: MARKET / % OF FUND trimmed to the reference's
+           18.5mm columns (36.3 / 36.3 / 13.3 / 13.3%). Card 430: equal
+           top/bottom padding, the cap-centred face does the centring. */
         .top10-table .foord-table td,
         .top10-table .foord-table th {
-            padding-top: 0.55mm;
-            padding-bottom: 0.35mm;
+            padding-top: 0.45mm;
+            padding-bottom: 0.45mm;
         }
         .top10-table .foord-table td:first-child,
         .top10-table .foord-table th:first-child {
@@ -598,7 +599,7 @@
             color: #000;
             font-size: 8pt;
             line-height: 8.5pt;
-            padding: 0.52mm 0.5mm 0.32mm;
+            padding: 0.42mm 0.5mm;
         }
         .perf-table td:first-child { padding-left: 1.5mm; }
         /* Row greys fade down the table (measured off the 875 reference):
@@ -628,14 +629,14 @@
         .cost-table .foord-table th { font-size: 8pt; }
         .cost-table .foord-table td {
             font-size: 8pt;
-            padding-top: 0.7mm;
-            padding-bottom: 0.5mm;
+            padding-top: 0.6mm;
+            padding-bottom: 0.6mm;
         }
         .cost-table .foord-table tr.total-row td {
             font-size: 8pt;
             font-weight: 400;
-            padding-top: 0.7mm;
-            padding-bottom: 0.5mm;
+            padding-top: 0.6mm;
+            padding-bottom: 0.6mm;
         }
 
         /* === Chart === */
@@ -965,6 +966,7 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    @include('funds.partials.global-intl-fixes')
     @include('funds.partials.screen-centre')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
@@ -1075,12 +1077,17 @@
                 // Bracketed qualifiers in section headings render smaller
                 // ("(Effective exposure)"), matching the signed-off templates.
                 $renderHeading = function (string $title): string {
-                    return preg_replace(
-                        '/\s*\(([^)]+)\)/',
+                    // Card 430: a note number after the closing bracket moves
+                    // inside it, and Unicode superscripts become <sup>.
+                    $html = preg_replace(
+                        '/\s*\(([^)]+)\)/u',
                         ' <span class="title-suffix">($1)</span>',
-                        e($title)
+                        e(\App\Support\FactsheetText::supInsideBracket($title))
                     );
+
+                    return \App\Support\FactsheetText::supDigits($html);
                 };
+
                 // Reference: URLs and email addresses render naartjie
                 // (mirrored client-side by the `linkify` display formatter).
                 $linkify = function (string $text): string {
@@ -1450,10 +1457,9 @@
                                         <tr>
                                             @foreach ($fund->data['mainContent']['performanceTable']['headers'] as $index => $header)
                                                 <th>
-                                                    <span x-data="editableField('mainContent.performanceTable.headers.{{ $index }}', '{!! addslashes($header) !!}')"
+                                                    <span x-data="editableField('mainContent.performanceTable.headers.{{ $index }}', '{!! addslashes($header) !!}', 'supDigits')"
                                                           @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-html="value"></span>
+                                                          :class="editMode ? 'editable' : ''">{!! \App\Support\FactsheetText::supDigits($header) !!}</span>
                                                 </th>
                                             @endforeach
                                         </tr>
@@ -1470,15 +1476,15 @@
                                             $perfRowsRaw = $fund->data['mainContent']['performanceTable']['rows'];
                                             $perfColKeysIntl = $fund->data['mainContent']['performanceTable']['columnKeys'] ?? [];
                                             $intlNames = [
-                                                'fund' => 'Fund <sup>3</sup>',
-                                                'benchmark' => 'Peer group <sup>4</sup>',
-                                                'comparator 2' => 'US inflation <sup>5</sup>',
-                                                'comparator 3' => 'World equities <sup>6</sup>',
-                                                'comparator 4' => 'World bonds <sup>7</sup>',
-                                                'comparator 5' => 'Fund in euros <sup>3</sup>',
-                                                'comparator 6' => 'Fund in sterling <sup>3</sup>',
-                                                'fund highest' => 'Fund highest <sup>3,8</sup>',
-                                                'fund lowest' => 'Fund lowest <sup>3,8</sup>',
+                                                'fund' => 'Fund<sup>3</sup>',
+                                                'benchmark' => 'Peer group<sup>4</sup>',
+                                                'comparator 2' => 'US inflation<sup>5</sup>',
+                                                'comparator 3' => 'World equities<sup>6</sup>',
+                                                'comparator 4' => 'World bonds<sup>7</sup>',
+                                                'comparator 5' => 'Fund in euros<sup>3</sup>',
+                                                'comparator 6' => 'Fund in sterling<sup>3</sup>',
+                                                'fund highest' => 'Fund highest<sup>3,8</sup>',
+                                                'fund lowest' => 'Fund lowest<sup>3,8</sup>',
                                             ];
                                             $intlOrder = [
                                                 ['fund', 'benchmark', 'comparator 2', 'comparator 3', 'comparator 4'],
@@ -1681,10 +1687,9 @@
                             <div>
                                 @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $note)
                                     <p class="page2-note">
-                                        <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($note) !!}')"
+                                        <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($note) !!}', 'noteHang')"
                                               @click="editMode && startEdit()"
-                                              :class="editMode ? 'editable' : ''"
-                                              x-html="value"></span>
+                                              :class="editMode ? 'editable' : ''">{!! \App\Support\FactsheetText::noteHang($note) !!}</span>
                                     </p>
                                 @endforeach
                             </div>
@@ -1695,10 +1700,9 @@
                     @if(isset($fund->data['footer']))
                         <div class="footer-divider">
                             <p class="footer-info">
-                                <span x-data="editableField('footer.info', '{{ addslashes($fund->data['footer']['info']) }}')"
+                                <span x-data="editableField('footer.info', '{{ addslashes($fund->data['footer']['info']) }}', 'footerInfo')"
                                       @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
+                                      :class="editMode ? 'editable' : ''">{!! \App\Support\FactsheetText::footerInfo($fund->data['footer']['info']) !!}</span>
                             </p>
                             <p class="footer-info">
                                 <span x-data="editableField('footer.freeOfCharge', '{{ $fund->data['footer']['freeOfCharge'] }}')"
@@ -1748,14 +1752,17 @@
         // Display formatters — keep the styled rendering (e.g. the smaller
         // "— CLASS R" suffix) after Alpine re-renders an edited value.
         const editableFormatters = {
+            ...window.intlFormatters,
             fundName(value) {
                 const m = String(value).match(/^(.+?)\s*[—–-]\s*(CLASS\s+[A-Z][0-9]*)$/i);
                 if (!m) return String(value).toUpperCase();
                 return m[1].toUpperCase() + ' <span class="class-suffix">&mdash; ' + m[2].toUpperCase() + '</span>';
             },
             headingSuffix(value) {
-                return String(value).replace(/\s*\(([^)]+)\)/, ' <span class="title-suffix">($1)</span>');
+                return intlFormatters.supDigits(intlFormatters.supInsideBracket(value)
+                    .replace(/\s*\(([^)]+)\)/, ' <span class="title-suffix">($1)</span>'));
             },
+
             // Reference: URLs and email addresses render naartjie
             linkify(value) {
                 return String(value)

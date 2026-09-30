@@ -26,10 +26,10 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
             </svg>
             <input type="search" x-model="search" placeholder="Search funds by name…"
-                   class="w-full pl-9 border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                   class="w-full pl-9 border-gray-300 rounded-md shadow-sm text-sm focus:border-naartjie-500 focus:ring-naartjie-500">
         </div>
         <select x-model="fundClass"
-                class="sm:w-48 border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                class="sm:w-48 border-gray-300 rounded-md shadow-sm text-sm focus:border-naartjie-500 focus:ring-naartjie-500">
             <option value="">All classes</option>
             @foreach ($classes as $class)
                 <option value="{{ $class }}">Class {{ $class }}</option>
@@ -44,6 +44,6 @@
 
     <div x-show="visibleCount === 0" style="display: none" class="text-center py-10 text-sm text-gray-500">
         No funds match your filters.
-        <button type="button" @click="search = ''; fundClass = ''" class="ml-1 text-indigo-600 hover:text-indigo-800 font-medium">Clear filters</button>
+        <button type="button" @click="search = ''; fundClass = ''" class="ml-1 text-naartjie-600 hover:text-naartjie-800 font-medium">Clear filters</button>
     </div>
 </div>

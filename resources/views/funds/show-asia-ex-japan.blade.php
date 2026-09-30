@@ -602,9 +602,9 @@
         .cost-table .foord-table td:nth-child(2) { width: 24.45%; }
         .cost-table .foord-table th:not(:first-child),
         .cost-table .foord-table td:not(:first-child) { text-align: center; padding-right: 3.1mm; }
-        /* Caps centred in the dark header cell (card 377): 0.73/0.17mm
-           keeps the 3.97mm cell height but drops the text 0.43mm. */
-        .cost-table .foord-table th { font-size: 8.01pt; padding-top: 0.73mm; padding-bottom: 0.17mm; }
+        /* Card 430: equal padding (3.97mm cell kept) — the cap-centred face
+           now centres the caps that card 377's 0.73/0.17mm split faked. */
+        .cost-table .foord-table th { font-size: 8.01pt; padding-top: 0.45mm; padding-bottom: 0.45mm; }
         .cost-table .foord-table td {
             font-size: 8.01pt;
             padding-top: 0.65mm;
@@ -614,8 +614,8 @@
         .cost-table .foord-table tr.total-row td {
             font-size: 8.01pt;
             font-weight: 500;
-            padding-top: 0.65mm;
-            padding-bottom: 0.45mm;
+            padding-top: 0.55mm;
+            padding-bottom: 0.55mm;
         }
 
         /* Performance fee examples — name col + four equal PERIOD columns,
@@ -626,7 +626,7 @@
             width: 33.0%;
             padding-left: 1.36mm;
         }
-        .pfe-table .foord-table th { font-size: 6.96pt; padding-top: 0.4mm; padding-bottom: 0.1mm; }
+        .pfe-table .foord-table th { font-size: 6.96pt; padding-top: 0.25mm; padding-bottom: 0.25mm; }
         /* Reference: the two-line accrual row sets its label on the lower line. */
         .pfe-table .foord-table tbody tr:last-child td { vertical-align: bottom; }
         /* QC card 364: performance fee table 7.5pt — outranks the global
@@ -1005,6 +1005,7 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    @include('funds.partials.global-intl-fixes')
     @include('funds.partials.screen-centre')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
@@ -1117,18 +1118,17 @@
                 // trailing superscript digits inside the brackets keep their
                 // superscript treatment ("…ANNUALISED¹").
                 $renderHeading = function (string $title): string {
+                    // Card 430: a note number after the closing bracket moves
+                    // inside it, and Unicode superscripts become <sup>.
                     $html = preg_replace(
                         '/\s*\(([^)]+)\)/u',
                         ' <span class="title-suffix">($1)</span>',
-                        e($title)
+                        e(\App\Support\FactsheetText::supInsideBracket($title))
                     );
 
-                    return strtr($html, [
-                        '¹' => '<sup>1</sup>', '²' => '<sup>2</sup>', '³' => '<sup>3</sup>',
-                        '⁴' => '<sup>4</sup>', '⁵' => '<sup>5</sup>', '⁶' => '<sup>6</sup>',
-                        '⁷' => '<sup>7</sup>', '⁸' => '<sup>8</sup>',
-                    ]);
+                    return \App\Support\FactsheetText::supDigits($html);
                 };
+
                 // Reference: URLs and email addresses render naartjie
                 // (mirrored client-side by the `linkify` display formatter).
                 $linkify = function (string $text): string {
@@ -1450,10 +1450,9 @@
                                         <tr>
                                             @foreach ($fund->data['mainContent']['performanceTable']['headers'] as $index => $header)
                                                 <th>
-                                                    <span x-data="editableField('mainContent.performanceTable.headers.{{ $index }}', '{!! addslashes($header) !!}')"
+                                                    <span x-data="editableField('mainContent.performanceTable.headers.{{ $index }}', '{!! addslashes($header) !!}', 'supDigits')"
                                                           @click="editMode && startEdit()"
-                                                          :class="editMode ? 'editable' : ''"
-                                                          x-html="value"></span>
+                                                          :class="editMode ? 'editable' : ''">{!! \App\Support\FactsheetText::supDigits($header) !!}</span>
                                                 </th>
                                             @endforeach
                                         </tr>
@@ -1469,11 +1468,11 @@
                                             $perfRowsRaw = $fund->data['mainContent']['performanceTable']['rows'];
                                             $perfColKeysGe = $fund->data['mainContent']['performanceTable']['columnKeys'] ?? [];
                                             $geNames = [
-                                                'fund' => 'Fund <sup>3</sup>',
+                                                'fund' => 'Fund<sup>3</sup>',
                                                 'benchmark' => 'MSCI Asia ex-Japan',
-                                                'comparator 2' => 'Peer group <sup>4</sup>',
-                                                'fund highest' => 'Fund highest <sup>3,5</sup>',
-                                                'fund lowest' => 'Fund lowest <sup>3,5</sup>',
+                                                'comparator 2' => 'Peer group<sup>4</sup>',
+                                                'fund highest' => 'Fund highest<sup>3,5</sup>',
+                                                'fund lowest' => 'Fund lowest<sup>3,5</sup>',
                                             ];
                                             // 879 quotes no sterling/euro share classes:
                                             // Fund/MSCI Asia ex-Japan/Peer group, spacer, highest/lowest.
@@ -1524,10 +1523,9 @@
                                 <div class="perf-footnotes">
                                     @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $note)
                                         <p class="footnote">
-                                            <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($note) !!}')"
+                                            <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($note) !!}', 'noteHang')"
                                                   @click="editMode && startEdit()"
-                                                  :class="editMode ? 'editable' : ''"
-                                                  x-html="value"></span>
+                                                  :class="editMode ? 'editable' : ''">{!! \App\Support\FactsheetText::noteHang($note) !!}</span>
                                         </p>
                                     @endforeach
                                 </div>
@@ -1783,10 +1781,9 @@
                             </div>
                             @if(!empty($pfe['footnote']))
                                 <p class="pfe-note">
-                                    <span x-data="editableField('page2Content.performanceFeeExamples.footnote', '{!! addslashes($pfe['footnote']) !!}')"
+                                    <span x-data="editableField('page2Content.performanceFeeExamples.footnote', '{!! addslashes($pfe['footnote']) !!}', 'noteHang')"
                                           @click="editMode && startEdit()"
-                                          :class="editMode ? 'editable' : ''"
-                                          x-html="value"></span>
+                                          :class="editMode ? 'editable' : ''">{!! \App\Support\FactsheetText::noteHang($pfe['footnote']) !!}</span>
                                 </p>
                             @endif
                         </div>
@@ -1796,10 +1793,9 @@
                     @if(isset($fund->data['footer']))
                         <div class="footer-divider">
                             <p class="footer-info">
-                                <span x-data="editableField('footer.info', '{{ addslashes($fund->data['footer']['info']) }}')"
+                                <span x-data="editableField('footer.info', '{{ addslashes($fund->data['footer']['info']) }}', 'footerInfo')"
                                       @click="editMode && startEdit()"
-                                      :class="editMode ? 'editable' : ''"
-                                      x-text="value"></span>
+                                      :class="editMode ? 'editable' : ''">{!! \App\Support\FactsheetText::footerInfo($fund->data['footer']['info']) !!}</span>
                             </p>
                             <p class="footer-info">
                                 <span x-data="editableField('footer.freeOfCharge', '{{ $fund->data['footer']['freeOfCharge'] }}')"
@@ -1855,6 +1851,7 @@
         // Display formatters — keep the styled rendering after Alpine
         // re-renders an edited value.
         const editableFormatters = {
+            ...window.intlFormatters,
             // The 879 banner prints the class suffix in a lighter, smaller
             // treatment. Alpine rewrites this span's innerHTML on init, so the
             // nested markup has to be rebuilt here or it is lost before the
@@ -1868,13 +1865,10 @@
                     + '<span class="class-suffix"> — ' + m[2].toUpperCase() + '</span>';
             },
             headingSuffix(value) {
-                return String(value)
-                    .replace(/\s*\(([^)]+)\)/, ' <span class="title-suffix">($1)</span>')
-                    .replace(/¹/g, '<sup>1</sup>').replace(/²/g, '<sup>2</sup>')
-                    .replace(/³/g, '<sup>3</sup>').replace(/⁴/g, '<sup>4</sup>')
-                    .replace(/⁵/g, '<sup>5</sup>').replace(/⁶/g, '<sup>6</sup>')
-                    .replace(/⁷/g, '<sup>7</sup>').replace(/⁸/g, '<sup>8</sup>');
+                return intlFormatters.supDigits(intlFormatters.supInsideBracket(value)
+                    .replace(/\s*\(([^)]+)\)/, ' <span class="title-suffix">($1)</span>'));
             },
+
             // Reference: URLs and email addresses render naartjie
             linkify(value) {
                 return String(value)

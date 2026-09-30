@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $revisionFund->name }} - Revision from {{ $revision->created_at->format('M d, Y H:i:s') }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         @media print {
             .no-print { display: none; }
@@ -19,15 +18,15 @@
 <body class="bg-gray-50 text-gray-900">
     <div class="max-w-7xl mx-auto bg-white shadow-lg">
         <!-- Header with Revision Info -->
-        <div class="no-print bg-red-600 text-white p-4 flex justify-between items-center">
+        <div class="no-print bg-naartjie-600 text-white p-4 flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-bold">📋 Revision Preview</h1>
-                <p class="text-red-100 text-sm">
+                <p class="text-naartjie-50 text-sm">
                     Viewing revision from {{ $revision->created_at->format('M d, Y H:i:s') }} 
                     by {{ $revision->user->name ?? 'Unknown' }}
                 </p>
                 @if($revision->change_summary)
-                <p class="text-red-100 text-sm">{{ $revision->change_summary }}</p>
+                <p class="text-naartjie-50 text-sm">{{ $revision->change_summary }}</p>
                 @endif
             </div>
             <div class="flex items-center space-x-3">
@@ -48,7 +47,7 @@
                     All Revisions
                 </a>
                 <a href="{{ route('funds.show', $fund) }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out">
+                   class="bg-navy-600 hover:bg-navy-700 text-white px-4 py-2 rounded-lg transition duration-150 ease-in-out">
                     Current Version
                 </a>
             </div>
@@ -58,9 +57,9 @@
         <!-- Page 2 -->
         <div class="bg-white mt-8 shadow-lg">
             <!-- Header -->
-            <div class="bg-gray-800 text-white p-6 flex justify-between items-center">
+            <div class="bg-navy-700 text-white p-6 flex justify-between items-center">
                 <div>
-                    <div class="bg-red-500 text-white px-4 py-2 mb-4 inline-block font-semibold">
+                    <div class="bg-naartjie-600 text-white px-4 py-2 mb-4 inline-block font-semibold">
                         {{ $revisionFund->data['fund']['date'] ?? $revisionFund->updated_at->format('d F Y') }}
                     </div>
                     <h1 class="text-2xl font-bold">

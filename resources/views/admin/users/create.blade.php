@@ -48,7 +48,7 @@
                         <div class="flex items-start">
                             <input type="hidden" name="is_admin" value="0">
                             <input id="is_admin" type="checkbox" name="is_admin" value="1" @checked(old('is_admin'))
-                                class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                class="mt-1 rounded border-gray-300 text-naartjie-600 shadow-sm focus:ring-naartjie-500">
                             <label for="is_admin" class="ms-2 text-sm text-gray-700">
                                 <span class="font-medium">Administrator</span>
                                 <span class="block text-gray-600">Can manage user accounts, delete funds, and view the queue dashboard.</span>
