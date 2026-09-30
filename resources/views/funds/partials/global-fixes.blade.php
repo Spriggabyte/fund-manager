@@ -137,8 +137,8 @@
     }
 @else
     /* ---- 292 + 300: local sidebar — body Avenir Next 7pt at 0.85 line
-       spacing (8.2pt, matches the signed-off balanced design), 1pt before /
-       3pt after each paragraph (4pt = 1.4mm between sections).
+       spacing (8.2pt, matches the signed-off balanced design); the gap
+       between sections is Trello 429's 1.85mm (was 4pt = 1.4mm).
        `.sidebar-section .sidebar-heading` is needed because the equity
        sheet's headings are <p>s: `.sidebar-section p` below would otherwise
        out-specify a bare `.sidebar-heading` and set them 7pt Regular
@@ -284,21 +284,17 @@
         line-height: 0 !important;
         vertical-align: baseline !important;
         position: relative !important;
-        top: -0.708em !important;
+        /* 0.708 × 0.65em ≈ 0.46em of the copy, in whole pixels so every
+           marker sits the same height above its word (a fractional shift
+           rounds differently row to row); rounded toward the baseline, so
+           on 7.5pt copy the raise is 4px and the figure tops sit ~0.3mm
+           above the ascenders — "slightly higher", and the same raise the
+           international sheets use (card 430). */
+        top: -0.708em !important; /* browsers without CSS round() */
+        top: round(to-zero, -0.708em, 1px) !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         letter-spacing: 0 !important;
-    }
-
-    /* Headings, values and totals centred in their rows: table text uses
-       the cap-centred twin of Avenir Next declared in partials/avenir-fonts
-       (same glyphs; only the line-box metrics differ). Per-table padding
-       below corrects what whole-pixel row snapping leaves over. */
-    .page table th,
-    .page table td,
-    .page table th *,
-    .page table td * {
-        font-family: 'Avenir Next Cap', 'Avenir Next', 'Lato', sans-serif !important;
     }
 
     /* Date centred in the naartjie badge. The badge flex-centres one line
@@ -326,6 +322,11 @@
     .note-hang {
         padding-left: 1.4mm !important;
         text-indent: -1.4mm !important;
+    }
+    .footnotes p:not(.note-hang),
+    p.footnote:not(.note-hang) {
+        padding-left: 0 !important;
+        text-indent: 0 !important;
     }
     .note-hang sup.note-marker {
         display: inline-block;
@@ -367,6 +368,13 @@
             n.parentNode.replaceChild(frag, n);
         });
 
+        // No space between a word and its marker ("Fund ³" → "Fund³").
+        document.querySelectorAll('.page sup').forEach(function (sup) {
+            var prev = sup.previousSibling;
+            while (prev && prev.nodeType === 1 && prev.lastChild) prev = prev.lastChild;
+            if (prev && prev.nodeType === 3 && /\S\s+$/.test(prev.nodeValue)) prev.nodeValue = prev.nodeValue.replace(/\s+$/, '');
+        });
+
         // Numbered notes: a <sup> before any other text is the note number.
         document.querySelectorAll('.footnotes p, p.footnote, p.footnotes').forEach(function (p) {
             var w = document.createTreeWalker(p, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT), node, marker = null;
@@ -381,82 +389,8 @@
             if (next && next.nodeType === 3) next.nodeValue = next.nodeValue.replace(/^\s+/, '');
         });
 
-        (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () {
-            requestAnimationFrame(centreTableText);
-        });
     });
 
-    // Trello 429: every heading, value and total centred in its row. Chrome
-    // paints a cell's background and its text baseline at whole-pixel
-    // positions (layout position rounded), so depending on where a row
-    // falls on the pixel grid its text lands up to a pixel off centre —
-    // and that changes month to month with the data. For each cell this
-    // predicts the painted position of the text (cap top of the first line
-    // to baseline of the last) and of the cell, and moves whole pixels of
-    // padding from bottom to top (or back) until the text is centred within
-    // half a pixel. Row heights never change. Positions are taken relative
-    // to each 297mm page, i.e. as laid out for the PDF. A performance
-    // table's header row moves as one so single-line headers ("YTD") stay
-    // on the bottom line with the two-line ones.
-    function centreTableText() {
-        var PAGE = 297 * 96 / 25.4, CAP = 0.708;
-        var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
-        function textNodes(cell) {
-            var out = [], w = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT, {
-                acceptNode: function (n) {
-                    return n.nodeValue.trim() && !n.parentElement.closest('sup') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-                }
-            });
-            while (w.nextNode()) out.push(w.currentNode);
-            return out;
-        }
-        function baselineAt(node, atEnd) {
-            var probe = document.createElement('span');
-            probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
-            node.parentNode.insertBefore(probe, atEnd ? node.nextSibling : node);
-            var y = probe.getBoundingClientRect().top;
-            probe.parentNode.removeChild(probe);
-            return y;
-        }
-        // Whole pixels the cell's text must move down (negative = up).
-        function offset(cell) {
-            var nodes = textNodes(cell);
-            if (!nodes.length || cell.querySelector('div, p, table, ul, canvas, svg')) return null;
-            var page = cell.closest('.page'), idx = pages.indexOf(page);
-            var shift = idx * PAGE - page.getBoundingClientRect().top;
-            var r = cell.getBoundingClientRect();
-            var first = nodes[0], last = nodes[nodes.length - 1];
-            var capTop = Math.round(baselineAt(first, false) + shift) - CAP * parseFloat(getComputedStyle(first.parentElement).fontSize);
-            var base = Math.round(baselineAt(last, true) + shift);
-            var cellMid = (Math.round(r.top + shift) + Math.round(r.bottom + shift)) / 2;
-            return Math.round(cellMid - (capTop + base) / 2);
-        }
-        function move(cell, d) {
-            if (!d) return;
-            var cs = getComputedStyle(cell), pt = parseFloat(cs.paddingTop), pb = parseFloat(cs.paddingBottom);
-            d = Math.max(-pt, Math.min(pb, d));
-            cell.style.setProperty('padding-top', (pt + d) + 'px', 'important');
-            cell.style.setProperty('padding-bottom', (pb - d) + 'px', 'important');
-        }
-        document.querySelectorAll('.page table tr').forEach(function (tr) {
-            var cells = Array.prototype.slice.call(tr.children).filter(function (c) { return /^T[DH]$/.test(c.tagName); });
-            var perfHead = tr.closest('.performance-table, .perf-table') && cells.length && cells.every(function (c) { return c.tagName === 'TH'; });
-            if (perfHead) {
-                // Centre the tallest (two-line) header; the rest follow it.
-                var tallest = null, height = 0;
-                cells.forEach(function (c) {
-                    if (!textNodes(c).length) return;
-                    var range = document.createRange();
-                    range.selectNodeContents(c);
-                    var h = range.getBoundingClientRect().height;
-                    if (h > height) { height = h; tallest = c; }
-                });
-                var d = tallest ? offset(tallest) : null;
-                if (d) cells.forEach(function (c) { move(c, d); });
-                return;
-            }
-            cells.forEach(function (c) { move(c, offset(c)); });
-        });
-    }
 </script>
+@include('funds.partials.table-centring')
 @endunless

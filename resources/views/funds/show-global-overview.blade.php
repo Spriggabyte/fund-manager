@@ -84,10 +84,17 @@
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
             font-size: 10pt;
+            /* Trello 429: a line box exactly the font's height at 10pt (16px)
+               leaves no leading for Chrome to round — date centred (the 0.3mm
+               top padding it replaces set the date 0.2mm low). */
+            line-height: 12pt;
             letter-spacing: 0.01em;
             text-align: center;
-            padding-top: 0.3mm;
         }
+        /* The badge's edges and the date's baseline are painted on whole
+           pixels; at this badge's position they round 0.78px apart (date
+           0.2mm low). Half a pixel up lands the baseline on the nearer one. */
+        .date-badge > span { position: relative; top: -0.5px; }
         .logo { position: absolute; top: 8.4mm; right: 10.5mm; height: 11mm; }
         .logo img { height: 100%; width: auto; }
 

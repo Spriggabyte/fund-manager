@@ -133,8 +133,9 @@
             position: absolute;
             top: 9mm;
             /* Trello 429: the logo's right edge (the "D") lines up with
-               the right edge of the tables (203.45mm); it overhung by 1mm. */
-            right: 6.55mm;
+               the right edge of the tables (203.2mm on this sheet, whose
+               main column is 0.15mm narrower); it overhung by 1.3mm. */
+            right: 6.8mm;
             height: 13mm;
         }
 
