@@ -140,12 +140,16 @@
            TITLE BANNER — 34mm tall, naartjie (875 reference);
            text inset 7.75mm, same as the signed-off navy banner.
            ===================================================== */
+        /* Trello 444: the five-line standfirst ran to 0.97mm off the bar's
+           foot (caps 4.97mm from the top). Copy 1px closer to the title and
+           both 6px up: caps 3.38mm from the top, last baseline 3.70mm from
+           the foot. Whole px, so the baselines keep their pixel phase. */
         .fund-banner {
             background-color: var(--naartjie);
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
-            padding: 3.6mm 6mm 0 7.75mm;
+            padding: calc(3.6mm - 6px) 6mm 0 7.75mm;
             margin: 0;
             width: 100%;
         }
@@ -156,7 +160,7 @@
             font-size: 23pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 1.1mm 0;
+            margin: 0 0 calc(1.1mm - 1px) 0;
             line-height: 1.05;
         }
 
@@ -330,8 +334,16 @@
             gap: 4.6mm;
         }
 
-        .two-col.top-row { margin-bottom: 8.2mm; }
-        .two-col.mid-row { margin-bottom: 6mm; }
+        /* Trello 444: the four page-1 sections evenly spaced, with the
+           performance table clear of the 8mm bottom margin (it ended at
+           290.25mm). Gaps from the bottom of one block (geo TOTAL row,
+           chart legend, last TOP 10 row) to the cap top of the next heading
+           were 9.06 / 7.50 / 5.65mm; now 6.68 / 6.71 / 6.71mm, table foot
+           288.13mm. Moves are whole px (sector/chart row up 9px, TOP 10 up
+           12px, PORTFOLIO up 8px) so every table row keeps its pixel phase
+           and its cap centring. */
+        .two-col.top-row { margin-bottom: calc(8.2mm - 9px); }
+        .two-col.mid-row { margin-bottom: calc(6mm - 3px); }
         .two-col .col-left { flex: 0 0 68.5mm; min-width: 0; }
         .two-col .col-right { flex: 1 1 0; min-width: 0; }
 
@@ -522,6 +534,18 @@
         .geo-table .foord-table th:first-child,
         .geo-table .foord-table td:first-child { width: 44%; white-space: nowrap; }
         .geo-table .foord-table td { background-color: var(--row-grey-2); }
+        /* Trello 444: TOTAL / EQUITY / CASH and the TOTAL row printed 0.21mm
+           low in their bars (caps 1.16mm from the top, 0.74mm from the
+           bottom). One px of padding top→bottom (fund 37's card 419 fix)
+           lands them within 0.06mm of centre; row heights unchanged. */
+        .geo-table .foord-table th {
+            padding-top: calc(0.52mm - 1px);
+            padding-bottom: calc(0.52mm + 1px);
+        }
+        .geo-table .foord-table tr.total-row td {
+            padding-top: calc(0.51mm - 1px);
+            padding-bottom: calc(0.51mm + 1px);
+        }
 
         /* Top 10 — SECURITY 40.1%, ASSET CLASS 28.3% (left), MARKET and
            % OF FUND centred; row backgrounds fade in pairs. */
@@ -565,7 +589,9 @@
         .top10-table .foord-table tbody tr:nth-child(9) td,
         .top10-table .foord-table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
 
-        .top10-table { margin-bottom: 5mm; }
+        /* Trello 444: +4px (see .two-col.top-row). Collapses with the inner
+           .table-wrapper's 2.6mm, so this is the whole gap. */
+        .top10-table { margin-bottom: calc(5mm + 4px); }
 
         /* Performance table — column grid measured off the 875 reference
            (separators at 533/644/760/833/908/982/1056/1130 px @150 dpi):
@@ -626,7 +652,14 @@
         .cost-table .foord-table td:not(:first-child) { text-align: center; }
         /* QC cards 256 / 262: the whole cost-ratio block is Avenir Next 8pt
            (reference rows on a 4.5mm pitch; the total row is Regular). */
-        .cost-table .foord-table th { font-size: 8pt; }
+        /* Trello 444: 12 MONTHS / 36 MONTHS sat 0.21mm low in the navy bar,
+           the same bias as the geo header; 1px of padding top→bottom
+           centres them. The value rows were already within 0.07mm. */
+        .cost-table .foord-table th {
+            font-size: 8pt;
+            padding-top: calc(0.52mm - 1px);
+            padding-bottom: calc(0.52mm + 1px);
+        }
         .cost-table .foord-table td {
             font-size: 8pt;
             padding-top: 0.6mm;
@@ -648,6 +681,33 @@
         .chart-wrapper canvas {
             width: 100% !important;
             height: 100% !important;
+        }
+
+        /* Trello 444 (fund 37's card 451): the end-of-line cash values are
+           HTML over the canvas so they print as vector text in the series
+           colour, as in the 875 reference. Canvas text rasterised to a
+           paler tint than its line ("$ 241" was hard to read).
+           endValuePlugin positions the spans. */
+        .chart-end-labels {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .chart-end-labels span {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 6.7pt;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+        .chart-end-labels .baseline-probe {
+            display: inline-block;
+            width: 0;
+            height: 0;
         }
 
         /* QC card 124: caption closer to the axis and further up — the
@@ -797,6 +857,14 @@
             text-transform: uppercase;
             color: var(--dark-navy);
             margin: 0 0 1.5mm 0;
+        }
+
+        /* Trello 444: page-2 headings the same 8pt as the page-1 section
+           headings (875 reference: 8.04pt on both pages; the global round's
+           7.5pt read smaller). Two classes outrank global-fixes' !important;
+           its 9pt leading is kept so the page doesn't reflow. */
+        .page2-content .page2-heading {
+            font-size: 8pt !important;
         }
 
         .page2-body {
@@ -1382,6 +1450,7 @@
                                     <div class="chart-wrapper">
                                         <div class="chart-ytitle">Cash Value<sup>2</sup> ($&rsquo;000)</div>
                                         <canvas id="performanceChart"></canvas>
+                                        <div class="chart-end-labels" aria-hidden="true"></div>
                                     </div>
                                     {{-- Legend colours per the 875 reference: Fund red, US inflation
                                          dark navy, World equities steel blue, World bonds light grey --}}
@@ -1879,24 +1948,45 @@
         // End value annotation plugin — reference: Avenir Next Medium 6.7pt
         // in the series colour, centred on the line end (QC card 124: these
         // were bold 7px, a different face and size from the rest of the sheet).
+        // Trello 444: the labels are spans in .chart-end-labels (vector text
+        // in the PDF); each sits on the baseline canvas text would use with
+        // textBaseline 'middle' at the line end.
+        const endLabelLayer = document.querySelector('#performanceChart + .chart-end-labels');
         const endValuePlugin = {
             id: 'endValueAnnotation',
             afterDraw(chart) {
+                if (!endLabelLayer) return;
                 const { ctx } = chart;
+                ctx.save();
+                ctx.font = '500 ' + pt(6.7) + 'px "Avenir Next", Lato, sans-serif';
+                ctx.textBaseline = 'middle';
+                const middleAscent = ctx.measureText('$ 0').actualBoundingBoxAscent;
+                ctx.textBaseline = 'alphabetic';
+                const middleToBaseline = ctx.measureText('$ 0').actualBoundingBoxAscent - middleAscent;
+                ctx.restore();
+
+                // Spans are laid out at the layer's origin and moved with a
+                // transform: a fractional `top` snaps the text baseline to a
+                // whole px (up to 0.8px off the line end), a translate does not.
+                endLabelLayer.textContent = '';
+                const layerRect = endLabelLayer.getBoundingClientRect();
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
                     if (meta.hidden) return;
                     const lastPoint = meta.data[meta.data.length - 1];
                     if (!lastPoint) return;
                     const lastValue = dataset.data[dataset.data.length - 1];
-                    const label = '$ ' + Math.round(lastValue).toLocaleString();
-                    ctx.save();
-                    ctx.font = '500 ' + pt(6.7) + 'px "Avenir Next", Lato, sans-serif';
-                    ctx.fillStyle = dataset.borderColor;
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(label, lastPoint.x + 4, lastPoint.y);
-                    ctx.restore();
+                    const span = document.createElement('span');
+                    span.textContent = '$ ' + Math.round(lastValue).toLocaleString();
+                    span.style.color = dataset.labelColor || dataset.borderColor;
+                    const probe = document.createElement('i');
+                    probe.className = 'baseline-probe';
+                    span.appendChild(probe);
+                    endLabelLayer.appendChild(span);
+                    const probeRect = probe.getBoundingClientRect();
+                    const dx = lastPoint.x + 4 - (span.getBoundingClientRect().left - layerRect.left);
+                    const dy = lastPoint.y + middleToBaseline - (probeRect.bottom - layerRect.top);
+                    span.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
                 });
             }
         };
@@ -1959,6 +2049,10 @@
                     },
                     {
                         label: 'World bonds',
+                        // Trello 444 (fund 19's card 436 rule): the line keeps
+                        // its light grey; the "$ 241" end label is a shade
+                        // darker to stay legible.
+                        labelColor: '#a6a6a6',
                         data: chartData.map(d => d.worldBonds),
                         borderColor: colors.lightGrey,
                         borderWidth: 1.5,

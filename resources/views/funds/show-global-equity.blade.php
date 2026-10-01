@@ -1001,6 +1001,12 @@
             line-height: 10.4pt !important;
         }
 
+        /* Card 448: GEOGRAPHIC / PERFORMANCE headings 5px (1.32mm) closer to
+           their charts (charts stay put, x-axes level). Evens the page-1
+           section gaps: PS bars → heading caps 5.55mm, legend → TOP 10 5.58mm.
+           Whole px keeps the baseline snap unchanged. */
+        .two-col .section-heading { position: relative; top: 5px; }
+
         /* Card 381: global-fixes centres header cells vertically; the
            one-line YTD must sit on the second header line (reference). */
         .perf-table th { vertical-align: bottom !important; }
@@ -1023,13 +1029,15 @@
         /* Card 418: the Class B footer carries E. + www lines under the
            phone (Aug 2026 B sheet). Reference baselines: rule 255.8mm,
            copy 262.5/266.1, free of charge 273.2, T./E./www 280.6/284.5/
-           288.3; leaf top 1.1mm below the phone baseline, right edge 200mm.
-           R/R1 (phone only) keep the measured layout above. */
+           288.3; right edge 200mm. R/R1 (phone only) keep the measured
+           layout above. Card 448: the leaf top sits level with the T. line
+           (top: 0) like every other global sheet, not 1.1mm below its
+           baseline as in the August B reference. */
         .page2-content.p2-spread { padding-bottom: 7.43mm; }
         .p2-spread .footer-divider { padding-top: 4.01mm; }
         .p2-spread .footer-info { margin-bottom: 3.56mm; }
         .p2-spread .footer-contact { margin-top: 3.83mm; } /* collapses with the 3.56mm above */
-        .p2-spread .footer-leaf { top: 3.75mm; right: 2.98mm; }
+        .p2-spread .footer-leaf { right: 2.98mm; }
     </style>
     @include('funds.partials.global-intl-fixes')
     @include('funds.partials.screen-centre')

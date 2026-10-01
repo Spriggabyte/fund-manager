@@ -637,8 +637,11 @@
             padding-left: 1.36mm;
         }
         .pfe-table .foord-table th { font-size: 6.96pt; padding-top: 0.25mm; padding-bottom: 0.25mm; }
-        /* Reference: the two-line accrual row sets its label on the lower line. */
-        .pfe-table .foord-table tbody tr:last-child td { vertical-align: bottom; }
+        /* Reference: the two-line accrual row sets its label on the lower line.
+           Trello 446: !important, or global-fixes' `table td { vertical-align:
+           middle !important }` centres "Performance fee accrual" / "None"
+           between the two lines of the PERIOD cells (fund 48, card 447). */
+        .pfe-table .foord-table tbody tr:last-child td { vertical-align: bottom !important; }
         /* QC card 364: performance fee table 7.5pt — outranks the global
            partial's 8pt page-2 table rule. */
         .page2-content .pfe-table .foord-table td {
@@ -712,6 +715,33 @@
             font-size: 3.9pt;
             line-height: 0;
             vertical-align: super;
+        }
+
+        /* Trello 446: the end-of-line cash values are HTML over the canvas
+           so they print as vector text — Avenir Next Medium 6.75pt in the
+           series colour, as in the 879 reference. Bitmap canvas text (5.9pt
+           Regular) read a lot paler than the lines. endValuePlugin
+           positions the spans. */
+        .chart-end-labels {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .chart-end-labels span {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 6.75pt;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+        .chart-end-labels .baseline-probe {
+            display: inline-block;
+            width: 0;
+            height: 0;
         }
 
         /* 877 reference: hairline swatches and lighter slate legend text. */
@@ -844,9 +874,11 @@
         /* === Page 2 content === */
         .page2-content {
             flex: 1;
-            /* ANNUALISED COST RATIO % table header lands at y=20.6mm; the
-               main column spans x 64.9mm → 202.9mm (877 reference) */
-            padding: 22.8mm 5.5mm 7.7mm 4.86mm;
+            /* The main column spans x 64.9mm → 202.9mm (877 reference).
+               Trello 446: the cap top of ANNUALISED COST RATIO % sits level
+               with the cap top of the grey column's first line (28.05mm),
+               the lock-up of the other global sheets (875/874). */
+            padding: calc(22.8mm + 18px) 5.5mm 7.7mm 4.86mm;
             min-width: 0;
             overflow: hidden;
             display: flex;
@@ -858,9 +890,15 @@
         /* The reference sets each page-2 block in its own Publisher text box,
            so the measured column width and leading differ per block. */
         .pfe-table.page2-section { margin-bottom: 3.5mm; }
-        .page2-section.share-pricing { padding-right: 4.1mm; margin-bottom: 6mm; }
+        .page2-section.share-pricing { padding-right: 4.1mm; margin-bottom: calc(6mm - 1px); }
         .page2-section.share-pricing .page2-body { line-height: 9.07pt; }
-        .page2-section.more-about { margin-bottom: 5.7mm; }
+        .page2-section.more-about { margin-bottom: calc(5.7mm - 5px); }
+        /* Trello 446: every section break — last line of copy to the next
+           heading's baseline — is the same 34px (9.0mm); they ran 36/35/
+           39/40px. Tightened so the column, now lower by 18px, still ends
+           (performance fee note descenders) above 249mm. */
+        .page2-section.ter-note { margin-bottom: calc(6.5mm - 2px); }
+        .page2-section.perf-fees { margin-bottom: calc(6.5mm - 6px); }
         .page2-section.more-about .page2-body { line-height: 9.5pt; }
         .page2-section.more-about .page2-heading { margin-bottom: 0.5mm; }
 
@@ -1431,6 +1469,7 @@
                                     <div class="chart-wrapper perf-wrapper">
                                         <div class="chart-ytitle">Cash Value<sup>2</sup> ($&rsquo;000)</div>
                                         <canvas id="performanceChart"></canvas>
+                                        <div class="chart-end-labels" aria-hidden="true"></div>
                                     </div>
                                     {{-- Legend per the 879 reference: Fund red, the MSCI
                                          Asia ex-Japan benchmark dark navy, the peer group
@@ -1732,7 +1771,7 @@
 
                     <!-- Performance Fees -->
                     @if(isset($fund->data['page2Content']['performanceFees']))
-                        <div class="page2-section">
+                        <div class="page2-section perf-fees">
                             <h3 class="page2-heading">
                                 <span x-data="editableField('page2Content.performanceFees.title', '{{ $fund->data['page2Content']['performanceFees']['title'] }}')"
                                       @click="editMode && startEdit()"
@@ -2119,11 +2158,17 @@
         // collected first, sorted top-to-bottom, and any pair closer than a
         // label's line-height is pushed apart — never a value hard-coded
         // for this month's figures, since next month's will differ.
+        // Trello 446: the labels are spans in .chart-end-labels (vector
+        // text in the PDF); each sits on the baseline canvas text would use
+        // with textBaseline 'middle' at its position.
+        const endLabelLayer = document.querySelector('#performanceChart + .chart-end-labels');
+        const END_LABEL_FONT = '500 9px "Avenir Next", Lato, sans-serif'; // 6.75pt
         const endValuePlugin = {
             id: 'endValueAnnotation',
             afterDraw(chart) {
+                if (!endLabelLayer) return;
                 const { ctx } = chart;
-                const MIN_LABEL_GAP = 8.4; // px, ~ one line-height at 7.9px font
+                const MIN_LABEL_GAP = 8.8; // px — the reference's $ 136 / $ 136 pair sits 2.32mm apart
 
                 const entries = chart.data.datasets.map((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
@@ -2148,14 +2193,30 @@
                 }
 
                 ctx.save();
-                ctx.font = '7.9px Avenir Next, Lato, sans-serif';
-                ctx.textAlign = 'left';
+                ctx.font = END_LABEL_FONT;
                 ctx.textBaseline = 'middle';
-                entries.forEach(entry => {
-                    ctx.fillStyle = entry.color;
-                    ctx.fillText(entry.label, entry.x + 8.6, entry.y);
-                });
+                const middleAscent = ctx.measureText('$ 0').actualBoundingBoxAscent;
+                ctx.textBaseline = 'alphabetic';
+                const middleToBaseline = ctx.measureText('$ 0').actualBoundingBoxAscent - middleAscent;
                 ctx.restore();
+
+                // Spans are laid out at the layer's origin and moved with a
+                // transform: a fractional `top` snaps the text baseline to a
+                // whole px, a translate does not.
+                endLabelLayer.textContent = '';
+                const layerRect = endLabelLayer.getBoundingClientRect();
+                entries.forEach(entry => {
+                    const span = document.createElement('span');
+                    span.textContent = entry.label;
+                    span.style.color = entry.color;
+                    const probe = document.createElement('i');
+                    probe.className = 'baseline-probe';
+                    span.appendChild(probe);
+                    endLabelLayer.appendChild(span);
+                    const dx = entry.x + 8.6 - (span.getBoundingClientRect().left - layerRect.left);
+                    const dy = entry.y + middleToBaseline - (probe.getBoundingClientRect().bottom - layerRect.top);
+                    span.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+                });
             }
         };
 

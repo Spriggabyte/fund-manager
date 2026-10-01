@@ -688,6 +688,32 @@
             height: 100% !important;
         }
 
+        /* Trello 451: the end-of-line cash values are HTML over the canvas
+           so they print as vector text in the series colour, as in the
+           874 reference. Bitmap text in the canvas softened to a paler tint
+           than the lines. endValuePlugin positions the spans. */
+        .chart-end-labels {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .chart-end-labels span {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 6.7pt;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+        .chart-end-labels .baseline-probe {
+            display: inline-block;
+            width: 0;
+            height: 0;
+        }
+
         /* QC card 124: caption closer to the axis and further up — the
            reference right-aligns it so "($'000)" starts level with the top
            of the plot (rotated -90deg, the element's right end is its top). */
@@ -1446,6 +1472,7 @@
                                     <div class="chart-wrapper">
                                         <div class="chart-ytitle">Cash Value<sup>2</sup> ($&rsquo;000)</div>
                                         <canvas id="performanceChart"></canvas>
+                                        <div class="chart-end-labels" aria-hidden="true"></div>
                                     </div>
                                     {{-- Legend colours per the 874 reference: Fund red, US inflation
                                          dark navy, World equities steel blue, World bonds light grey --}}
@@ -1952,25 +1979,46 @@
         const endLabelValues = @json($chartEndLabels ?? []);
 
         // End value annotation plugin — reference: Avenir Next Medium 6.7pt
-        // in the series colour, centred on the line end.
+        // in the series colour, centred on the line end. Trello 451: the
+        // labels are spans in .chart-end-labels (vector text in the PDF);
+        // each sits on the baseline canvas text would use with
+        // textBaseline 'middle' at the line end.
+        const endLabelLayer = document.querySelector('#performanceChart + .chart-end-labels');
         const endValuePlugin = {
             id: 'endValueAnnotation',
             afterDraw(chart) {
+                if (!endLabelLayer) return;
                 const { ctx } = chart;
+                ctx.save();
+                ctx.font = '500 ' + pt(6.7) + 'px "Avenir Next", Lato, sans-serif';
+                ctx.textBaseline = 'middle';
+                const middleAscent = ctx.measureText('$ 0').actualBoundingBoxAscent;
+                ctx.textBaseline = 'alphabetic';
+                const middleToBaseline = ctx.measureText('$ 0').actualBoundingBoxAscent - middleAscent;
+                ctx.restore();
+
+                // Spans are laid out at the layer's origin and moved with a
+                // transform: a fractional `top` snaps the text baseline to a
+                // whole px (up to 0.8px off the line end), a translate does not.
+                endLabelLayer.textContent = '';
+                const layerRect = endLabelLayer.getBoundingClientRect();
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
                     if (meta.hidden) return;
                     const lastPoint = meta.data[meta.data.length - 1];
                     if (!lastPoint) return;
                     const lastValue = endLabelValues[dataset.seriesKey] ?? dataset.data[dataset.data.length - 1];
-                    const label = '$ ' + Math.round(lastValue).toLocaleString();
-                    ctx.save();
-                    ctx.font = '500 ' + pt(6.7) + 'px "Avenir Next", Lato, sans-serif';
-                    ctx.fillStyle = dataset.borderColor;
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(label, lastPoint.x + 4, lastPoint.y);
-                    ctx.restore();
+                    const span = document.createElement('span');
+                    span.textContent = '$ ' + Math.round(lastValue).toLocaleString();
+                    span.style.color = dataset.labelColor || dataset.borderColor;
+                    const probe = document.createElement('i');
+                    probe.className = 'baseline-probe';
+                    span.appendChild(probe);
+                    endLabelLayer.appendChild(span);
+                    const probeRect = probe.getBoundingClientRect();
+                    const dx = lastPoint.x + 4 - (span.getBoundingClientRect().left - layerRect.left);
+                    const dy = lastPoint.y + middleToBaseline - (probeRect.bottom - layerRect.top);
+                    span.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
                 });
             }
         };
@@ -2037,6 +2085,10 @@
                     {
                         label: 'World bonds',
                         seriesKey: 'worldBonds',
+                        // Trello 451 (fund 19's card 436): the line keeps its
+                        // light grey; the "$ 241" end label is a shade darker
+                        // to stay legible.
+                        labelColor: '#a6a6a6',
                         data: chartData.map(d => d.worldBonds),
                         borderColor: colors.lightGrey,
                         borderWidth: 1.5,
