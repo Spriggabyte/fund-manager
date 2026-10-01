@@ -127,8 +127,9 @@
             justify-content: flex-end;
             align-items: flex-start;
             /* Trello 429: 6.53mm right lands the logo's right edge on the
-               tables' right edge (203.45mm); at 1.5mm it overhung by 5mm. */
-            padding: 7mm 6.53mm 0 4mm;
+               tables' right edge (203.45mm); at 1.5mm it overhung by 5mm.
+               Card 438 v2: 9mm top, like every other local sheet (was 7mm). */
+            padding: 9mm 6.53mm 0 4mm;
         }
 
         .date-badge {
@@ -144,8 +145,10 @@
             letter-spacing: 0.01em;
         }
 
+        /* Card 438 v2: 13mm like the other local sheets — 13.7mm made the
+           logo ~6% larger than on Balanced/Flexible/Domestic. */
         .logo img {
-            height: 13.7mm;
+            height: 13mm;
             width: auto;
         }
 

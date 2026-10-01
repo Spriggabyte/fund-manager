@@ -159,9 +159,13 @@
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
-            /* QC card 315: title baseline 36.5mm, paragraph moved up to
-               43.3mm so it clears the bottom of the banner (Aug reference). */
-            padding: 2.82mm 6mm 0 7.75mm;
+            /* QC card 315: paragraph moved up to 43.3mm so it clears the
+               bottom of the banner (Aug reference). Trello 447 ("nudge fund
+               name down a bit"): the title drops 3px to baseline 37.3mm,
+               the same 3.6mm inset as the other naartjie banners (877/875/
+               874/809/821); the h1 margin gives the 0.78mm back, so the
+               paragraph stays put. */
+            padding: 3.6mm 6mm 0 7.75mm;
             margin: 0;
             width: 100%;
         }
@@ -172,7 +176,7 @@
             font-size: 23pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 2.33mm 0;
+            margin: 0 0 1.55mm 0;
             line-height: 1.05;
         }
 
@@ -666,8 +670,11 @@
             padding-left: 1.36mm;
         }
         .pfe-table .foord-table th { font-size: 6.96pt; padding-top: 0.25mm; padding-bottom: 0.25mm; }
-        /* Reference: the two-line accrual row sets its label on the lower line. */
-        .pfe-table .foord-table tbody tr:last-child td { vertical-align: bottom; }
+        /* Reference: the two-line accrual row sets its label on the lower line.
+           Trello 447: !important, or global-fixes' `table td { vertical-align:
+           middle !important }` centres "Performance fee accrual" / "None"
+           between the two lines of the PERIOD cells. */
+        .pfe-table .foord-table tbody tr:last-child td { vertical-align: bottom !important; }
         /* QC card 361: performance fee table 7.5pt — outranks the global
            partial's 8pt page-2 table rule. */
         .page2-content .pfe-table .foord-table td {
@@ -1190,10 +1197,12 @@
 
                 // Reference: URLs and email addresses render naartjie
                 // (mirrored client-side by the `linkify` display formatter).
+                // Trello 447: a "T:" / "E:" label never ends a line apart
+                // from its number or address.
                 $linkify = function (string $text): string {
                     return preg_replace(
-                        '/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/',
-                        '<span class="ref-link">$1</span>',
+                        ['/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/', '/\b([TE]):\s+/'],
+                        ['<span class="ref-link">$1</span>', "$1:\u{00A0}"],
                         e($text)
                     );
                 };
@@ -1906,7 +1915,8 @@
                 return String(value)
                     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                     .replace(/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/g,
-                        '<span class="ref-link">$1</span>');
+                        '<span class="ref-link">$1</span>')
+                    .replace(/\b([TE]):\s+/g, '$1: ');
             }
         };
         function editableField(fieldPath, initialValue, formatter) {

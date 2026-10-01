@@ -599,7 +599,13 @@
         .top10-table .foord-table tbody tr:nth-child(9) td,
         .top10-table .foord-table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
 
-        .top10-table { margin-bottom: 2.4mm; }
+        /* Trello 461 v3: the grey column keeps the global (429) rhythm, so the
+           PORTFOLIO section moves down instead — +10px puts "Note: Totals" on
+           the sidebar's last baseline (ZAE… 290.25mm; was 287.60mm). Whole px
+           so every row below keeps its pixel snapping. Base is 2.6mm, not the
+           old 2.4mm: the .table-wrapper's 2.6mm margin collapses through this
+           one, so 2.6mm was the gap actually in effect. */
+        .top10-table { margin-bottom: calc(2.6mm + 10px); }
 
         /* Performance table — ten columns on the feeder (name, cash value,
            since inception, 15/10/7/5/3 yrs, 1 yr, this month). */
