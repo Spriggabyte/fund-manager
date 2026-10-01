@@ -2100,7 +2100,7 @@
                     // 6.8pt (Chart.js sizes are px: 9px), ~1.9mm right of
                     // the line end and centred on it.
                     ctx.font = '500 9px Avenir Next, Lato, sans-serif';
-                    ctx.fillStyle = dataset.borderColor;
+                    ctx.fillStyle = dataset.labelColor || dataset.borderColor;
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(label, lastPoint.x + 7, lastPoint.y);
@@ -2163,7 +2163,9 @@
 
         // Trello 443 asked whether the light-grey "R 96" is the line's
         // colour: it is (#c9c9c9 for both; the August sheet uses #ccc for
-        // both), it just reads paler as small type. The canvas is drawn at
+        // both), it just reads paler as small type. Trello 476 found it too
+        // faint next to the 809 sheet, so the label now takes 809's darker
+        // #a6a6a6 (card 436) and the line stays light grey. The canvas is drawn at
         // four device pixels per CSS px for crisper type, as on the 821
         // sheet (Trello 433), and only once Avenir Next is loaded — a
         // canvas drawn first keeps the fallback face.
@@ -2207,6 +2209,9 @@
                     },
                     {
                         label: 'World bonds',
+                        // Trello 476: the "R 96" end label is a shade darker
+                        // than the line so it stays legible (as on 809).
+                        labelColor: '#a6a6a6',
                         data: chartData.map(d => d.worldBonds),
                         borderColor: colors.lightGrey,
                         borderWidth: 1.5,
