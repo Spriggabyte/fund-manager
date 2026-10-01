@@ -941,6 +941,21 @@
             border-top: none;
             position: relative;
         }
+        /* Trello 465 (Carla): the footer sits at one fixed spot on both
+           classes, as on both August references. B3 has no TIC footnote
+           and only three fee-example columns, so a footer in the flow
+           rode 7.15mm higher than B2's. The top is B2's signed-off
+           position (939.09px, rule at 248.4mm). */
+        .page-2 .fees-content {
+            position: relative;
+        }
+        .page-2 .footer {
+            position: absolute;
+            top: 248.47mm;
+            left: 5.35mm;
+            right: 6mm;
+            margin-top: 0;
+        }
         .footer::after {
             content: "";
             position: absolute;
