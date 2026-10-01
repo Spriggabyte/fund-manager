@@ -777,8 +777,12 @@
                (6 lines); 0.01em wrapped "portfolio." onto a 7th (card 235). */
             letter-spacing: 0;
             color: #000;
-            /* 1.85mm under the legend; 3.2mm to the next heading (card 440). */
-            margin: 0.54mm 0 2.31mm 0;
+            /* 1.85mm under the legend (card 440). Below it, 4px more than
+               the 3.2mm section gap (4.22mm baseline to PORTFOLIO's cap
+               top): Carla's v2 note wanted breathing room under the copy,
+               whose descenders made the standard gap read tighter than the
+               gaps under the tables. */
+            margin: 0.54mm 0 3.37mm 0;
         }
 
         /* =====================================================
@@ -963,6 +967,24 @@
             padding-top: 5.5mm;
             border-top: none;
             position: relative;
+        }
+        /* Card 440 (v2): the naartjie block ends level with the grey
+           column's copy — "www.foord.co.za" on the "Published on…" baseline
+           (286.01mm). Pinned, as in show-domestic, so the fee tables above
+           can't move it: every line exactly 30px under its old in-flow spot.
+           The top is fractional on purpose — 252.45–252.51mm is the window
+           where Chrome's whole-px baselines keep the signed-off 14/26/27/15/
+           14px line steps (252.42 lifts the e-mail line 1px; 252.54 drops
+           www 1px off the sidebar's baseline). */
+        .page-2 .fees-content {
+            position: relative;
+        }
+        .page-2 .footer {
+            position: absolute;
+            top: 252.48mm;
+            left: 4mm;
+            right: 6mm;
+            margin-top: 0;
         }
         .footer::after {
             content: "";

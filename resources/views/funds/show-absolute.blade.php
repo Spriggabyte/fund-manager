@@ -686,19 +686,24 @@
         /* Trello 439: PERFORMANCE FEES sat 3.47mm above its copy; it moves
            0.77mm down to the 2.7mm every table heading has (heading baseline
            to the ascenders), the copy stays put. */
+        /* Trello 439 v2 "equal spaces between these sections": the last
+           copy line to the next heading was 8.47 / 15.87 / 14.55mm (32 / 60
+           / 55px) above TOTAL INVESTMENT CHARGES / PERFORMANCE FEES /
+           PERFORMANCE FEE EXAMPLES. All three are now 49px (12.96mm, their
+           mean), so the examples table and the footer stay where they were.
+           Each margin carries the px it had to gain or give up: +17, -11, -6. */
         .performance-fees-section {
-            margin: 12.57mm 0 0 0;
+            margin: 9.66mm 0 0 0;
         }
         .performance-fees-section .section-heading + .performance-fees-text {
             margin-top: 1.63mm;
         }
 
-        /* 6mm / 12.25mm less Trello 439's 0.84mm (.table-heading). */
         .tic-section {
-            margin-top: 5.16mm;
+            margin-top: 9.66mm;
         }
         .pfe-section {
-            margin-top: 11.41mm;
+            margin-top: 9.82mm;
         }
         .performance-fees-text {
             font-size: 7.5pt;
@@ -733,10 +738,14 @@
            heading baseline to axis top, as the design; was 5.76mm) — the
            top margin grows by what .chart-title gives up. It collapses with
            the Top 10 table's 4.2mm, so 5.22mm = 4.2 + 1.02. The bottom
-           gives the next table heading its 0.84mm (3.85mm before). */
+           gives the next table heading its 0.84mm (3.85mm before).
+           Trello 439 v2: "nudge both PORTFOLIO sections up" — 2px (0.53mm)
+           off the top lifts the chart, table and notes together, so
+           "Note: Totals" lands on 289.72mm (design 289.68mm) instead of
+           290.25mm, over the bottom margin. */
         .charts-row {
             display: block;
-            margin: 5.22mm 0 3.01mm 0;
+            margin: 4.69mm 0 3.01mm 0;
         }
 
         /* The reference draws the chart over the left half of the column only
