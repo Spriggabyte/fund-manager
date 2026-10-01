@@ -400,23 +400,28 @@
             width: 24.4%;
         }
 
-        /* Flexible reference section anchors (150dpi): TOP 10 header row at
-           y=690, chart plot tops at y=1006. The live tables render slightly
-           taller row pitches than the design, so the inter-section margins
-           are tightened to land the next section on the reference y. */
+        /* Page-1 rhythm (Trello 440, Carla): two gaps only, so each section
+           reads as a group. Measured ink to ink on the exported PDF:
+           - 1.85mm from a heading's baseline to what it introduces (table
+             bar, chart, copy), and from a chart's legend / the performance
+             table to the copy or notes under it;
+           - 3.2mm from the end of one section (last table row, last
+             baseline of copy) to the cap top of the next heading.
+           The margins below are those gaps less the fonts' own line slack. */
         .aa-table {
-            /* Reference: header row 9.5mm under the ASSET ALLOCATION heading */
-            margin-top: 1.3mm;
-            margin-bottom: 2mm;
+            margin-top: 0.77mm;
+            margin-bottom: 2.37mm;
         }
         .top10-table {
-            /* Reference: SECURITY row 5.3mm under its heading, chart heading
-               5.4mm under the last row. */
             margin-top: 0.6mm;
-            margin-bottom: 1.7mm;
+            margin-bottom: 2.595mm;
         }
 
         /* Performance Table — columns: name 20.1%, cash 11.55%, since 12%, 8 x 8.05% */
+        .table-container.performance-table {
+            /* Notes sit the 1.85mm heading gap under the table (card 440). */
+            margin-bottom: 1.39mm;
+        }
         .performance-table table th {
             background-color: var(--dark-navy);
             color: var(--white);
@@ -535,8 +540,11 @@
             padding-left: 1mm;
             padding-right: 1mm;
         }
+        /* Cards 404/440: the 6pt headers read too small; 7.5pt like every
+           other navy table header (fund 41's TIC). Centred in the bar by
+           partials/table-centring. */
         .tic-table table th {
-            font-size: 6pt;
+            font-size: 7.5pt;
         }
         .tic-table table td {
             /* Reference labels ~7% larger than 7pt ("Total expense ratio
@@ -619,6 +627,15 @@
             color: var(--dark-navy);
             margin: 0;
         }
+        /* Card 440: the copy sits the same 1.85mm under PERFORMANCE FEES as
+           the tables sit under their headings (the later .fee-description
+           rule had given it a 2.4mm top margin, 3.7mm baseline-to-cap). */
+        .performance-fees-section .section-heading {
+            margin-bottom: 0.57mm;
+        }
+        .performance-fees-section .section-heading + .performance-fees-text {
+            margin-top: 0;
+        }
 
         /* Total row */
         table tbody tr.total-row td,
@@ -629,21 +646,28 @@
         }
 
         /* Change indicators — arrow coloured only; number inherits table colour.
-           Reference arrows are ~5pt Wingdings triangles, smaller than the digits. */
+           Cards 403/440: drawn as inline SVG (like show.blade.php), not ▲/▼
+           text. Avenir has no such glyphs, so they came from whatever
+           fallback font the machine had: ▼ printed narrower and lower than ▲,
+           and staging's Linux fallback differed again. Both triangles share
+           one 1.7 x 1.55mm box (the global spec in partials/global-fixes),
+           centred on the figures' cap height, and the number sits in a slot
+           as wide as "00.0" so every triangle lands on one vertical. */
         td.change-cell { color: #000; }
         td.change-cell .change-arrow-up,
         td.change-cell .change-arrow-down {
-            /* 5.9pt renders the Unicode triangle ~2.05mm tall — the reference's
-               Wingdings3 glyph measures 2.08mm (QC 2026-09-14). */
-            font-size: 5.9pt;
-            /* Reference gap between triangle and value is ~8-9px at 150dpi;
-               the bare word space only gave ~4px. */
-            margin-right: 0.8mm;
-            /* The fallback glyph font has a tall line box that stretched the
-               AA rows to 4.76mm (ref 4.48mm) — keep it out of the row height. */
-            line-height: 0;
             display: inline-block;
-            vertical-align: -0.05em;
+            width: 1.7mm;
+            height: 1.55mm;
+            vertical-align: calc((0.708em - 1.55mm) / 2);
+            /* 1.3mm before a one-figure value ("0.4"); the slot is one
+               figure (0.58em) wider than that value. */
+            margin-right: calc(1.3mm - 0.58em);
+        }
+        td.change-cell .change-num {
+            display: inline-block;
+            /* Avenir Next figures are tabular: 0.58em each, point 0.26em. */
+            min-width: 2em;
         }
 
         td.change-cell .change-arrow-up { color: #000; }
@@ -679,16 +703,19 @@
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
-            margin: 0 0 0.8mm 0;
+            /* Card 440: the chart's top ink (the "R 673" end label) sits the
+               1.85mm heading gap under the title's baseline. The chart may
+               start inside the title's line box, below its baseline. */
+            margin: 0 0 -0.585mm 0;
         }
 
         .chart-wrapper {
-            /* Measured from the flexible reference: y-axis line 195px at
-               150dpi (33mm plot) → 46mm wrapper including x labels + legend.
-               (39mm rendered the plot area ~22% too short.) */
-            /* August reference: heading→axis top 6.9mm, axis 36mm, date labels
-               4.3mm under the baseline, legend 4.3mm under the labels → 48mm. */
-            height: 48mm;
+            /* August reference: axis 36mm, date labels 4.3mm under the
+               baseline, legend 4.3mm under the labels. Card 440 trimmed the
+               empty SVG above the plot (Highcharts spacing top 12 → 7px) and
+               below the legend (23 → 19px), so 48mm less those 9px keeps the
+               plot the same height. */
+            height: 45.62mm;
             position: relative;
         }
 
@@ -705,18 +732,27 @@
 
         /* Rotated y-axis caption for the performance chart — rendered in CSS so
            Highcharts doesn't reserve a full title column (the reference tucks
-           it right beside the axis). */
+           it right beside the axis). Card 440: it used to take the 100% box
+           of `.chart-wrapper > div` and rotate about its centre, so its x
+           followed the column width — the wider left chart's caption ran
+           onto its axis line while the right one cleared it by 0.7mm. Now it
+           is sized to its text and turned about its own corner, so both sit
+           the same distance from their axis. */
+        .chart-wrapper > .chart-ytitle {
+            width: auto !important;
+            height: auto !important;
+        }
         .chart-ytitle {
             position: absolute;
-            /* Reference caption's right edge sits 0.4mm left of the axis line;
-               -9mm overlapped the axis (card 235 "labels on the axis"). */
-            left: -8.4mm;
-            /* Keep the rotated label vertically centred on the 48mm-high
-               chart (-8mm at 39mm, -12mm at 47mm). */
-            top: -12.3mm;
-            width: 22mm;
-            text-align: center;
-            transform: rotate(-90deg);
+            /* The y axis is drawn 4.36mm in from the wrapper; the caption's
+               baseline side (its right edge) stops 0.7mm short of it. */
+            left: 1.35mm;
+            /* Centre of the caption, 8.5mm below the top of the axis. */
+            top: 10.38mm;
+            white-space: nowrap;
+            line-height: 7.2pt;
+            transform-origin: 0 0;
+            transform: rotate(-90deg) translateX(-50%);
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 6pt;
             color: #000;
@@ -732,12 +768,17 @@
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 7.5pt;
-            line-height: 9.15pt;
+            /* Card 440: set slightly tighter (was 9.15pt) to give page 1
+               more room at the foot. A whole number of px (11px): Chrome
+               paints each baseline on a whole px, so 8.7pt (11.6px) printed
+               the lines 11, 12, 11, 12px apart. */
+            line-height: 8.25pt;
             /* No tracking: the reference sets this at natural Regular width
                (6 lines); 0.01em wrapped "portfolio." onto a 7th (card 235). */
             letter-spacing: 0;
             color: #000;
-            margin: 1.2mm 0 1.2mm 0;
+            /* 1.85mm under the legend; 3.2mm to the next heading (card 440). */
+            margin: 0.54mm 0 2.31mm 0;
         }
 
         /* =====================================================
@@ -1313,7 +1354,7 @@
                                                     }
                                                 @endphp
                                                 <td class="change-cell">
-                                                    @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span>@endif {{ $numPart }}
+                                                    @if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 9" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,9 5,0 10,9' : '0,0 10,0 5,9' }}"/></svg>@endif<span class="change-num">{{ $numPart }}</span>
                                                 </td>
                                             @else
                                                 <td>{{ $fmt($row[$colKey] ?? '', 1) }}</td>
@@ -1745,12 +1786,18 @@
 
                 Highcharts.chart(containerId, {
                     chart: {
-                        // Top 12: reference sets the axis top 6.9mm under the heading.
+                        // Top 7: room for half the end label above the plot (card 440
+                        // pulled the chart up under its title; was 12).
                         // Right 40 (10.6mm): the reference line ends 11.7mm before the
                         // column edge with the "R 673" label filling that zone.
-                        // Bottom 23 with the legend's y: 19 keeps the legend inside the
-                        // SVG while reserving 4px more under the plot than the old 4/0.
-                        type: 'spline', backgroundColor: 'transparent', spacing: [12, 40, 23, 0], animation: false,
+                        // Bottom 19 with the legend's y: 19 puts the legend at the foot
+                        // of the SVG, the plot keeping the space it had at 23 + 48mm.
+                        type: 'spline', backgroundColor: 'transparent', spacing: [7, 40, 19, 0], animation: false,
+                        // Plot left pinned at 16px (the axis 4.37mm in from the column):
+                        // left to Highcharts it rounded the "100" label width to 15 or
+                        // 16px depending on the page, moving the axis against the CSS
+                        // "Cash Value" caption (card 440).
+                        marginLeft: 16,
                     },
                     title: { text: null },
                     xAxis: {

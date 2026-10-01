@@ -89,6 +89,10 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         .page:last-child { page-break-after: auto; }
+        /* Cards 409/438: table text centred on the painted pixels — the
+           white row rules and Chrome's baseline snapping are modelled (see
+           partials/table-centring), not just the rounded cell box. */
+        .page { --centre-snap: 1; }
 
         .toolbar-shell {
             width: 210mm;
@@ -146,12 +150,15 @@
         }
 
         /* ── Title Banner (full bleed) ── */
+        /* Card 438: title + standfirst centred in the bar — cap top of the
+           name 5mm below the bar's top edge, last baseline 5mm above its
+           bottom (was 3.9mm / 6.1mm). */
         .title-banner {
             background-color: var(--dark-navy);
             color: var(--white);
             height: 33.8mm;
             min-height: 33.8mm;
-            padding: 2.6mm 8mm 0 8mm;
+            padding: 3.6mm 8mm 0 8mm;
         }
 
         .fund-name {
@@ -273,13 +280,18 @@
         }
 
         /* ── Two-Column Grid ── */
+        /* Card 438: rows 2 (TOP 10 / PORTFOLIO PERFORMANCE VS BENCHMARK)
+           and 3 (MONTHLY) moved up 1.85mm / 2.6mm and the space handed to
+           PORTFOLIO PERFORMANCE %, so the white gap above each of the
+           three headings is the same ~5.2mm (was 7.1 / 6.0 / 2.6mm). The
+           performance table itself does not move (.chart-description). */
         .two-col {
             display: flex;
             gap: 4mm;
-            margin-bottom: 6.6mm;
+            margin-bottom: 4.75mm;
         }
         .two-col > * { flex: 1; min-width: 0; }
-        .two-col.row-2 { margin-bottom: 4.3mm; }
+        .two-col.row-2 { margin-bottom: 3.65mm; }
 
         /* ── Tables ── */
         .table-container {
@@ -293,15 +305,21 @@
             font-size: 7pt;
         }
 
+        /* Card 438: navy column headings 7.5pt like the other local sheets
+           and the August reference (were 6.5pt), and right-aligned over
+           their figures (the reference sets them flush right). The band is
+           a whole, odd number of px (15px = 3.97mm, as the asset header
+           already was): caps can only move in whole px, so in an even band
+           they sit half a pixel off centre (top 10 was 16px). */
         table th {
             background-color: var(--dark-navy);
             color: var(--white);
             font-weight: 500;
-            font-size: 6.5pt;
+            font-size: 7.5pt;
             line-height: 7.5pt;
             text-transform: uppercase;
-            text-align: center;
-            padding: 0.9mm 1.5mm;
+            text-align: right;
+            padding: calc((15px - 7.5pt) / 2) 1.5mm;
             border-right: 0.4mm solid var(--white);
             border-bottom: 0.4mm solid var(--white);
         }
@@ -390,10 +408,6 @@
            bar row (the heading sits alone above a 4.2mm gap). */
         .asset-table { margin: 5.4mm 0 0 0; }
         .asset-table table tbody td { background-color: var(--cell-standard); }
-        .asset-table table th {
-            font-size: 6.5pt;
-            padding: 0.7mm 1.5mm;
-        }
         /* Card 287: Avenir's caps sit ~0.3mm above the middle of the line
            box, so the padding is shifted down to centre the text in the
            row (same 4.5mm row height). */
@@ -427,18 +441,23 @@
             font-size: 7pt;
             line-height: 2.7mm;
             color: var(--body-grey);
-            margin: 2.4mm 0 2.4mm 0;
+            /* Card 438: bottom margin takes the 2.5mm rows 2–3 gave up */
+            margin: 2.4mm 0 4.9mm 0;
         }
 
         /* ── Performance Table ── */
         .perf-table table td { background-color: var(--cell-perf); }
         .perf-table table th {
-            font-size: 6pt;
+            /* Card 438: 7pt like the other local sheets' performance
+               headers and the August reference (was 6pt). */
+            font-size: 7pt;
             /* Trello 429: two-line headers set tighter (fund 39 ratio, 1.09 x
                the size); the space goes to the padding so the bar keeps its
                height. */
-            line-height: 6.5pt;
-            padding: 1.18mm 1mm;
+            line-height: 7.6pt;
+            /* 27px band (7.14mm, as before): the two-line block (cap top to
+               last baseline ≈17.2px) centres to ±0.1px in an odd band. */
+            padding: calc((27px - 2 * 7.6pt) / 2) 1mm;
             text-align: right;
         }
         .perf-table table th:first-child { text-align: left; width: 20%; }
@@ -529,14 +548,21 @@
 
         /* Page-2 headings sit further off their tables than page 1 */
         .page-2 .section-heading { margin-bottom: 2.6mm; }
+        /* Card 438: the white space under each heading matches FEE RATES'
+           (3.1mm to the table) — TIC and PFE stood 0.25mm further off their
+           navy rows, PERFORMANCE FEES 0.55mm off its copy. The headings
+           move down; the tables and copy stay put. */
+        .page-2 .section-heading.over-thead { position: relative; top: 0.25mm; }
+        .page-2 .section-heading.over-copy { position: relative; top: 0.55mm; }
 
         /* Card 204: page-2 table data and column headings Avenir Next 7.5pt
-           (reference), overriding the global 8pt page-2 rule; padding is
-           shifted down ~0.33mm so the caps sit in the middle of each row. */
+           (reference), overriding the global 8pt page-2 rule. Card 438: a
+           17px navy band (4.5mm; reference 4.41–4.54mm) so the caps can
+           centre exactly — the 16px band left them half a pixel low. */
         .page-2 table th {
             font-size: 7.5pt !important;
             line-height: 7.5pt;
-            padding: 0.81mm 1.5mm 0.65mm;
+            padding: calc((17px - 7.5pt) / 2) 1.5mm;
         }
         .page-2 .fee-table table td,
         .page-2 .examples-table table td {
@@ -777,11 +803,16 @@
                     @endif
                 </span>
             </h1>
+            @php
+                // Card 438: articles and "in" keep to the word after them, so
+                // "The fund is…" and "in the short…" start a line instead of
+                // ending one. Twin of the `standfirst` display formatter below.
+                $standfirst = fn (string $text): string => preg_replace('/\b(a|an|the|in)\s+(?=\S)/iu', '$1&nbsp;', e($text));
+            @endphp
             <p class="fund-description">
-                <span x-data="editableField('fund.description', '{{ $fund->data['fund']['description'] ?? '' }}')"
+                <span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}', 'standfirst')"
                       @click="editMode && startEdit()"
-                      :class="editMode ? 'editable' : ''"
-                      x-text="value"></span>
+                      :class="editMode ? 'editable' : ''">{!! $standfirst($fund->data['fund']['description'] ?? '') !!}</span>
             </p>
         </div>
 
@@ -1238,7 +1269,7 @@
                 <!-- Total Investment Charge -->
                 @if(isset($fund->data['fees']['totalInvestmentCharge']))
                     <div class="fee-section">
-                        <h3 class="section-heading">
+                        <h3 class="section-heading over-thead">
                             <span x-data="editableField('fees.totalInvestmentCharge.title', '{{ $fund->data['fees']['totalInvestmentCharge']['title'] }}')"
                                   @click="editMode && startEdit()"
                                   :class="editMode ? 'editable' : ''"
@@ -1321,7 +1352,7 @@
                 <!-- Performance Fees -->
                 @if(isset($fund->data['fees']['performanceFees']))
                     <div class="fee-section">
-                        <h3 class="section-heading">
+                        <h3 class="section-heading over-copy">
                             <span x-data="editableField('fees.performanceFees.title', '{{ $fund->data['fees']['performanceFees']['title'] }}')"
                                   @click="editMode && startEdit()"
                                   :class="editMode ? 'editable' : ''"
@@ -1341,7 +1372,7 @@
                 <!-- Performance Fee Examples -->
                 @if(isset($fund->data['fees']['performanceFeeExamples']))
                     <div class="fee-section">
-                        <h3 class="section-heading">
+                        <h3 class="section-heading over-thead">
                             <span x-data="editableField('fees.performanceFeeExamples.title', '{{ $fund->data['fees']['performanceFeeExamples']['title'] }}')"
                                   @click="editMode && startEdit()"
                                   :class="editMode ? 'editable' : ''"
@@ -1478,6 +1509,12 @@
                 const m = String(value).match(/^(.+?)\s*[\u2014\u2013-]\s*(CLASS\s+[A-Z][0-9]*)$/i);
                 if (!m) return String(value);
                 return m[1] + ' <span class="class-suffix">&mdash; ' + m[2].toUpperCase() + '</span>';
+            },
+            // Card 438: articles and "in" keep to the next word — see $standfirst.
+            standfirst(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/\b(a|an|the|in)\s+(?=\S)/giu, '$1&nbsp;');
             }
         };
         function editableField(fieldPath, initialValue, formatter) {

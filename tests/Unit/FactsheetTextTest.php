@@ -39,6 +39,17 @@ class FactsheetTextTest extends TestCase
         );
     }
 
+    public function test_straight_quotes_become_typographic_quotes(): void
+    {
+        $this->assertSame(
+            'Foord Global Equity Fund (Luxembourg) (the “Master Fund”). The portfolio’s asset selection',
+            FactsheetText::smartQuotes('Foord Global Equity Fund (Luxembourg) (the "Master Fund"). The portfolio\'s asset selection')
+        );
+        $this->assertSame('“PDS” — ‘quoted’', FactsheetText::smartQuotes('"PDS" — \'quoted\''));
+        // Text that is already curly is left as it is.
+        $this->assertSame('(“Equity Trustees”)', FactsheetText::smartQuotes('(“Equity Trustees”)'));
+    }
+
     public function test_footer_breaks_after_track_record_and_escapes_the_text(): void
     {
         $this->assertSame(

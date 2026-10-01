@@ -303,6 +303,16 @@
             margin: 0 0 0.8mm 0;
         }
 
+        /* Trello 439 (Carla): every table heading the same 2.7mm (baseline
+           to the navy/grey bar) above its table on both pages — the 816
+           design's spacing; they were 1.8-1.95mm. The headings move up,
+           the tables stay put: the space above each heading gives up the
+           same 0.84mm (.alloc-sector-row, .charts-row, .fees-content,
+           .tic-section, .pfe-section). */
+        .section-heading.table-heading {
+            margin-bottom: 1.64mm;
+        }
+
         .section-subheading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
@@ -413,7 +423,7 @@
         .alloc-sector-row {
             display: flex;
             gap: 5.6mm;
-            margin-bottom: 2.2mm;
+            margin-bottom: 1.36mm; /* 2.2mm less Trello 439's 0.84mm */
         }
 
         .alloc-col {
@@ -431,10 +441,15 @@
             margin-top: 2.15mm;
         }
 
+        /* Trello 406: thicker bars on a wider row pitch, to the 816 design
+           (bars 3.6mm on a 4.5mm pitch; these were 3.05mm on 4.03mm, the
+           block 2.4mm short over five rows). Whole CSS px — 17px row =
+           4.50mm, 14px bar = 3.70mm — so Chrome paints every bar the same
+           thickness (3.05mm = 11.5px snapped to 2.96 / 3.22mm row by row). */
         .alloc-row {
             display: flex;
             align-items: center;
-            height: 4.03mm;
+            height: 17px;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 7.5pt;
@@ -453,7 +468,7 @@
         .alloc-row .alloc-bar-cell { width: 24.2mm; }
 
         .alloc-row .alloc-bar {
-            height: 3.05mm;
+            height: 14px;
             background-color: var(--naartjie);
         }
 
@@ -668,15 +683,22 @@
         /* Trello 273 "increase spacing between paragraphs": design (816,
            Jun 2026) has 15.0mm from the TER note's last line to PERFORMANCE
            FEES and 15.3mm from "sharing rate." to the examples heading. */
+        /* Trello 439: PERFORMANCE FEES sat 3.47mm above its copy; it moves
+           0.77mm down to the 2.7mm every table heading has (heading baseline
+           to the ascenders), the copy stays put. */
         .performance-fees-section {
-            margin: 11.8mm 0 0 0;
+            margin: 12.57mm 0 0 0;
+        }
+        .performance-fees-section .section-heading + .performance-fees-text {
+            margin-top: 1.63mm;
         }
 
+        /* 6mm / 12.25mm less Trello 439's 0.84mm (.table-heading). */
         .tic-section {
-            margin-top: 6mm;
+            margin-top: 5.16mm;
         }
         .pfe-section {
-            margin-top: 12.25mm;
+            margin-top: 11.41mm;
         }
         .performance-fees-text {
             font-size: 7.5pt;
@@ -707,9 +729,14 @@
            CHARTS SECTION
            ===================================================== */
         /* One full-width chart instead of the balanced sheet's pair. */
+        /* Trello 439: the chart heading moves 1mm down onto its chart (4.74mm
+           heading baseline to axis top, as the design; was 5.76mm) — the
+           top margin grows by what .chart-title gives up. It collapses with
+           the Top 10 table's 4.2mm, so 5.22mm = 4.2 + 1.02. The bottom
+           gives the next table heading its 0.84mm (3.85mm before). */
         .charts-row {
             display: block;
-            margin: 4mm 0 3.85mm 0;
+            margin: 5.22mm 0 3.01mm 0;
         }
 
         /* The reference draws the chart over the left half of the column only
@@ -728,7 +755,7 @@
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
-            margin: 0 0 4.15mm 0;
+            margin: 0 0 3.13mm 0;
         }
 
         .chart-wrapper {
@@ -742,6 +769,16 @@
         .chart-wrapper > div:not(.chart-ytitle) {
             width: 100% !important;
             height: 100% !important;
+        }
+
+        /* Trello 439: the end-value labels ("R 636") run past the chart's
+           right edge, where Highcharts' render target, container and SVG
+           clipped the last digit. The column's right half is empty, so let
+           them overflow. */
+        #portfolioChart,
+        #portfolioChart .highcharts-container,
+        #portfolioChart .highcharts-root {
+            overflow: visible !important;
         }
 
         /* Rotated y-axis caption for the performance chart — rendered in CSS so
@@ -864,9 +901,9 @@
            ===================================================== */
         .fees-content {
             flex: 1;
-            /* FEE RATES heading baseline lands at y≈29.7mm like the reference;
-               left inset 5.35mm matches p1 main content (ref heading x≈65.3mm). */
-            padding: 27.3mm 6mm 4mm 5.35mm;
+            /* Fee table's top edge at y≈31.5mm, the reference's 31.8mm; left
+               inset 5.35mm matches p1 main content (ref heading x≈65.3mm). */
+            padding: 26.46mm 6mm 4mm 5.35mm; /* 27.3mm less Trello 439's 0.84mm */
             overflow: hidden;
         }
 
@@ -1356,7 +1393,7 @@
 
                 <!-- Top 10 Investments -->
                 @if(isset($fund->data['mainContent']['topInvestments']))
-                    <h3 class="section-heading">{{ $fund->data['mainContent']['topInvestments']['title'] ?? 'TOP 10 INVESTMENTS' }}</h3>
+                    <h3 class="section-heading table-heading">{{ $fund->data['mainContent']['topInvestments']['title'] ?? 'TOP 10 INVESTMENTS' }}</h3>
 
                     <div class="table-container top10-table">
                         <table>
@@ -1415,7 +1452,7 @@
                     @endphp
                     {{-- Reference sets this heading's bracketed text at FULL heading size
                          (only ASSET ALLOCATION's "(MAX LIMITS IN BRACKETS)" is smaller). --}}
-                    <h3 class="section-heading">{!! $normaliseSupers(e($fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED¹)')) !!}</h3>
+                    <h3 class="section-heading table-heading">{!! $normaliseSupers(e($fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED¹)')) !!}</h3>
 
                     <div class="table-container performance-table">
                         <table>
@@ -1525,7 +1562,7 @@
             <div class="fees-content">
                 <!-- Fee Rates -->
                 @if(isset($fund->data['fees']['feeRates']))
-                    <h3 class="section-heading">{{ $fund->data['fees']['feeRates']['title'] ?? 'FEE RATES' }}</h3>
+                    <h3 class="section-heading table-heading">{{ $fund->data['fees']['feeRates']['title'] ?? 'FEE RATES' }}</h3>
 
                     <div class="table-container fee-rates-table">
                         <table>
@@ -1562,7 +1599,7 @@
                 <!-- Total Investment Charge -->
                 @if(isset($fund->data['fees']['totalInvestmentCharge']))
                     <div class="tic-section">
-                        <h3 class="section-heading">{{ $fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %' }}</h3>
+                        <h3 class="section-heading table-heading">{{ $fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %' }}</h3>
 
                         <div class="table-container tic-table">
                             <table>
@@ -1609,7 +1646,7 @@
                 <!-- Performance Fee Examples -->
                 @if(isset($fund->data['fees']['performanceFeeExamples']))
                     <div class="pfe-section">
-                    <h3 class="section-heading">{{ $fund->data['fees']['performanceFeeExamples']['title'] ?? 'PERFORMANCE FEE EXAMPLES %' }}</h3>
+                    <h3 class="section-heading table-heading">{{ $fund->data['fees']['performanceFeeExamples']['title'] ?? 'PERFORMANCE FEE EXAMPLES %' }}</h3>
 
                     <div class="table-container pfe-table">
                         <table>

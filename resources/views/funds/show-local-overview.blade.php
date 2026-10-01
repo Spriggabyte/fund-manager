@@ -129,22 +129,21 @@
         }
 
         /* ---------- Grey section bands ---------- */
-        /* Trello 392/405: headings centred in the band and indented to the
-           left edge of the navy banner's copy (14.1mm = 9.9 + 3.5 + 0.7),
-           whatever the band's own left edge. Chrome paints the band and the
-           text baseline on whole px, so the band is a whole number of px
-           tall and the baseline a whole number of px below its top (line
-           box = height, Avenir's hhea metrics round to 10 + 3px at 8pt):
-           caps 9.45px from the top, 10px from the bottom on every band,
-           instead of 0.2–0.5mm high by a different amount on each. The
-           negative margin gives back the 0.14mm over the design's 7.0mm so
-           nothing below the band moves. */
+        /* Trello 392/405: headings centred in the band. Chrome paints the
+           band and the text baseline on whole px, so the band is a whole
+           number of px tall and the baseline a whole number of px below its
+           top (line box = height, Avenir's hhea metrics round to 10 + 3px at
+           8pt): caps 9.45px from the top, 10px from the bottom on every
+           band, instead of 0.2–0.5mm high by a different amount on each.
+           The negative margin gives back the 0.14mm over the design's 7.0mm
+           so nothing below the band moves.
+           Trello 450: headings back to 1.0mm inside each band's own left
+           edge, as on the global overview (392 had moved them to 14.1mm). */
         .band {
-            --band-left: 9.9mm;
             height: 27px;
             line-height: 27px;
             margin-bottom: calc(7.0mm - 27px);
-            margin-left: var(--band-left);
+            margin-left: 9.9mm;
             width: 190mm;
             background-color: var(--band-grey);
             color: var(--white);
@@ -154,11 +153,11 @@
             letter-spacing: 0.01em;
             text-transform: uppercase;
             white-space: nowrap;
-            padding-left: calc(14.1mm - var(--band-left));
+            padding-left: 1.0mm;
         }
         /* Publisher places the synopsis/strategy bands and the footer bars
            1.3mm further right than the tables (11.2mm vs 9.9mm). */
-        .band.band-shifted { --band-left: 11.2mm; width: 190.7mm; }
+        .band.band-shifted { margin-left: 11.2mm; width: 190.7mm; }
 
         /* ---------- White rules inside the tables (Trello 405) ----------
            Every white line between cells is 1pt. Chrome paints a box's
@@ -715,7 +714,7 @@
             @endforeach
         </div>
 
-        <div class="band" style="margin-top: 7.4mm; --band-left: 10.2mm;"><span x-data="editableField('mainContent.sectorAllocation.title', '{{ $attr($sectors['title'] ?? 'SECTOR EXPOSURE (FOORD EQUITY)') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $sectors['title'] ?? 'SECTOR EXPOSURE (FOORD EQUITY)' }}</span></div>
+        <div class="band" style="margin-top: 7.4mm; margin-left: 10.2mm;"><span x-data="editableField('mainContent.sectorAllocation.title', '{{ $attr($sectors['title'] ?? 'SECTOR EXPOSURE (FOORD EQUITY)') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $sectors['title'] ?? 'SECTOR EXPOSURE (FOORD EQUITY)' }}</span></div>
         <div class="sector-block">
             <div id="sectorChart"></div>
         </div>

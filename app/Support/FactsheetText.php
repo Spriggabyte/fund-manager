@@ -55,6 +55,22 @@ class FactsheetText
     }
 
     /**
+     * Straight quotes become typographic ones ("Master Fund" → “Master
+     * Fund”, fund's → fund’s) to match the curly “Equity Trustees” the
+     * published prose already uses (card 445). A quote opens after the
+     * start, whitespace, an opening bracket or a dash; otherwise it closes.
+     * Plain text in, plain text out.
+     */
+    public static function smartQuotes(string $text): string
+    {
+        $text = preg_replace('/(^|[\s(\[{—–])"/u', '$1“', $text);
+        $text = str_replace('"', '”', $text);
+        $text = preg_replace("/(^|[\\s(\\[{—–])'/u", '$1‘', $text);
+
+        return str_replace("'", '’', $text);
+    }
+
+    /**
      * Footer blurb: "…investment track record," ends the first line so
      * "the Foord team, …" starts the second (card 430). Plain text in.
      */

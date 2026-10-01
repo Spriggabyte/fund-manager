@@ -250,6 +250,11 @@
             return window.intlFormatters.supDigits(value)
                 .replace(/^\s*(<sup>[^<]*<\/sup>)\s*/, '<span class="note-num">$1</span>');
         },
+        smartQuotes(value) {
+            return String(value)
+                .replace(/(^|[\s(\[{—–])"/g, '$1“').replace(/"/g, '”')
+                .replace(/(^|[\s(\[{—–])'/g, '$1‘').replace(/'/g, '’');
+        },
         footerInfo(value) {
             return String(value)
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

@@ -11,6 +11,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     @include('funds.partials.avenir-fonts')
     <style>
+        /* Static TrueType Merriweather (as show-income). Google Fonts serves
+           Merriweather as a variable font, which Chromium's PDF backend embeds
+           as a Type3 font that prints wrongly — the last Type3 face on this
+           sheet once Avenir went TrueType (QC card 232). */
+        @font-face {
+            font-family: 'Merriweather TT';
+            src: url('{{ asset('fonts/Merriweather/Merriweather-Regular.ttf') }}') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
         /* =====================================================
            FOORD FUND FACT SHEET - PDF TEMPLATE
            Optimized for 2-page A4 layout
@@ -175,11 +187,13 @@
         }
 
         .fund-description {
-            font-family: 'Merriweather', Georgia, serif;
+            font-family: 'Merriweather TT', 'Merriweather', Georgia, serif;
             font-weight: 400;
             font-size: 9pt;
             line-height: 11.3pt;
-            letter-spacing: 0.01em;
+            /* Static Merriweather sets narrower than the variable font; 0.018em
+               matches the reference line lengths (show-income, card 332). */
+            letter-spacing: 0.018em;
             margin: 0;
             color: var(--white);
         }
@@ -408,9 +422,26 @@
            taller row pitches than the design, so the inter-section margins
            are tightened to land the next section on the reference y. */
         .aa-table {
-            /* Reference TOP 10 heading at y=114.2mm with the asset table
-               (7 rows) ending ~110mm. */
-            margin-bottom: 3.4mm;
+            /* Card 441: the three page-1 section gaps (asset table → TOP 10,
+               TOP 10 → charts, chart note → performance table) are even at
+               ~5.27mm; this one was 3.95mm. */
+            margin-bottom: 4.65mm;
+        }
+        /* Card 441: every asset-allocation row is a whole 17px. The header
+           and TOTAL rows were 16px, and on an even-px row the 7.5pt caps
+           can only sit half a pixel off centre (they printed ~0.25mm low);
+           on 17px centreTableText() centres them exactly. */
+        .aa-table table th,
+        .aa-table table td {
+            line-height: 11px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+        /* The smaller "(60)" / "(100)" limits would otherwise hang their own
+           11px line below the baseline and stretch the row past 17px. */
+        .aa-table .row-limit,
+        .aa-table .th-limit {
+            line-height: 0;
         }
         .top10-table {
             margin-bottom: 2.6mm;
@@ -528,8 +559,10 @@
             padding-left: 1mm;
             padding-right: 1mm;
         }
+        /* Cards 204 + 441: the 12/36 MONTHS headings are 7.5pt like the
+           reference (they were 6pt) — see the page-2 block below. */
         .tic-table table th {
-            font-size: 6pt;
+            font-size: 7.5pt;
         }
         .tic-table table td {
             /* Reference labels ~7% larger than 7pt ("Total expense ratio
@@ -588,6 +621,43 @@
             font-weight: 400;
             padding-top: 1.18mm;
             padding-bottom: 1.18mm;
+        }
+
+        /* Cards 204 + 441 (1 Oct 2026): page-2 table data is Avenir Next
+           7.5pt, beating the global 8pt page-2 rule (as on the equity sheet).
+           Rows are a whole odd number of px — 15px fee rates and PFE rows,
+           17px TIC rows (reference 4.47mm), 21px PFE total — because 7.5pt
+           caps on an even-px row can only sit half a pixel off centre;
+           centreTableText() then centres them exactly. */
+        .page-2 .fee-rates-table td,
+        .page-2 .tic-table td,
+        .page-2 .pfe-table td,
+        .page-2 .tic-table th,
+        .page-2 .pfe-table th {
+            font-size: 7.5pt !important;
+            line-height: 11px;
+        }
+        .page-2 .pfe-table th,
+        .page-2 .pfe-table td {
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+        /* 12px lines keep the two-line "Minimum annual fee" row odd too
+           (27px), so its one-line label and two-line value both centre. */
+        .page-2 .fee-rates-table td {
+            line-height: 12px;
+            padding-top: 1.5px;
+            padding-bottom: 1.5px;
+        }
+        .page-2 .tic-table th,
+        .page-2 .tic-table td,
+        .page-2 .tic-table tr.total-row td {
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+        .page-2 .pfe-table tr.total-row td {
+            padding-top: 5px;
+            padding-bottom: 5px;
         }
 
         /* "* Minimum fees apply" is black in the reference (p1 footnotes are navy) */
@@ -658,8 +728,9 @@
             display: flex;
             gap: 6mm;
             /* Reference: chart headings at y=168.8mm (TOP 10 table foot at
-               ~165mm). */
-            margin: 4.7mm 0 0 0;
+               ~165mm). Card 441: 5.27mm from the TOP 10 foot to the heading
+               caps, the same gap as above and below this section. */
+            margin: 4.36mm 0 0 0;
         }
 
         .chart-container {
@@ -675,7 +746,9 @@
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
-            margin: 0 0 0.8mm 0;
+            /* Card 441: headings 1.5mm closer to their graphs (was 0.8mm);
+               the charts keep their size and move up as a block. */
+            margin: 0 0 -0.7mm 0;
         }
 
         .chart-wrapper {
@@ -735,7 +808,10 @@
             line-height: 9.25pt;
             letter-spacing: 0.01em;
             color: #000;
-            margin: 2mm 0 3.1mm 0;
+            /* Card 441: 3.1mm → 4.08mm evens the gap to the performance
+               table (last baseline → heading caps) with the other two
+               section gaps (~5.27mm). */
+            margin: 2mm 0 4.08mm 0;
         }
 
         /* =====================================================
@@ -925,11 +1001,11 @@
         }
 
         .footer-text {
-            font-family: 'Merriweather', Georgia, serif;
+            font-family: 'Merriweather TT', 'Merriweather', Georgia, serif;
             font-weight: 400;
             font-size: 8pt;
             line-height: 10.1pt;
-            letter-spacing: 0.01em;
+            letter-spacing: 0.018em; /* static Merriweather — see .fund-description */
             color: var(--naartjie);
             margin: 0 0 3.5mm 0;
         }
@@ -1141,7 +1217,9 @@
                 @endif
                 </span>
             </h1>
-            <p class="fund-description"><span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['fund']['description'] ?? '' }}</span></p>
+            {{-- Card 441: the last two words share a line ("five years."), so the
+                 standfirst never ends on a one-word orphan. --}}
+            <p class="fund-description"><span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! preg_replace('/\s+(?=\S+$)/u', '&nbsp;', e(trim($fund->data['fund']['description'] ?? ''))) !!}</span></p>
         </div>
 
         <!-- Main Content -->

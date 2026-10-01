@@ -906,6 +906,10 @@
             text-decoration: underline;
         }
 
+        /* Card 445: the grey column's www.foord.com takes the copy's navy
+           (underline included) instead of the gold link colour. */
+        .info-sidebar .ref-link { color: inherit; }
+
         .info-sidebar-content p:last-child { margin-bottom: 0; }
 
         /* === Page 2 content === */
@@ -1241,11 +1245,12 @@
 
                 // Reference: URLs and email addresses render naartjie
                 // (mirrored client-side by the `linkify` display formatter).
+                // Card 445: straight quotes print curly, like “Equity Trustees”.
                 $linkify = function (string $text): string {
                     return preg_replace(
                         '/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/',
                         '<span class="ref-link">$1</span>',
-                        e($text)
+                        e(\App\Support\FactsheetText::smartQuotes($text))
                     );
                 };
             @endphp
@@ -1780,7 +1785,7 @@
             },
             // Reference: URLs and email addresses render naartjie
             linkify(value) {
-                return String(value)
+                return intlFormatters.smartQuotes(value)
                     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                     .replace(/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/g,
                         '<span class="ref-link">$1</span>');

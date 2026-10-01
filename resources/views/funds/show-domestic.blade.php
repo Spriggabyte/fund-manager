@@ -295,7 +295,11 @@
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: var(--dark-navy);
-            margin: 0 0 0.8mm 0;
+            /* Trello 442 (Carla): every heading sits the same 2.4mm
+               (baseline to the top of the bar, axis or first line of copy
+               below it) above its table, chart or copy, on both pages —
+               the reference's 2.37mm. */
+            margin: 0 0 1.35mm 0;
         }
 
         .section-subheading {
@@ -305,7 +309,8 @@
             line-height: 9pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin: -0.5mm 0 0.9mm 0;
+            /* 0.3mm (collapsed) under the ASSET ALLOCATION heading */
+            margin: -1.05mm 0 1.45mm 0;
         }
 
         /* Smaller suffix style for parenthetical text in section headings */
@@ -391,10 +396,30 @@
             width: 39.5%;
         }
 
-        /* Reference inter-section rhythm: ~6mm between a table and the next heading */
-        .aa-table,
+        /* Trello 442 (Carla): the four page-1 sections are spread evenly
+           down the column — ≈8.2mm from each table / the chart legend to
+           the next heading's caps (the gap above and below the chart is
+           .charts-row's margin). */
+        .aa-table {
+            margin-bottom: 7.4mm;
+        }
         .top10-table {
-            margin-bottom: 4.2mm;
+            margin-bottom: 0;
+        }
+
+        /* Trello 399/442: headings and totals centred in their bars. Chrome
+           paints bars and baselines on whole pixels and 7.5pt caps are
+           7.08px tall, so only an odd-pixel bar lets partials/table-centring
+           centre them exactly (an even bar leaves them 0.46px low) — 17px
+           for the asset-allocation header/total, 15px for the TOP 10 and
+           performance rows. Row metrics are whole px (line-height and
+           padding): pt-based calc() paddings land on 15.97px in Chrome's
+           1/64px layout units, so rows painted alternately 15 and 16px. */
+        .aa-table table th,
+        .aa-table table tr.total-row td {
+            line-height: 11px;
+            padding-top: 3px;
+            padding-bottom: 3px;
         }
 
         /* Performance Table — columns: name 20.1%, cash 11.55%, since 12%, 8 x 8.05% */
@@ -420,8 +445,9 @@
         .performance-table table td {
             color: #000;
             font-size: 7.5pt;
-            line-height: 8pt;
-            padding: 0.45mm 0.5mm;
+            /* 15px rows — the reference's 3.97mm (Trello 399) */
+            line-height: 11px;
+            padding: 2px 0.5mm;
         }
         .performance-table table td:first-child {
             padding-left: 1.5mm;
@@ -434,8 +460,8 @@
         .performance-table table tr.perf-spacer-row td {
             background-color: var(--row-grey-2) !important;
             padding: 0;
-            height: 3.58mm;
-            line-height: 3.58mm;
+            height: 15px;
+            line-height: 15px;
             font-size: 0;
         }
 
@@ -456,8 +482,10 @@
            step lighter (measured 230/235/240). */
         .top10-table table td,
         .top10-table table th {
-            padding-top: 0.45mm;
-            padding-bottom: 0.45mm;
+            /* 15px rows (see the asset-allocation header above) */
+            line-height: 11px;
+            padding-top: 2px;
+            padding-bottom: 2px;
         }
         .top10-table table td:first-child,
         .top10-table table th:first-child {
@@ -502,8 +530,19 @@
         }
         .tic-table table td {
             font-size: 7.6pt;
-            padding-top: 0.92mm;
-            padding-bottom: 0.92mm;
+            /* Whole-pixel rows (Trello 400/442): 8pt caps are 7.55px tall,
+               so an even bar centres them best (0.22px). */
+            line-height: 12px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+        /* Trello 442: TIC / PFE headings centred in the navy bar — an odd
+           17px bar for the 7.5pt caps (see the asset-allocation header). */
+        .tic-table table th,
+        .pfe-table table th {
+            line-height: 11px;
+            padding-top: 3px;
+            padding-bottom: 3px;
         }
         .tic-table table tbody tr td {
             background-color: var(--row-grey-2);
@@ -520,8 +559,9 @@
         .tic-table table tr.total-row td {
             font-size: 7.6pt;
             font-weight: 500;
-            padding-top: 0.95mm;
-            padding-bottom: 0.95mm;
+            line-height: 12px;
+            padding-top: 3px;
+            padding-bottom: 3px;
         }
 
         /* Performance fee examples — label 48.2%, four 12.95% columns,
@@ -538,9 +578,10 @@
         }
         .pfe-table table td {
             font-size: 8pt;
-            line-height: 9.4pt;
-            padding-top: 0.42mm;
-            padding-bottom: 0.42mm;
+            /* 16px rows (Trello 401: one row painted 15px, the rest 16px) */
+            line-height: 12px;
+            padding-top: 2px;
+            padding-bottom: 2px;
         }
         .pfe-table table tbody tr td {
             background-color: var(--row-grey-2);
@@ -558,8 +599,9 @@
         .pfe-table table tr.total-row td {
             font-size: 8pt;
             font-weight: 400;
-            padding-top: 1.18mm;
-            padding-bottom: 1.18mm;
+            line-height: 12px;
+            padding-top: 5px;
+            padding-bottom: 5px;
         }
 
         /* "* Minimum fees apply" is black in the reference (p1 footnotes are navy) */
@@ -568,19 +610,30 @@
         }
 
         /* Performance-fees narrative — 7.5pt navy, continuous line rhythm */
+        /* Trello 442 (Carla): the three page-2 sections sit an equal 10mm
+           apart (last line of one to the next heading's caps). */
         .performance-fees-section {
-            margin: 6.3mm 0 0 0;
+            margin: 8.65mm 0 0 0;
         }
 
         .tic-section {
-            margin-top: 6mm;
+            margin-top: 8.59mm;
         }
         .pfe-section {
-            margin-top: 7.5mm;
+            margin-top: 8.75mm;
+        }
+
+        /* PERFORMANCE FEES comes down to its copy: 2.4mm from the heading's
+           baseline to the first line's caps, like every other heading. */
+        .performance-fees-section .section-heading {
+            margin-bottom: 0;
+        }
+        .performance-fees-section .section-heading + .performance-fees-text {
+            margin-top: 1.06mm;
         }
         .performance-fees-text {
             font-size: 7.5pt;
-            line-height: 9.24pt;
+            line-height: 12px;
             color: var(--dark-navy);
             margin: 0;
         }
@@ -611,10 +664,9 @@
         .charts-row {
             display: flex;
             gap: 6mm;
-            /* Reference rhythm: ~8mm between the TOP 10 table and the chart
-               title; x-axis lands at 211.3mm; ~10mm from the legend down to
-               the PORTFOLIO PERFORMANCE heading (header band at 238.4mm). */
-            margin: 10mm 0 9mm 0;
+            /* Trello 442: the same ≈8.2mm section gap above the chart title
+               and below the legend as between the tables (see .aa-table). */
+            margin: 7.38mm 0 7.19mm 0;
         }
 
         /* Single chart at the left of the content column — sized so the
@@ -643,15 +695,19 @@
             margin: 0 0 0.8mm 0;
         }
 
-        /* Reference plot is 33mm tall (axis top 178.3mm → x-axis 211.3mm);
-           the extra ~12.5mm covers the x labels and legend. The title sits
-           ~7mm above the plot top. */
+        /* Trello 210/398: the August reference's plot (measured) — 125px
+           from the axis top down to the "100" line, the y-axis running on
+           17px (4.5mm) below it — inside fixed Highcharts margins (4px
+           above, 33px below for the dates and legend; see the chart
+           script). Whole pixels, so the plot lands exactly. Trello 442: the
+           title sits 2.4mm (baseline to axis top) above the chart, like
+           the table headings. */
         .chart-wrapper {
-            height: 45.5mm;
+            height: 179px;
             position: relative;
         }
         .chart-container .chart-title {
-            margin-bottom: 5.3mm;
+            margin-bottom: 0.48mm;
         }
 
         .chart-wrapper > div {
@@ -662,12 +718,20 @@
         /* Rotated y-axis caption for the performance chart — rendered in CSS so
            Highcharts doesn't reserve a full title column (the reference tucks
            it right beside the axis). */
+        /* `.chart-wrapper > .chart-ytitle` beats the 100% x 100% rule the
+           Highcharts container needs, so the box is just the caption's
+           22mm line, rotated about its centre. */
+        .chart-wrapper > .chart-ytitle {
+            width: 22mm !important;
+            height: 2.4mm !important;
+        }
         .chart-ytitle {
             position: absolute;
-            left: -11.5mm; /* QC card 291: caption ~0.9mm off the axis */
-            /* Vertically centred on the 33mm plot (plot middle ≈192mm) */
-            top: -5.3mm;
-            width: 22mm;
+            line-height: 2.4mm;
+            left: -9mm; /* QC card 291: caption ~0.9mm off the axis */
+            /* Trello 442 ("move Cash Value up a bit"): as in the
+               reference, the caption starts ~1.3mm below the axis top. */
+            top: 10.45mm;
             text-align: center;
             transform: rotate(-90deg);
             font-family: 'Avenir Next', 'Lato', sans-serif;
@@ -698,7 +762,11 @@
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-weight: 400;
             font-size: 6pt;
-            line-height: 7.2pt;
+            /* Trello 399/442: one constant line pitch through every note
+               (the reference's 7.2pt is 9.6px, which Chrome's whole-pixel
+               baselines painted as 9/10/11px gaps — the tight ones let the
+               raised ™ touch the line above). */
+            line-height: 10px;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
             margin-top: 1.2mm;
@@ -706,7 +774,7 @@
         }
 
         .footnotes p {
-            margin: 0.3mm 0;
+            margin: 0;
         }
 
         .footnotes sup {
@@ -795,9 +863,10 @@
            red-line annotation on the SKM scan); 8pt labels and values
            (measured: ref labels 1.145x the old 7pt render). */
         .fee-rates-table td {
-            padding: 0.3mm 1mm 0.3mm 1.6mm;
+            /* 16px rows (Trello 400: rows painted 15 and 14px) */
+            padding: 2px 1mm 2px 1.6mm;
             font-size: 8pt;
-            line-height: 9.4pt;
+            line-height: 12px;
             background-color: var(--row-grey-2);
             color: var(--dark-navy);
             text-align: left;
@@ -842,7 +911,9 @@
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 400;
             font-size: 7.5pt;
-            line-height: 9.24pt;
+            /* Whole px, so every line is the same distance apart (9.24pt
+               = 12.32px painted as alternate 12/13px gaps). */
+            line-height: 12px;
             color: var(--dark-navy);
             margin: 2.4mm 0 0 0;
         }
@@ -1502,7 +1573,14 @@
                         </div>
 
                         @if(isset($fund->data['fees']['totalInvestmentCharge']['footnote']))
-                            <p class="footnotes tic-footnote">{{ $fund->data['fees']['totalInvestmentCharge']['footnote'] }}</p>
+                            {{-- Trello 442: "which is" travels with "grounded" and dates stay
+                                 whole, so the note breaks "…for a year / which is grounded …
+                                 Prior to / 2 June 2025, the B class…". --}}
+                            <p class="footnotes tic-footnote">{!! preg_replace(
+                                ['/\bwhich is (?=\S)/u', '/\b(\d{1,2}) ([A-Z][a-z]+) (\d{4})\b/u'],
+                                ['which&nbsp;is&nbsp;', '$1&nbsp;$2&nbsp;$3'],
+                                e($fund->data['fees']['totalInvestmentCharge']['footnote'])
+                            ) !!}</p>
                         @endif
                         @if(isset($fund->data['fees']['totalInvestmentCharge']['description']))
                             <p class="fee-description">{{ $fund->data['fees']['totalInvestmentCharge']['description'] }}</p>
@@ -1632,89 +1710,101 @@
                 // Display the cash values in thousands of R (the chart shows "R 1,487" for ~1,487,000 cents → R-thousand)
                 const formatCashLabel = (v) => 'R ' + Math.round(v).toLocaleString('en-US');
 
-                // Reference chart (Foord Balanced Class A design PDF, measured from
-                // its vector paths): the y-axis is LINEAR from 0 with a "nice" max
-                // just above the curve peak (peak * 1.05 rounded up to 100), and only
-                // the "100" baseline value is labelled near the axis.
+                // Trello 210/398, measured from the August B2/B3 and March B2
+                // references: the y-axis is LOGARITHMIC (their curves fit a log
+                // scale to 0.07mm, a linear one only to 1.3mm — hence "the line
+                // should run a bit higher"), the curve's peak touches the top of
+                // the y-axis (no blank band above it), the x-axis line runs along
+                // the "100" value, and the y-axis carries on 17px (4.5mm) below it,
+                // with the dates under the axis's foot. The plot is a fixed 142px
+                // (125px above the 100 line) inside fixed margins, so the 100
+                // line's position is known before drawing.
+                const plotMarginTop = 4;
+                const plotMarginBottom = 33;
+                const belowHundredPx = 17;
+                const plotHeight = document.getElementById('portfolioChart').offsetHeight - plotMarginTop - plotMarginBottom;
+
                 const portfolioMaxVal = Math.max(
                     ...portfolioData.map(d => Math.max(d.fund || 0, d.benchmark || 0))
                 );
-                const portfolioYMax = Math.ceil(portfolioMaxVal * 1.05 / 100) * 100;
-
-                // The cash-value series can dip below the 100 baseline (drawdowns
-                // sink the indexed value under its starting point) — the reference
-                // chart extends the axis below 100 to give the trough headroom
-                // instead of clipping it flush against the axis (Trello: "extend
-                // the y-axis down a bit"). Only drop below 100 when the data
-                // actually requires it.
                 const portfolioMinVal = Math.min(
-                    ...portfolioData.map(d => Math.min(
-                        d.fund ?? Infinity,
-                        d.benchmark ?? Infinity
-                    ))
+                    ...portfolioData.map(d => Math.min(d.fund ?? Infinity, d.benchmark ?? Infinity))
                 );
-                const portfolioYMin = portfolioMinVal < 100
-                    ? Math.floor(portfolioMinVal * 0.95 / 10) * 10
-                    : 100;
+                const lnHundred = Math.log(100);
+                // ~1px above the peak so the line's stroke isn't clipped.
+                const lnMax = Math.log(portfolioMaxVal) + (Math.log(portfolioMaxVal) - lnHundred) * 0.008;
+                // A trough deeper than the 17px allowance takes the axis lower.
+                const lnMin = Math.min(
+                    lnHundred - belowHundredPx / (plotHeight - belowHundredPx) * (lnMax - lnHundred),
+                    Math.log(portfolioMinVal) - (lnMax - Math.log(portfolioMinVal)) * 0.008
+                );
+                const portfolioYMax = Math.exp(lnMax);
+                const portfolioYMin = Math.exp(lnMin);
+                const hundredAbovePlotBottom = plotHeight * (lnHundred - lnMin) / (lnMax - lnMin);
 
-                // Calendar-aligned ticks every TWO years anchored on the first FULL
-                // month (the 820 reference labels Jan 14, Jan 16, … Jan 26 — the
-                // shorter history halves the balanced fund's 4-year pitch; the 100
-                // baseline point sits one month earlier and carries no tick).
+                // Ticks every TWO years from the 100 baseline point, which is the
+                // inception month-end (the 820 reference labels Jan 14, Jan 16, …
+                // Jan 26). Each month-end point is labelled as the start of the
+                // following month, as in the reference, so the first tick lies on
+                // the y-axis instead of standing just right of it (Trello 398).
                 const portfolioDates = portfolioData.map(d => d.date);
-                const portfolioTickPositions = (function () {
-                    const idxByDate = {};
-                    portfolioDates.forEach((d, i) => { idxByDate[d] = i; });
-                    const anchor = portfolioDates.length > 1 ? portfolioDates[1] : portfolioDates[0];
-                    const anchorIdx = portfolioDates.length > 1 ? 1 : 0;
-                    const firstYear = parseInt(anchor.slice(0, 4), 10);
-                    const month = anchor.slice(5, 7);
-                    const positions = [anchorIdx];
-                    for (let y = firstYear + 2; y <= 2040; y += 2) {
-                        const key = y + '-' + month;
-                        if (idxByDate[key] !== undefined) positions.push(idxByDate[key]);
-                    }
-                    return positions;
-                })();
+                const portfolioTickPositions = [];
+                for (let i = 0; i < portfolioDates.length; i += 24) portfolioTickPositions.push(i);
+                const nextMonth = (label) => {
+                    const m = label.match(/^(\d{4})-(\d{2})$/);
+                    if (!m) return label;
+                    const y = parseInt(m[1], 10), mo = parseInt(m[2], 10);
+                    return mo === 12 ? (y + 1) + '-01' : y + '-' + String(mo + 1).padStart(2, '0');
+                };
 
                 Highcharts.chart('portfolioChart', {
-                    chart: { type: 'spline', backgroundColor: 'transparent', spacing: [4, 46, 4, 0], animation: false },
+                    chart: {
+                        type: 'spline', backgroundColor: 'transparent', animation: false,
+                        spacing: [0, 46, 0, 0],
+                        marginTop: plotMarginTop,
+                        marginBottom: plotMarginBottom,
+                    },
                     title: { text: null },
                     xAxis: {
                         categories: portfolioDates,
+                        tickmarkPlacement: 'on',
                         tickWidth: 1,
                         tickLength: 3,
                         tickColor: '#000',
                         lineColor: '#000',
                         lineWidth: 1,
+                        // Lifts the axis line and its ticks from the plot's foot
+                        // onto the 100 value.
+                        offset: -hundredAbovePlotBottom,
                         labels: {
+                            // Measured from the axis line: the dates sit under the
+                            // y-axis's foot (reference: 3.55mm below it).
+                            y: hundredAbovePlotBottom + 13,
                             // textOverflow 'none' stops Highcharts ellipsizing the
                             // final "Jan 26" label at the plot edge.
                             style: { fontSize: '8px', color: '#000', textOverflow: 'none', whiteSpace: 'nowrap' },
-                            formatter: function () { return formatXTickPortfolio(this.value); },
+                            formatter: function () { return formatXTickPortfolio(nextMonth(this.value)); },
                             rotation: 0,
                             autoRotation: false,
                         },
                         tickPositions: portfolioTickPositions,
                     },
                     yAxis: {
+                        type: 'logarithmic',
                         title: { text: null },
-                        // LINEAR axis from 0 — measured from the published reference
-                        // chart (see note above). Only the 100 baseline is labelled.
                         gridLineWidth: 0,
                         lineColor: '#000',
                         lineWidth: 1,
-                        tickWidth: 1,
-                        tickLength: 3,
-                        tickColor: '#000',
-                        // Axis min is normally 100 (the curve's first point sits ON
-                        // the x-axis line) but drops lower when the series dips
-                        // below 100, so the trough doesn't clip against the axis.
+                        // No tick beside the "100" (the reference has none).
+                        tickLength: 0,
                         min: portfolioYMin,
                         max: portfolioYMax,
                         endOnTick: false,
                         startOnTick: false,
-                        tickPositions: [100],
+                        maxPadding: 0,
+                        minPadding: 0,
+                        // Log axes take tick positions as log10 values: [2] is 100.
+                        tickPositions: [2],
                         labels: {
                             distance: 2,
                             y: 1, /* QC card 291: label sits just above the axis (this chart is offset differently) */

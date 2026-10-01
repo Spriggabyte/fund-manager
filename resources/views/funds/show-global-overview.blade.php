@@ -253,10 +253,12 @@
         .perf .spacer-fund { grid-column: 2 / -1; height: calc(2.5mm + var(--row-comp)); }
         .perf .spacer-group { grid-column: 1 / -1; height: calc(3.5mm + var(--row-comp)); }
 
-        /* Trello 402: source notes 3.2mm closer to the table so they read as
-           part of it (the synopsis band's margin takes the 3.2mm back). */
+        /* Trello 402 brought the source notes 3.2mm closer to the table;
+           Trello 449 nudged them 2.1mm back down so the first baseline sits
+           5.0mm under the table, as on the local overview. The synopsis
+           band's margin takes the difference, so the band doesn't move. */
         .perf-footnotes {
-            margin: 1.4mm 0 0 24.6mm;
+            margin: 3.5mm 0 0 24.6mm;
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-size: 6.1pt;
             line-height: 2.6mm;
@@ -437,12 +439,13 @@
            and the legend comes up with the names. */
         #sectorChart { width: 190mm; height: calc(70mm - 7px); margin-top: 4.5mm; }
 
-        /* Trello 402: cap top level with the chart legend's "Fund" /
-           "Benchmark" (was 271.6mm, beside the QR block). */
+        /* Trello 449: back beside the QR block (Trello 402 had lifted it to
+           the chart legend). It is for the whole overview, not the chart,
+           and sits where the local overview puts it. */
         .rounding-note {
             position: absolute;
             left: 15.7mm;
-            top: 257.9mm;
+            top: 271.6mm;
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-size: 5.1pt;
             line-height: 2.2mm;
@@ -668,7 +671,7 @@
 
         @foreach (['synopsis', 'strategy'] as $si => $section)
             @php $block = $p2[$section] ?? []; @endphp
-            <div class="band band-shifted" style="margin-top: {{ $si === 0 ? '7.8mm' : '5.9mm' }};">
+            <div class="band band-shifted" style="margin-top: {{ $si === 0 ? '5.7mm' : '5.9mm' }};">
                 <span x-data="editableField('page2Content.{{ $section }}.title', '{{ $attr($block['title'] ?? mb_strtoupper($section)) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $block['title'] ?? mb_strtoupper($section) }}</span>&nbsp;(<span x-data="editableField('page2Content.{{ $section }}.quarter', '{{ $attr($block['quarter'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $block['quarter'] ?? '' }}</span>)
             </div>
             <div class="bullet-cols">
