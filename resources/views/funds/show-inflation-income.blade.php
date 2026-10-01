@@ -1556,9 +1556,27 @@
                 <!-- Numbered footnotes (the 827 reference prints them at the
                      bottom of page 1, below the performance table) -->
                 @if(isset($fund->data['mainContent']['performanceTable']['footnotes']))
+                    @php
+                        // Trello 387/422: Benchmark⁷ is decorated at render, so print its
+                        // Stats SA note too when the stored footnotes predate it (funds
+                        // imported before the importer added note 7). The importer's
+                        // copy wins once present.
+                        $p1Footnotes = array_values($fund->data['mainContent']['performanceTable']['footnotes']);
+                        if (! collect($p1Footnotes)->contains(fn ($note) => str_contains((string) $note, 'Stats SA'))) {
+                            try {
+                                $statsMonth = \Illuminate\Support\Carbon::parse($fund->data['fund']['date'] ?? $fund->fund_date)->format('F Y');
+                            } catch (\Throwable) {
+                                $statsMonth = null;
+                            }
+                            $roundingIndex = collect($p1Footnotes)->search(fn ($note) => str_starts_with((string) $note, 'Note:'));
+                            array_splice($p1Footnotes, $roundingIndex === false ? count($p1Footnotes) : $roundingIndex, 0, [
+                                '⁷ Source: Stats SA, performance as calculated by Foord'.($statsMonth ? " (estimated for {$statsMonth})" : ''),
+                            ]);
+                        }
+                    @endphp
                     <div class="p1-footnotes">
                         <div class="footnotes">
-                            @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $footnote)
+                            @foreach ($p1Footnotes as $footnote)
                                 <p>{!! $normaliseSupers($footnote) !!}</p>
                             @endforeach
                         </div>

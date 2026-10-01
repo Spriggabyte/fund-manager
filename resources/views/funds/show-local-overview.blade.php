@@ -121,15 +121,30 @@
             font-weight: 400;
             font-size: 9.2pt;
             line-height: 4.0mm;
-            letter-spacing: 0.005em;
+            /* Trello 405: tracking opened up (was 0.005em) so the words
+               aren't so tight; the three lines still break as before. */
+            letter-spacing: 0.02em;
             margin-left: 0.7mm;
             color: var(--white);
         }
 
         /* ---------- Grey section bands ---------- */
+        /* Trello 392/405: headings centred in the band and indented to the
+           left edge of the navy banner's copy (14.1mm = 9.9 + 3.5 + 0.7),
+           whatever the band's own left edge. Chrome paints the band and the
+           text baseline on whole px, so the band is a whole number of px
+           tall and the baseline a whole number of px below its top (line
+           box = height, Avenir's hhea metrics round to 10 + 3px at 8pt):
+           caps 9.45px from the top, 10px from the bottom on every band,
+           instead of 0.2–0.5mm high by a different amount on each. The
+           negative margin gives back the 0.14mm over the design's 7.0mm so
+           nothing below the band moves. */
         .band {
-            height: 7.0mm;
-            margin-left: 9.9mm;
+            --band-left: 9.9mm;
+            height: 27px;
+            line-height: 27px;
+            margin-bottom: calc(7.0mm - 27px);
+            margin-left: var(--band-left);
             width: 190mm;
             background-color: var(--band-grey);
             color: var(--white);
@@ -138,22 +153,40 @@
             font-size: 8pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            padding-left: 1.0mm;
+            white-space: nowrap;
+            padding-left: calc(14.1mm - var(--band-left));
         }
         /* Publisher places the synopsis/strategy bands and the footer bars
            1.3mm further right than the tables (11.2mm vs 9.9mm). */
-        .band.band-shifted { margin-left: 11.2mm; width: 190.7mm; }
+        .band.band-shifted { --band-left: 11.2mm; width: 190.7mm; }
+
+        /* ---------- White rules inside the tables (Trello 405) ----------
+           Every white line between cells is 1pt. Chrome paints a box's
+           background on whole px, so the 0.38/0.4mm gaps came out 1px or
+           2px wide depending on where each row fell. Each cell now clips
+           half a px off every edge (clip-path is not snapped, and half a px
+           is as far as the snapping can move an edge) and the gaps are
+           1pt - 1px, so every rule is exactly 1pt.
+           What a gap loses goes to the cell after it (value columns keep
+           their right edge, so right-aligned figures don't move) and is
+           split above and below each row (--row-grow; the grid starts half
+           of it higher), so every row keeps its centre and the pitch is
+           unchanged. */
+        .perf, .stats, .aa { --rule-gap: calc(1pt - 1px); }
+        .perf .cell, .perf .group-label, .stats .cell, .aa .cell { clip-path: inset(0.5px); }
 
         /* ---------- Performance grid ---------- */
         .perf {
+            --row-grow: calc(0.38mm - var(--rule-gap));
             margin-left: 9.5mm;
             width: 190.3mm;
             display: grid;
-            grid-template-columns: 10.6mm 1.7mm 75.0mm repeat(6, 0.4mm 16.7mm);
+            /* Design: 10.6 | 1.7 | 75.0 | 6 × (0.4 gap + 16.7), rows 5.97mm
+               on a 0.38mm gap. */
+            grid-template-columns: 10.6mm 1.7mm 75.0mm repeat(6, var(--rule-gap) calc(16.7mm + 0.4mm - var(--rule-gap)));
             grid-auto-rows: auto;
-            row-gap: 0.38mm;
+            row-gap: var(--rule-gap);
+            margin-bottom: calc(var(--row-grow) / -2);
             font-size: 8pt;
         }
         .perf .cell {
@@ -161,7 +194,7 @@
             align-items: center;
             overflow: hidden;
             white-space: nowrap;
-            height: 5.97mm;
+            height: calc(5.97mm + var(--row-grow));
         }
         .perf .head {
             background-color: var(--dark-navy);
@@ -170,7 +203,7 @@
             font-size: 7.55pt;
             text-transform: uppercase;
             justify-content: center;
-            height: 5.59mm;
+            height: calc(5.59mm + var(--row-grow));
         }
         .perf .head.head-label { grid-column: 1 / span 3; }
         /* Trello 320: Avenir's ascender-heavy line box leaves figures ~0.3mm
@@ -213,9 +246,9 @@
         /* Spacer rows: the gap between funds inside a group (2.2mm) and
            between groups (3.9mm) — implemented as explicit grid rows so the
            group label can span them. */
-        .perf .spacer-head { grid-column: 1 / -1; height: 3.6mm; }
-        .perf .spacer-fund { grid-column: 2 / -1; height: 1.44mm; }
-        .perf .spacer-group { grid-column: 1 / -1; height: 3.6mm; }
+        .perf .spacer-head { grid-column: 1 / -1; height: calc(3.6mm + var(--row-grow)); }
+        .perf .spacer-fund { grid-column: 2 / -1; height: calc(1.44mm + var(--row-grow)); }
+        .perf .spacer-group { grid-column: 1 / -1; height: calc(3.6mm + var(--row-grow)); }
 
         .perf-footnotes {
             margin: 3.4mm 0 0 22.5mm;
@@ -251,13 +284,19 @@
             line-height: 4.13mm;
             color: #000;
         }
+        /* Trello 405: one bullet shape and size. A 1.0mm dot at an absolute
+           offset from the item's top was snapped to whole px as 3×4, 4×4,
+           3×3 or 4×3 and sat 3–4px above the baseline. A whole-px dot set
+           on the text baseline (bottom 1px above it) paints identically on
+           every line. */
         .bullet-col li::before {
             content: '';
-            position: absolute;
-            left: 1.4mm;
-            top: 1.55mm;
-            width: 1.0mm;
-            height: 1.0mm;
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            vertical-align: 1px;
+            margin-left: -4.8mm;
+            margin-right: calc(4.8mm - 4px);
             border-radius: 50%;
             background-color: var(--naartjie);
         }
@@ -273,31 +312,45 @@
             color: var(--white);
             font-family: 'Merriweather', Georgia, serif;
             font-size: 8.35pt;
+            /* Trello 405: tracking opened up slightly, as the banner copy. */
+            letter-spacing: 0.02em;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
         }
+        /* Trello 405: the page-2 contact line is Avenir Next, as originally
+           designed (Helena approved the change from Merriweather). */
+        .footer-bar.footer-contact {
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            letter-spacing: normal;
+        }
 
         /* ---------- Page 2: statistics + asset allocation grids ---------- */
         .p2-row { display: flex; margin-left: 10.3mm; margin-top: 3.5mm; }
 
+        /* Design: stats 46.5 | 4 × (0.4 gap + 17.7), asset allocation
+           57.9 | 5 × (0.4 gap + 26.0), rows 3.81mm on a 0.4mm gap; the 1pt
+           rules as the performance grid. */
+        .stats, .aa { --row-grow: calc(0.4mm - var(--rule-gap)); }
         .stats {
             width: 118.7mm;
             display: grid;
-            grid-template-columns: 46.5mm repeat(4, 0.4mm 17.7mm);
+            grid-template-columns: 46.5mm repeat(4, var(--rule-gap) calc(17.7mm + 0.4mm - var(--rule-gap)));
             grid-auto-rows: auto;
-            row-gap: 0.4mm;
+            row-gap: var(--rule-gap);
+            margin: calc(var(--row-grow) / -2) 0;
             font-size: 8pt;
         }
         .aa {
             margin-left: 10.0mm;
-            margin-top: 3.8mm;
+            margin-top: calc(3.8mm - var(--row-grow) / 2);
+            margin-bottom: calc(var(--row-grow) / -2);
             width: 189.8mm;
             display: grid;
-            grid-template-columns: 57.9mm repeat(5, 0.4mm 26.0mm);
+            grid-template-columns: 57.9mm repeat(5, var(--rule-gap) calc(26.0mm + 0.4mm - var(--rule-gap)));
             grid-auto-rows: auto;
-            row-gap: 0.4mm;
+            row-gap: var(--rule-gap);
             font-size: 8pt;
         }
         .stats .cell, .aa .cell {
@@ -306,7 +359,7 @@
             overflow: hidden;
             white-space: nowrap;
             background-color: var(--row-grey);
-            height: 3.81mm;
+            height: calc(3.81mm + var(--row-grow));
         }
         .stats .head, .aa .head {
             background-color: var(--dark-navy);
@@ -318,13 +371,18 @@
                reference; reverts Trello 320's centring). */
             justify-content: flex-end;
             text-align: right;
-            line-height: 3.9mm;
-            padding: 0 1.95mm 0 0;
+            /* Trello 405: tighter leading on the two- and three-line fund
+               names (was 3.9mm ≈ 11pt; 12px keeps every line the same
+               distance apart once Chrome rounds the baselines). The 2px
+               bottom padding keeps the last line's baseline 1.1mm above the
+               cell's bottom edge, as in the reference. */
+            line-height: 12px;
+            padding: 0 1.95mm 2px 0;
             white-space: normal;
         }
         .aa .head { padding-right: 3.2mm; }
-        .stats .head { height: 11.5mm; }
-        .aa .head { height: 11.56mm; }
+        .stats .head { height: calc(11.5mm + var(--row-grow)); }
+        .aa .head { height: calc(11.56mm + var(--row-grow)); }
         .stats .head.head-label, .aa .head.head-label { justify-content: flex-start; text-align: left; padding-left: 1.2mm; }
         .stats .cell:not(.head), .aa .cell:not(.head) { padding-top: 0.6mm; }
         .stats .cell.label, .aa .cell.label { padding-left: 1.2mm; }
@@ -347,7 +405,11 @@
         #maturityChart { width: 64.5mm; height: 34.4mm; margin-top: 2.3mm; }
 
         .sector-block { margin-left: 9.9mm; width: 190mm; margin-top: 2.6mm; }
-        #sectorChart { width: 190mm; height: 55mm; margin-top: 0.5mm; }
+        /* Trello 405: the Fund/Benchmark legend sits 12px (3.2mm) closer to
+           the category labels: the chart is 12px shorter and its legend
+           margin 12px smaller, so the plot and x-axis don't move. The
+           rounding note stays put (it's for the whole overview). */
+        #sectorChart { width: 190mm; height: calc(55mm - 12px); margin-top: 0.5mm; }
 
         .rounding-note {
             position: absolute;
@@ -373,7 +435,8 @@
         .qr-block .qr-text { padding: 0 6.5mm; }
         .qr-block .qr-url { white-space: nowrap; }
         .qr-block .qr-heading { color: var(--naartjie); text-transform: uppercase; }
-        .qr-block a { color: var(--white); text-decoration: underline; font-size: 7.2pt; }
+        /* Trello 405: the URL is the same size as the rest of the block, no underline. */
+        .qr-block a { color: var(--white); text-decoration: none; }
         .qr-image {
             position: absolute;
             left: 181.4mm;
@@ -503,7 +566,7 @@
 
         <div class="band" style="margin-top: 3.8mm;"><span x-data="editableField('mainContent.performanceTable.title', '{{ $attr($perf['title'] ?? 'PERFORMANCE %') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $perf['title'] ?? 'PERFORMANCE %' }}</span></div>
 
-        <div class="perf" style="margin-top: 3.0mm;">
+        <div class="perf" style="margin-top: calc(3.0mm - var(--row-grow) / 2);">
             <div class="cell head head-label"></div>
             @foreach ($headers as $hi => $header)
                 <div></div>
@@ -652,7 +715,7 @@
             @endforeach
         </div>
 
-        <div class="band" style="margin-top: 7.4mm; margin-left: 10.2mm;"><span x-data="editableField('mainContent.sectorAllocation.title', '{{ $attr($sectors['title'] ?? 'SECTOR EXPOSURE (FOORD EQUITY)') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $sectors['title'] ?? 'SECTOR EXPOSURE (FOORD EQUITY)' }}</span></div>
+        <div class="band" style="margin-top: 7.4mm; --band-left: 10.2mm;"><span x-data="editableField('mainContent.sectorAllocation.title', '{{ $attr($sectors['title'] ?? 'SECTOR EXPOSURE (FOORD EQUITY)') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $sectors['title'] ?? 'SECTOR EXPOSURE (FOORD EQUITY)' }}</span></div>
         <div class="sector-block">
             <div id="sectorChart"></div>
         </div>
@@ -666,7 +729,7 @@
         </div>
         <img class="qr-image" src="{{ asset($qr['image'] ?? 'images/qr-terms-sa.png') }}" alt="QR code">
 
-        <div class="footer-bar">T. {{ $footer['contact']['phone'] ?? '+27 21 532 6969' }} | E. {{ $footer['contact']['email'] ?? 'unittrusts@foord.co.za' }} | {{ $footer['contact']['website'] ?? 'www.foord.co.za' }}</div>
+        <div class="footer-bar footer-contact">T. {{ $footer['contact']['phone'] ?? '+27 21 532 6969' }} | E. {{ $footer['contact']['email'] ?? 'unittrusts@foord.co.za' }} | {{ $footer['contact']['website'] ?? 'www.foord.co.za' }}</div>
     </div>
 
     <!-- Highcharts -->
@@ -781,7 +844,7 @@
                 tickInterval: 5, minMax: 30,
                 spacing: [4, 2, 0, 0],
                 labelSize: '5.3pt', axisSize: '4.7pt', legendSize: '6pt',
-                legendGap: 37, legendMargin: 21, labelY: 15,
+                legendGap: 37, legendMargin: 9, labelY: 15,
                 // Trello 222: a small gap between the Fund and Benchmark bars.
                 pointPadding: 0.07, groupPadding: 0.15,
                 // Publisher wraps each sector label in a ~11mm box. Greedy

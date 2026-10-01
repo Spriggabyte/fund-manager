@@ -181,6 +181,33 @@ class ExcelImportShariahTest extends TestCase
         );
     }
 
+    public function test_shariah_rand_sukuk_the_feed_tags_foreign_prints_as_the_sheet_does(): void
+    {
+        // Trello 289/344: the 840 feed tags RSA Sukuk (RS2034) "Foreign sukuk"
+        // although its market is ZAF; the August sheet prints "Equities"
+        // (unshaded). Genuinely foreign sukuk keep the feed's wording.
+        $fund = Fund::factory()->create(['template' => 'show-shariah']);
+
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['TOPX_SECURITY_1', 'KSA Sukuk 5.25% 04/06/2027'],
+            ['TOPX_ASSET_CLASS_1', 'Foreign sukuk'],
+            ['TOPX_MARKET_1', 'SAU'],
+            ['TOPX_PERCENT_OF_FUNDS_1', '4.2'],
+            ['TOPX_SECURITY_2', 'RSA Sukuk 11.58% (RS2034)'],
+            ['TOPX_ASSET_CLASS_2', 'Foreign sukuk'],
+            ['TOPX_MARKET_2', 'ZAF'],
+            ['TOPX_PERCENT_OF_FUNDS_2', '1.9'],
+        ], 'shariah_rand_sukuk');
+        (new FactsheetImporter)->import($fund, $path);
+        $fund->save();
+
+        $this->assertSame(
+            ['Foreign sukuk', 'Equities'],
+            array_column($fund->fresh()->top_investments['rows'], 'assetClass')
+        );
+    }
+
     public function test_other_templates_keep_the_feeds_singular_asset_classes(): void
     {
         // Twenty signed-off fact sheets publish the feed's singular wording;

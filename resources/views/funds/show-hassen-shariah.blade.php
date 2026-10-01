@@ -524,6 +524,16 @@
             padding-top: 0.41mm;
             padding-bottom: 0.41mm;
         }
+        /* Card 417: SECURITY / % OF FUND sat 0.19mm low in the navy bar
+           (caps 1.17mm from the top, 0.79mm from the bottom). The cap-centred
+           face still leaves the baseline 0.3px below centre in a 15px row,
+           and this row's layout baseline (737.53px) rounded down a whole px.
+           Half a px of padding moved top→bottom removes that bias (0.91 /
+           1.06mm, like the PFE headers); row height unchanged. */
+        .top10-table .foord-table th {
+            padding-top: calc(0.41mm - 0.5px);
+            padding-bottom: calc(0.41mm + 0.5px);
+        }
         .top10-table .foord-table td:first-child,
         .top10-table .foord-table th:first-child {
             width: 30.05%;
@@ -580,6 +590,16 @@
             line-height: 8.5pt;
             padding: 0.65mm 1.15mm;
         }
+        /* Card 417: the Fund and Fund lowest rows printed 0.32mm low (caps
+           1.44mm from the top, 0.79mm from the bottom). On this 8.5pt leading
+           the baseline sits 0.55px below the cap-centred position, so rows
+           whose layout top falls late in a pixel round a whole px low.
+           Moving 0.5px of padding top→bottom removes the bias: every row
+           within ±0.21mm, whatever month-to-month data moves the table. */
+        .perf-table tbody td {
+            padding-top: calc(0.65mm - 0.5px);
+            padding-bottom: calc(0.65mm + 0.5px);
+        }
         .perf-table td:first-child { padding-left: 1.7mm; }
         .perf-table th:first-child { padding-left: 1.7mm; }
         .perf-table th:last-child,
@@ -617,6 +637,13 @@
            centres them (the old 0.5/0.3mm split compensated for Avenir's
            high-sitting caps). */
         .cost-table .foord-table th { font-size: 8.01pt; padding-top: 0.4mm; padding-bottom: 0.4mm; }
+        /* Card 417: 12 / 36 MONTHS still printed 0.19mm low (1.17 / 0.79mm)
+           — same 0.3px baseline bias as the TOP 10 header; half a px of
+           padding top→bottom centres them, row height unchanged. */
+        .cost-table .foord-table th {
+            padding-top: calc(0.4mm - 0.5px);
+            padding-bottom: calc(0.4mm + 0.5px);
+        }
         .cost-table .foord-table td {
             font-size: 8.01pt;
             padding-top: 0.65mm;

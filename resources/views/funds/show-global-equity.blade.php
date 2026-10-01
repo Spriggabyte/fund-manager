@@ -655,10 +655,15 @@
             z-index: 2;
         }
 
+        /* Card 418: raised 0.97mm like the reference ("Value²" reads as one
+           word). vertical-align: super stacked on preflight's top: -0.5em
+           and lifted it 1.59mm; a whole-px raise snaps the same everywhere. */
         .chart-ytitle sup {
             font-size: 3.9pt;
             line-height: 0;
-            vertical-align: super;
+            vertical-align: baseline;
+            position: relative;
+            top: -4px;
         }
 
         /* QC cards 313 + 354: legends 6.5pt dark navy (reference). The
@@ -1013,6 +1018,17 @@
             letter-spacing: 0 !important;
             margin: 0 !important;
         }
+
+        /* Card 418: the Class B footer carries E. + www lines under the
+           phone (Aug 2026 B sheet). Reference baselines: rule 255.8mm,
+           copy 262.5/266.1, free of charge 273.2, T./E./www 280.6/284.5/
+           288.3; leaf top 1.1mm below the phone baseline, right edge 200mm.
+           R/R1 (phone only) keep the measured layout above. */
+        .page2-content.p2-spread { padding-bottom: 7.43mm; }
+        .p2-spread .footer-divider { padding-top: 4.01mm; }
+        .p2-spread .footer-info { margin-bottom: 3.56mm; }
+        .p2-spread .footer-contact { margin-top: 3.83mm; } /* collapses with the 3.56mm above */
+        .p2-spread .footer-leaf { top: 3.75mm; right: 2.98mm; }
     </style>
     @include('funds.partials.global-intl-fixes')
     @include('funds.partials.screen-centre')
@@ -1784,8 +1800,8 @@
                                            @click="editMode && startEdit()"
                                            :class="editMode ? 'editable' : ''"
                                            x-text="value"></span></p>
-                                {{-- The 877 footer carries the phone line only — the
-                                     email/website rows print when populated. --}}
+                                {{-- R/R1 carry the phone line only; Class B adds the
+                                     email/website rows (they print when populated). --}}
                                 @if(!empty($fund->data['footer']['contact']['email']))
                                     <p>E. <span x-data="editableField('footer.contact.email', '{{ $fund->data['footer']['contact']['email'] }}')"
                                                @click="editMode && startEdit()"

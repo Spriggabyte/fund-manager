@@ -177,7 +177,9 @@
             font-size: 23pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 1.1mm 0;
+            /* Aug 825 reference: standfirst baseline 45.73mm, 7.2mm below
+               the title's 38.53mm (QC card 425; 1.1mm left it 1.28mm high). */
+            margin: 0 0 2.38mm 0;
             line-height: 1.05;
         }
 

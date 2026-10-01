@@ -277,4 +277,58 @@ class ExcelImportPrescientGlobalEquityTest extends TestCase
         $this->assertSame('ASSET ALLOCATION %', $fund->page2_content['assetAllocation']['title']);
         $this->assertSame(['geographicEquityExposure'], array_keys($fund->asset_allocation));
     }
+
+    /**
+     * Trello 426: staging printed the July contributors/detractors seeded at
+     * onboarding under an August date. The export carries both lists
+     * (CONTRIBUTORS / DETRACTORS), which match the published August sheet.
+     */
+    public function test_contributors_and_detractors_refresh_the_page_two_table(): void
+    {
+        $fund = Fund::factory()->create([
+            'template' => 'show-prescient-global-equity',
+            'page2_content' => ['contributorsDetractors' => [
+                'title' => 'CONTRIBUTORS/DETRACTORS',
+                'rows' => [
+                    ['name' => 'Contributors to performance:', 'value' => 'JD.Com, Alibaba, Tencent, Microsoft'],
+                    ['name' => 'Detractors from performance:', 'value' => 'Whitehaven Coal, Quanta Services, Daqo New Energy, APR Corp'],
+                ],
+            ]],
+        ]);
+
+        $path = $this->makeXlsx($this->factsheetRows([
+            ['CONTRIBUTORS', 'Veeva Systems, Unity Software, Whitehaven Coal, APR Corp'],
+            ['DETRACTORS', 'JD.Com, Alphabet, Tencent, Baidu'],
+        ]), 'pge_factsheet_contrib');
+        (new FactsheetImporter)->import($fund, $path);
+        $fund->save();
+
+        $this->assertSame([
+            'title' => 'CONTRIBUTORS/DETRACTORS',
+            'rows' => [
+                ['name' => 'Contributors to performance:', 'value' => 'Veeva Systems, Unity Software, Whitehaven Coal, APR Corp'],
+                ['name' => 'Detractors from performance:', 'value' => 'JD.Com, Alphabet, Tencent, Baidu'],
+            ],
+        ], $fund->fresh()->page2_content['contributorsDetractors']);
+    }
+
+    public function test_an_export_without_contributors_keeps_the_stored_rows(): void
+    {
+        $rows = [
+            ['name' => 'Contributors to performance:', 'value' => 'Veeva Systems'],
+            ['name' => 'Detractors from performance:', 'value' => 'Baidu'],
+        ];
+        $fund = Fund::factory()->create([
+            'template' => 'show-prescient-global-equity',
+            'page2_content' => ['contributorsDetractors' => ['title' => 'CONTRIBUTORS/DETRACTORS', 'rows' => $rows]],
+        ]);
+
+        $path = $this->makeXlsx($this->factsheetRows([
+            ['CONTRIBUTORS', 'ERR'],
+        ]), 'pge_factsheet_no_contrib');
+        (new FactsheetImporter)->import($fund, $path);
+        $fund->save();
+
+        $this->assertSame($rows, $fund->fresh()->page2_content['contributorsDetractors']['rows']);
+    }
 }

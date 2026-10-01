@@ -519,7 +519,17 @@
             padding-top: 0.79mm;
             padding-bottom: 0.79mm;
         }
-        .top10-table .foord-table th { white-space: nowrap; }
+        /* Card 416: SECURITY / % OF FUND read low in the bar (caps 1.17mm
+           from the top, 0.79mm from the bottom). The header row starts at
+           a fractional 270.35px, so Chrome paints the fill at 270–285px but
+           rounds the baseline (281.89px) down to 282px. One px of padding
+           moved top→bottom lands it on 281px — centred like the cost and
+           PFE headers — with the 15px row height unchanged. */
+        .top10-table .foord-table th {
+            white-space: nowrap;
+            padding-top: calc(0.41mm - 1px);
+            padding-bottom: calc(0.41mm + 1px);
+        }
         .top10-table .foord-table td:first-child,
         .top10-table .foord-table th:first-child {
             width: 66%;

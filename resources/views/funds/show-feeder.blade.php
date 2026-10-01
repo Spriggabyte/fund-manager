@@ -180,6 +180,8 @@
             color: var(--white);
         }
 
+        .fund-banner .description .nobr { white-space: nowrap; }
+
         /* === Main body layout === */
         .main-body {
             display: flex;
@@ -334,6 +336,11 @@
            below the row, outside it, so it never pushes the chart up. */
         .two-col {
             --chart-overhang: -0.95mm;
+            /* Trello 283: the chart (y-axis caption, "100" label, plot and
+               legend) sits this far left of the column so the y-axis lands
+               under the "OR" of PORTFOLIO in the heading, as on the
+               reference (axis 3.73mm right of the heading's first letter). */
+            --chart-shift: 3.4mm;
         }
         .two-col .col-right > :nth-child(2) {
             display: flex;
@@ -343,8 +350,8 @@
         }
         .two-col .col-right > :nth-child(2) .chart-legend {
             position: absolute;
-            left: 0;
-            right: 0;
+            left: calc(-1 * var(--chart-shift));
+            right: var(--chart-shift);
             top: 100%;
             margin-top: calc(var(--chart-overhang) + 0.7mm);
         }
@@ -546,6 +553,13 @@
         .geo-table .foord-table th:first-child,
         .geo-table .foord-table td:first-child { width: 45.5%; }
         .geo-table .foord-table td { background-color: var(--row-grey-2); }
+        /* Trello 436: headings centred in the navy bar. 7.5pt caps (7.08px)
+           centre exactly only in an odd-px row — the 16px bar left them
+           0.46px (0.12mm) low. 17px ≈ the reference's 4.42mm bar. */
+        .geo-table .foord-table th {
+            padding-top: calc((17px - 8.5pt) / 2);
+            padding-bottom: calc((17px - 8.5pt) / 2);
+        }
 
         /* Top 10 — SECURITY 40.1%, ASSET CLASS 28.3% (left), MARKET and
            % OF FUND centred; row backgrounds fade in pairs. */
@@ -642,6 +656,11 @@
             padding-top: 0.32mm;
             padding-bottom: 0.32mm;
         }
+        /* Trello 436: more room between the white column rule and the
+           value copy — reference inset 3.93mm (was 1.45mm). */
+        .fee-rates-table .foord-table td:nth-child(2) {
+            padding-left: 4.05mm;
+        }
         /* "Foord global funds:" keeps the shared cell inset so it lines up
            with the row labels above it (card 253). */
         .fee-rates-table .foord-table tr.global-funds-header td {
@@ -659,9 +678,12 @@
         }
         .tic-table .foord-table th:not(:first-child),
         .tic-table .foord-table td:not(:first-child) { text-align: center; }
+        /* Trello 436: header centred in the navy bar — a 17px (odd) bar
+           centres 7.5pt caps exactly; the 14px one left them 0.12mm low.
+           Reference bar 4.41mm. */
         .tic-table .foord-table th {
-            padding-top: 0.35mm;
-            padding-bottom: 0.35mm;
+            padding-top: calc((17px - 8.5pt) / 2);
+            padding-bottom: calc((17px - 8.5pt) / 2);
         }
         /* Reference: every TIC row on a uniform 4.5mm pitch. */
         .tic-table .foord-table td {
@@ -688,6 +710,10 @@
             min-height: 0;
             height: auto;
             margin-bottom: calc(-1 * var(--chart-overhang));
+            /* Trello 283: extends into the column gap so the y-axis moves
+               left; the plot's right end (and the end labels) stay put, so
+               the plot widens towards the reference's 51.7mm. */
+            margin-left: calc(-1 * var(--chart-shift));
             position: relative;
         }
 
@@ -717,8 +743,9 @@
             vertical-align: super;
         }
 
-        /* 875 reference: hairline swatches (~1px at 150 dpi) and lighter
-           slate legend text. */
+        /* 875 reference: hairline swatches (~1px at 150 dpi). Legend text is
+           black, as on the 809 reference (Trello 413: the slate #4d585e
+           read too light). */
         .chart-legend {
             display: flex;
             flex-wrap: wrap;
@@ -727,7 +754,7 @@
             margin-top: 1mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 6pt;
-            color: #4d585e;
+            color: #000;
         }
 
         .chart-legend span {
@@ -1119,11 +1146,23 @@
                           @click="editMode && startEdit()"
                           :class="editMode ? 'editable' : ''">{{ mb_strtoupper($mainName) }}@if($classText) <span class="class-suffix">&mdash; {{ $classText }}</span>@endif</span>
                 </h1>
+                @php
+                    // Trello 436: phrases stay together across line breaks —
+                    // hyphenated compounds never split at the hyphen, and
+                    // short words (and "South" of "South African") keep to
+                    // the word after them, so "South African" and
+                    // "a hard-currency" start a line instead of ending one.
+                    // Twin of the `standfirst` display formatter below.
+                    $standfirst = function (string $text): string {
+                        $html = preg_replace('/(\S+-\S+)/u', '<span class="nobr">$1</span>', e($text));
+
+                        return preg_replace('/(^|\s)(\p{L}{1,2}|South)\s+(?=\S)/u', '$1$2&nbsp;', $html);
+                    };
+                @endphp
                 <p class="description">
-                    <span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')"
+                    <span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}', 'standfirst')"
                           @click="editMode && startEdit()"
-                          :class="editMode ? 'editable' : ''"
-                          x-text="value"></span>
+                          :class="editMode ? 'editable' : ''">{!! $standfirst($fund->data['fund']['description'] ?? '') !!}</span>
                 </p>
             </div>
 
@@ -1361,8 +1400,11 @@
                                                           :class="editMode ? 'editable' : ''"
                                                           x-text="value"></span>
                                                 </span>
+                                                {{-- Trello 412: the largest sector spans the whole
+                                                     track, leaving ~2.9mm to its figure (reference
+                                                     2.8mm); at 63% the gap was 11.9mm. --}}
                                                 <div class="sector-bar-container">
-                                                    <div class="sector-bar" style="width: {{ round((float) ($row['value'] ?? 0) / $sectorMax * 63, 1) }}%;"></div>
+                                                    <div class="sector-bar" style="width: {{ round((float) ($row['value'] ?? 0) / $sectorMax * 100, 1) }}%;"></div>
                                                 </div>
                                                 <span class="sector-value">
                                                     <span x-data="editableField('mainContent.sectorAllocation.sectors.{{ $rowIndex }}.value', '{{ $row['value'] ?? '' }}')"
@@ -1817,6 +1859,13 @@
             headingSuffix(value) {
                 return String(value).replace(/\s*\(([^)]+)\)/, ' <span class="title-suffix">($1)</span>');
             },
+            // Standfirst phrases kept together (Trello 436) — see $standfirst.
+            standfirst(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/(\S+-\S+)/gu, '<span class="nobr">$1</span>')
+                    .replace(/(^|\s)(\p{L}{1,2}|South)\s+(?=\S)/gu, '$1$2&nbsp;');
+            },
             // Reference: URLs and email addresses render naartjie
             linkify(value) {
                 return String(value)
@@ -1946,7 +1995,7 @@
                     const lastValue = dataset.data[dataset.data.length - 1];
                     labels.push({
                         text: 'R ' + Math.round(lastValue).toLocaleString(),
-                        color: dataset.borderColor,
+                        color: dataset.labelColor || dataset.borderColor,
                         x: lastPoint.x + 4,
                         y: lastPoint.y - 3,
                     });
@@ -2026,6 +2075,9 @@
                     },
                     {
                         label: 'World bonds',
+                        // Trello 436: the line keeps its light grey; the
+                        // "R 382" end label is a shade darker to stay legible.
+                        labelColor: '#a6a6a6',
                         data: chartData.map(d => d.worldBonds),
                         borderColor: colors.lightGrey,
                         borderWidth: 1.5,

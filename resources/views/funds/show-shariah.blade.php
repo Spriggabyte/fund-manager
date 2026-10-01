@@ -404,10 +404,11 @@
             font-size: 7pt;
             /* Trello 429: two-line headers set tighter (fund 39 ratio, 1.09 x
                the size); the space goes to the padding so the bar keeps its
-               height. */
-            line-height: 7.6pt;
+               height. Trello 421: 7.6pt (10.13px) snapped to an 11px pitch
+               (1.18x, looser than funds 35/39); 7.5pt is exactly 10px. */
+            line-height: 7.5pt;
             text-align: right;
-            padding: 0.74mm 0.5mm;
+            padding: 0.79mm 0.5mm;
         }
         .performance-table table th:first-child {
             text-align: left;
@@ -948,8 +949,11 @@
            (reference 3.5mm). August reference: title top 28.8mm, first
            description line 41.0mm, last line ends 57.0mm in a band ending
            60.5mm. */
+        /* Trello 421 ("move fund name down a tiny bit"): 3mm left the title
+           baseline 0.41mm above the August sheet's 36.92mm; 3.5mm lands it
+           (and the description under it) within ±0.12mm. */
         .title-banner {
-            padding-top: 3mm;
+            padding-top: 3.5mm;
         }
         .fund-description {
             margin-top: 2.5mm;
@@ -1191,20 +1195,29 @@
             margin-top: 3.2mm;
         }
 
+        /* Trello 421 ("move the naartjie line down to match the Aug PDF"):
+           248.3mm was the reference's "______" text-box top; its ink sits
+           at 251.42mm. The rule now prints there, with the copy under it at
+           the reference's baselines (258.14 / 268.81mm) and the contact
+           lines unchanged (276.22mm). */
         .page-2 .footer {
             position: absolute;
-            top: 248.3mm;
+            top: 251.45mm;
             left: 5.35mm;
             right: 6mm;
             margin-top: 0;
-            padding-top: 9.2mm;
+            padding-top: 4.1mm;
+        }
+
+        .page-2 .footer .footer-text {
+            margin-bottom: 3.6mm;
         }
 
         /* The contact block's gap is set by the preceding paragraph's
            margin — the two collapse, so shrinking .footer-contact alone
            does nothing. */
         .page-2 .footer .footer-text + .footer-text {
-            margin-bottom: 1.9mm;
+            margin-bottom: 3.75mm;
         }
 
         .page-2 .footer .footer-contact {

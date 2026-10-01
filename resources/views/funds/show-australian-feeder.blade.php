@@ -762,10 +762,15 @@
             z-index: 2;
         }
 
+        /* Card 415: the note number tops out just above the ascenders
+           (0.43mm; reference 0.47mm) — vertical-align: super had it a full
+           1mm clear of them. Whole px, as in partials/global-intl-fixes. */
         .chart-ytitle sup {
             font-size: 3.9pt;
             line-height: 0;
-            vertical-align: super;
+            vertical-align: baseline;
+            position: relative;
+            top: -4px;
         }
 
         /* Hairline swatches; legend text black as in the 880 reference (card 318). */
@@ -808,6 +813,21 @@
             width: 1.71mm;
             height: 1.71mm;
             display: inline-block;
+        }
+
+        /* Card 415: each geographic key square is centred on the capitals
+           of its label. Flex centring put it on the middle of the 2.6mm
+           line box, which sits below the caps by an amount that depends on
+           the font metrics (0.55mm on the Linux export). Sitting the square
+           on the label's baseline and dropping it by half its overhang,
+           (1.71mm − 0.708em cap height) / 2, holds it on the caps. The keys
+           are SVG so they print at exactly 1.71mm: a CSS box is snapped to
+           whole px and came out 6×7px on one key and 7×6px on the other. */
+        .geo-legend > span { align-items: baseline; }
+        .geo-legend .legend-square {
+            display: block;
+            position: relative;
+            top: calc((1.71mm - 0.708em) / 2);
         }
 
         /* === Footnotes === */
@@ -1415,8 +1435,8 @@
                                         <canvas id="geoChart"></canvas>
                                     </div>
                                     <div class="chart-legend geo-legend">
-                                        <span><span class="legend-square" style="background: var(--naartjie);"></span> Fund</span>
-                                        <span><span class="legend-square" style="background: var(--dark-navy);"></span> MSCI ACWI</span>
+                                        <span><svg class="legend-square" viewBox="0 0 1 1" aria-hidden="true"><rect width="1" height="1" style="fill: var(--naartjie);"/></svg> Fund</span>
+                                        <span><svg class="legend-square" viewBox="0 0 1 1" aria-hidden="true"><rect width="1" height="1" style="fill: var(--dark-navy);"/></svg> MSCI ACWI</span>
                                     </div>
                                 </div>
                             @endif

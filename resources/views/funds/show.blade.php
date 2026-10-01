@@ -399,6 +399,23 @@
             margin-bottom: 4.2mm;
         }
 
+        /* Trello 432: headings centred in the navy header bars. Chrome
+           paints the bar and the text baseline on whole pixels and the
+           7.5pt caps are 7.08px tall, so an even-pixel bar leaves them half
+           a pixel (0.12mm) off centre whatever partials/table-centring
+           does. Odd-pixel bars (17px; 15px on the shallower top 10) let it
+           centre them exactly. On page 1 the tables' bottom margins give
+           the extra height back, so nothing below them moves. */
+        .aa-table table th,
+        .tic-table table th,
+        .pfe-table table th {
+            padding-top: calc((17px - 8.5pt) / 2);
+            padding-bottom: calc((17px - 8.5pt) / 2);
+        }
+        .aa-table {
+            margin-bottom: calc(4.2mm - (17px - 8.5pt - 1.2mm));
+        }
+
         /* Performance Table — columns: name 20.1%, cash 11.55%, since 12%, 8 x 8.05% */
         .performance-table table th {
             background-color: var(--dark-navy);
@@ -459,6 +476,14 @@
         .top10-table table th {
             padding-top: 0.45mm;
             padding-bottom: 0.45mm;
+        }
+        /* Trello 432: a 15px bar (odd, see the asset allocation header). */
+        .top10-table table th {
+            padding-top: calc((15px - 8.5pt) / 2);
+            padding-bottom: calc((15px - 8.5pt) / 2);
+        }
+        .top10-table {
+            margin-bottom: calc(4.2mm - (15px - 8.5pt - 0.9mm));
         }
         .top10-table table td:first-child,
         .top10-table table th:first-child {
@@ -810,25 +835,28 @@
             width: 50.9%;
         }
 
+        /* Trello 432: values start at the August reference's x (137.95mm),
+           0.7mm further into the column than the labels' inset. */
         .fee-rates-table td:last-child:not([colspan]) {
             text-align: left;
-            font-weight: 500;
-            padding-left: 1.6mm;
+            padding-left: 2.3mm;
         }
 
-        /* "Foord global funds:" — white background, then two pink rows (black text).
-           Reference sets these three rows in Avenir Next Medium. */
+        /* "Foord global funds:" — white background, then two pink rows.
+           Trello 268/432: plain Avenir Next in the same navy as the rest of
+           the table (the August reference is Regular; Medium and black
+           read as bold and darker). */
         .fee-rates-table tr.global-funds-header td {
             background-color: var(--white) !important;
             color: var(--dark-navy);
-            font-weight: 500;
+            font-weight: 400;
             text-align: left;
         }
 
         .fee-rates-table tr.sub-item td {
             background-color: var(--naartjie-20) !important;
-            color: #000;
-            font-weight: 500;
+            color: var(--dark-navy);
+            font-weight: 400;
         }
 
         /* Reference sets the "- Foord ..." sub-item fund names FLUSH with the
@@ -852,11 +880,17 @@
             color: #000;
         }
 
-        /* PERFORMANCE FEES: the reference runs its two data paragraphs as a
-           plain line break (no paragraph spacing) — collapse the
-           .fee-description top margin between consecutive paragraphs. */
+        /* Trello 432: PERFORMANCE FEES heading 4.75mm (baseline to baseline)
+           above its copy, as in the August reference (was 5.55mm). */
+        .performance-fees-section .section-heading + .performance-fees-text {
+            margin-top: 1.6mm;
+        }
+
+        /* Trello 411: "The annual fee is adjusted…" is a new paragraph, so
+           half a line of space goes before it (the reference runs the two
+           paragraphs on as a plain line break). */
         .performance-fees-text + .performance-fees-text {
-            margin-top: 0;
+            margin-top: 4.62pt;
         }
 
         /* =====================================================

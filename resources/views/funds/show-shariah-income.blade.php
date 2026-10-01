@@ -166,7 +166,10 @@
             font-size: 22.65pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 4.45mm 0;
+            /* Trello 420: the August sheet sets the standfirst's first
+               baseline 7.28mm below the title's (37.26 → 44.54mm); 4.45mm
+               left it 2.03mm too low once card 429 pinned the font metrics. */
+            margin: 0 0 2.42mm 0;
             line-height: 1.05;
         }
 

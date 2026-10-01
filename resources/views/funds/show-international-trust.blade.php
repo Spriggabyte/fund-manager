@@ -525,6 +525,15 @@
         /* 874 reference: geo rows on a 4.6mm pitch (taller than 875's) */
         .geo-table .foord-table th,
         .geo-table .foord-table td { padding-top: 0.7mm; padding-bottom: 0.7mm; }
+        /* Card 419: TOTAL / EQUITY / CASH printed 0.2mm low in the navy bar
+           (caps 1.45mm from the top, 1.05mm from the bottom): the baseline
+           sits ~0.3px below cap-centre and this row's layout baseline
+           rounds down a whole px. Half a px of padding moved top→bottom
+           centres it (the siblings' card 416/417 fix); row height unchanged. */
+        .geo-table .foord-table th {
+            padding-top: calc(0.7mm - 0.5px);
+            padding-bottom: calc(0.7mm + 0.5px);
+        }
 
         /* Top 10 — SECURITY 40.1%, ASSET CLASS 28.3% (left), MARKET and
            % OF FUND centred; row backgrounds fade in pairs. */
@@ -535,6 +544,15 @@
         .top10-table .foord-table th {
             padding-top: 0.45mm;
             padding-bottom: 0.45mm;
+        }
+        /* Card 419: SECURITY / % OF FUND sat 0.2mm low in the navy bar
+           (caps 1.18mm from the top, 0.79mm from the bottom) — same bias as
+           the geo header, but half a px does not cross this row's rounding
+           edge; one px top→bottom lands 0.91 / 1.06mm (card 416's fix on
+           879), row height unchanged. */
+        .top10-table .foord-table th {
+            padding-top: calc(0.45mm - 1px);
+            padding-bottom: calc(0.45mm + 1px);
         }
         .top10-table .foord-table td:first-child,
         .top10-table .foord-table th:first-child {
@@ -686,10 +704,16 @@
             z-index: 2;
         }
 
+        /* Card 419: raised 0.97mm like the reference ("Value²" reads as one
+           word). vertical-align: super stacked on preflight's top: -0.5em
+           and lifted it 1.59mm; a whole-px raise snaps the same everywhere
+           (fund 39's card 418 fix). */
         .chart-ytitle sup {
             font-size: 3.9pt;
             line-height: 0;
-            vertical-align: super;
+            vertical-align: baseline;
+            position: relative;
+            top: -4px;
         }
 
         /* QC card 130 ("align the keys"): the 874 reference sets the four

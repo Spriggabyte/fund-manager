@@ -107,6 +107,7 @@ class FactsheetImporter extends AbstractExcelImporter
         $this->mapScalarFields($fund, $data);
         $this->mapTopInvestments($fund, $data);
         $this->mapAssetAllocation($fund, $data);
+        $this->mapContributorsDetractors($fund, $data);
         $this->mapEquitySectorAllocation($fund, $data);
         $this->mapGeographicExposure($fund, $data);
         $this->mapMaturityBreakdown($fund, $data);
@@ -234,15 +235,17 @@ class FactsheetImporter extends AbstractExcelImporter
             if (! $security) {
                 break;
             }
+            $market = $data["TOPX_MARKET_{$i}"] ?? '';
             $rows[] = [
                 'security' => $security,
                 // The 877 feed names the second column by sector rather than
                 // asset class (TOP 10 INVESTMENTS "SECTOR" column).
                 'assetClass' => $this->normaliseAssetClass(
                     $fund,
-                    $data["TOPX_ASSET_CLASS_{$i}"] ?? $data["TOPX_SECURITY_SECTOR_{$i}"] ?? ''
+                    $data["TOPX_ASSET_CLASS_{$i}"] ?? $data["TOPX_SECURITY_SECTOR_{$i}"] ?? '',
+                    $market
                 ),
-                'market' => $data["TOPX_MARKET_{$i}"] ?? '',
+                'market' => $market,
                 'percentage' => $this->toNumber($data["TOPX_PERCENT_OF_FUNDS_{$i}"] ?? '0'),
             ];
         }
@@ -268,11 +271,18 @@ class FactsheetImporter extends AbstractExcelImporter
      * Scoped to the Shariah template on purpose: every other Foord sheet
      * publishes the feed's singular wording, so normalising globally would
      * rewrite twenty signed-off fact sheets.
+     *
+     * The feed also tags the rand-market RSA Sukuk (RS2034) "Foreign sukuk";
+     * the published sheet prints it "Equities", unshaded (Trello 289/344).
      */
-    private function normaliseAssetClass(Fund $fund, string $assetClass): string
+    private function normaliseAssetClass(Fund $fund, string $assetClass, string $market = ''): string
     {
         if (($fund->template ?? '') !== 'show-shariah') {
             return $assetClass;
+        }
+
+        if ($assetClass === 'Foreign sukuk' && $market === 'ZAF') {
+            return 'Equities';
         }
 
         return match ($assetClass) {
@@ -487,11 +497,16 @@ class FactsheetImporter extends AbstractExcelImporter
                     'changeDirection' => $direction,
                 ];
             } else {
+                $total = $data["PS_TOTAL_{$key}"] ?? '-';
+                if (! $isShariahIncome) {
+                    $total = $this->reconcileStructureTotal($data["PS_SA_{$key}"] ?? null, $data["PS_FOREIGN_{$key}"] ?? null, $total);
+                }
+
                 $rows[] = [
                     'name' => $name,
                     'sa' => $display($data["PS_SA_{$key}"] ?? '-'),
                     'foreign' => $display($data["PS_FOREIGN_{$key}"] ?? '-'),
-                    'total' => $display($data["PS_TOTAL_{$key}"] ?? '-'),
+                    'total' => $display($total),
                     'change' => $changeDisplay,
                     'changeDirection' => $direction,
                 ];
@@ -541,10 +556,12 @@ class FactsheetImporter extends AbstractExcelImporter
 
         // The hedge prints in accounting brackets ("(6)"); both rows sit
         // under the FOREIGN column on the published sheet.
+        // The re-sent August 2026 824 export signs it ("-6"); the brackets
+        // already say negative, so the sheet prints "(6)", never "(-6)".
         $hedge = $data['FOREIGN_CURRENCY_HEDGE'] ?? null;
         if ($hedge !== null) {
-            $hedge = $display($hedge);
-            $assetAllocation['foreignCurrencyHedge'] = $hedge === '-' ? '-' : "({$hedge})";
+            $hedge = ltrim($display($hedge), '-');
+            $assetAllocation['foreignCurrencyHedge'] = $hedge === '' ? '-' : "({$hedge})";
         }
         $exposure = $data['FOREIGN_CURRENCY_EXPOSURE'] ?? null;
         if ($exposure !== null) {
@@ -552,6 +569,27 @@ class FactsheetImporter extends AbstractExcelImporter
         }
 
         $fund->asset_allocation = $assetAllocation;
+    }
+
+    /**
+     * Foord applies its manual structure overrides (Aug 2026: netting the
+     * negative cash-and-call into money market) to the PS_SA_* cells only and
+     * leaves PS_TOTAL_* at the raw figures (-1 / 35 against a published
+     * 3 / 30). Two rounded columns can miss their rounded total by at most 1,
+     * so a total further out than that is rebuilt from SA + FOREIGN.
+     */
+    private function reconcileStructureTotal(mixed $sa, mixed $foreign, mixed $total): mixed
+    {
+        if (! is_numeric($sa) && ! is_numeric($foreign)) {
+            return $total;
+        }
+
+        $sum = (is_numeric($sa) ? (float) $sa : 0.0) + (is_numeric($foreign) ? (float) $foreign : 0.0);
+        if (is_numeric($total) && abs($sum - (float) $total) <= 1) {
+            return $total;
+        }
+
+        return $sum == round($sum) ? (string) (int) $sum : (string) round($sum, 1);
     }
 
     /**
@@ -773,6 +811,55 @@ class FactsheetImporter extends AbstractExcelImporter
         $page2['assetAllocation'] = array_merge(
             ['title' => 'ASSET ALLOCATION %'],
             $page2['assetAllocation'] ?? [],
+            ['rows' => $rows],
+        );
+        $fund->page2_content = $page2;
+    }
+
+    /**
+     * Prescient Foord Global Equity Feeder (823): page 2's CONTRIBUTORS /
+     * DETRACTORS rows. The export carries both lists (they match the
+     * published August 2026 sheet); before this mapping the rows were only
+     * ever the July names seeded at onboarding (Trello 426). Blank / ERR
+     * cells keep the stored row.
+     */
+    private function mapContributorsDetractors(Fund $fund, array $data): void
+    {
+        if (($fund->template ?? '') !== 'show-prescient-global-equity') {
+            return;
+        }
+
+        $labels = [
+            'CONTRIBUTORS' => 'Contributors to performance:',
+            'DETRACTORS' => 'Detractors from performance:',
+        ];
+
+        $page2 = $fund->page2_content ?? [];
+        $rows = $page2['contributorsDetractors']['rows'] ?? [];
+        $changed = false;
+
+        foreach ($labels as $key => $label) {
+            $value = trim((string) ($data[$key] ?? ''));
+            if (! $this->isUsable($value)) {
+                continue;
+            }
+
+            $index = array_search($label, array_column($rows, 'name'), true);
+            if ($index === false) {
+                $rows[] = ['name' => $label, 'value' => $value];
+            } else {
+                $rows[$index]['value'] = $value;
+            }
+            $changed = true;
+        }
+
+        if (! $changed) {
+            return;
+        }
+
+        $page2['contributorsDetractors'] = array_merge(
+            ['title' => 'CONTRIBUTORS/DETRACTORS'],
+            $page2['contributorsDetractors'] ?? [],
             ['rows' => $rows],
         );
         $fund->page2_content = $page2;

@@ -94,6 +94,44 @@ class ExcelImportFlexIncomeTest extends TestCase
         $this->assertSame('4', $structure['foreignCurrencyExposure']);
     }
 
+    public function test_sa_overrides_rebuild_stale_totals_and_negative_hedge_keeps_brackets(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-flex-income']);
+
+        // The re-sent August 2026 824A export (Trello 434): Foord's
+        // cash/money-market override lands in PS_SA_* only, PS_TOTAL_* keep
+        // the raw -1 / 35, and the hedge now arrives signed.
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['PS_SA_CASH_AND_CALL', '-'],
+            ['PS_FOREIGN_CASH_AND_CALL', '3'],
+            ['PS_TOTAL_CASH_AND_CALL', '-1'],
+            ['PS_SA_MONEY_MARKET', '30'],
+            ['PS_FOREIGN_MONEY_MARKET', '-'],
+            ['PS_TOTAL_MONEY_MARKET', '35'],
+            ['PS_SA_INFLATION_LINKED_BONDS', '19'],
+            ['PS_FOREIGN_INFLATION_LINKED_BONDS', '5'],
+            ['PS_TOTAL_INFLATION_LINKED_BONDS', '25'],
+            ['PS_SA_TOTAL', '90'],
+            ['PS_FOREIGN_TOTAL', '10'],
+            ['FOREIGN_CURRENCY_HEDGE', '-6'],
+            ['FOREIGN_CURRENCY_EXPOSURE', '4'],
+        ], 'flex-sa-override');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $structure = $fund->asset_allocation;
+        $rows = collect($structure['rows'])->keyBy('name');
+
+        // Published August sheet: Cash and call - / 3 / 3, Money market 30 / - / 30.
+        $this->assertSame('3', $rows['Cash and call']['total']);
+        $this->assertSame('30', $rows['Money market']['total']);
+        // A total within rounding of SA + FOREIGN is the feed's own figure.
+        $this->assertSame('25', $rows['Inflation linked bonds']['total']);
+
+        $this->assertSame('(6)', $structure['foreignCurrencyHedge']);
+    }
+
     public function test_flex_statistics_err_cells_preserve_seeded_values(): void
     {
         $fund = Fund::factory()->create([

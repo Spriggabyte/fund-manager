@@ -153,8 +153,10 @@
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
-            /* Reference title block sits ~1.5mm lower inside the navy band. */
-            padding: 5.1mm 6mm 0 7.75mm;
+            /* Trello 434 ("nudge heading + copy up"): since the 429 metrics
+               pin, 5.1mm put the title baseline at 38.63mm and the standfirst
+               1.37mm below the August reference (37.26 / 43.06mm). */
+            padding: 3.73mm 6mm 0 7.75mm;
             margin: 0;
             width: 100%;
         }
@@ -470,13 +472,28 @@
 
         /* Maturity spread — CSS bar list (labels left, naartjie bars,
            right-aligned value column at the block's right edge). */
-        .maturity-spread-rows { margin-top: 1.8mm; }
+        /* QC card 340 round 2 (Helena, 29 Sept): "the bars need to be wider
+           and spacing bigger between the maturity spread years" — back to the
+           824 August reference geometry, overriding the house bar spec
+           (3.05mm on 4.03mm): 4.4mm bars on a 5.3mm pitch, first bar top at
+           144.15mm. */
+        .maturity-spread-rows { margin-top: 2.02mm; position: relative; }
+        /* Bars are rects in one SVG over the track column (label 17mm, value
+           6.5mm): separate divs snapped to different px heights (3.17 vs
+           2.90mm in the export). */
+        .maturity-spread-svg {
+            position: absolute;
+            top: 0;
+            left: 17mm;
+            width: calc(100% - 17mm - 6.5mm);
+            height: 100%;
+            overflow: visible;
+            fill: var(--naartjie);
+        }
         .maturity-spread-row {
             display: flex;
             align-items: center;
-            /* House bar spec (equity sector bars, fund 11): 4.03mm pitch =
-               3.05mm bar + 0.98mm gap (was 4.17 + 1.17mm, QC card 340). */
-            margin-bottom: 0.98mm;
+            margin-bottom: 0.9mm;
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -484,19 +501,16 @@
             min-width: 17mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 3.05mm;
+            line-height: 4.4mm;
             color: #000;
         }
         .maturity-spread-track {
             flex: 1;
             min-width: 0;
-        }
-        .maturity-spread-bar {
-            height: 3.05mm;
-            background-color: var(--naartjie);
+            height: 4.4mm;
         }
         .maturity-spread-value {
-            line-height: 3.05mm;
+            line-height: 4.4mm;
             width: 6.5mm;
             min-width: 6.5mm;
             text-align: right;
@@ -568,11 +582,15 @@
         }
         .performance-table table th:nth-child(2) { width: 11.55%; }
         .performance-table table th:nth-child(3) { width: 12%; }
+        /* QC card 341 round 2 ("Benchmark line still seems top aligned"):
+           rows are exactly 15px. A 14px row cannot centre the 7.08px caps
+           closer than half a pixel (the table-centring JS left them 0.12mm
+           low); 15px centres them and gives the reference's 4.22mm pitch. */
         .performance-table table td {
             color: #000;
             font-size: 7.5pt;
             line-height: 8pt;
-            padding: 0.45mm 0.5mm;
+            padding: calc((15px - 8pt) / 2) 0.5mm;
         }
         .performance-table table td:first-child {
             padding-left: 1.5mm;
@@ -680,10 +698,15 @@
             padding-left: 1mm;
             padding-right: 1mm;
         }
+        /* Trello 434 ("nudge header up slightly to centre it"): a 16px
+           navy row left the caps half a pixel low whichever way the
+           table-centring JS rounded; 17px centres them (reference 4.41mm).
+           The TER paragraph gives the extra pixel back below. */
         .tic-table table th {
             font-size: 7.5pt;
-            padding-top: 0.62mm;
-            padding-bottom: 0.62mm;
+            line-height: 8.5pt;
+            padding-top: calc((17px - 8.5pt) / 2);
+            padding-bottom: calc((17px - 8.5pt) / 2);
         }
         /* QC cards 341 / 242: reference 4.47mm pitch, baseline 3.21mm below
            the row top. */
@@ -754,7 +777,9 @@
         }
 
         .tic-section {
-            margin-top: 6.27mm;
+            /* +1px: the 16px fee-rate rows (Trello 393) are 1px shorter in
+               all; keeps TOTAL INVESTMENT CHARGE % on the reference 86mm. */
+            margin-top: calc(6.27mm + 1px);
         }
         .pfe-section {
             margin-top: 7.5mm;
@@ -992,9 +1017,10 @@
            so the two tables' column breaks align vertically (per Paul's
            red-line annotation on the SKM scan); 7pt labels, 7pt medium values. */
         .fee-rates-table td {
-            /* QC cards 341 / 242: reference 4.39mm pitch, baseline 3.05mm
-               below the row top (text was sitting high). */
-            padding: 0.7mm 1mm 0.32mm 1.6mm;
+            /* QC cards 341 / 242: reference 4.39mm pitch. Trello 393: rows are
+               exactly 16px (a 16.4px row painted 17px then 16px), and the
+               table-centring JS centres the caps in them. */
+            padding: calc((16px - 9.4pt) / 2) 1mm calc((16px - 9.4pt) / 2) 1.6mm;
             /* Reference sets this table ~14% larger than the old 7pt
                ("Initial, exit and switching fees" measures 217px at 150dpi);
                row pitch unchanged (line-height still 9.4pt). */
@@ -1006,16 +1032,17 @@
         }
 
         .fee-rates-table td:first-child {
-            /* Reference value column starts at x≈816px/150dpi (138.2mm):
-               ~2.5mm right of the TIC table's 50.2% break. */
-            width: 51.9%;
+            /* Trello 434: the white column line sits on the TIC table's
+               50.2% break below it (it was 2.4mm to the right); the values
+               keep the reference x (138mm) through the wider padding. */
+            width: 50.1%;
         }
 
         .fee-rates-table td:last-child:not([colspan]) {
             text-align: left;
             /* 824 reference sets the values in Avenir Next Regular. */
             font-weight: 400;
-            padding-left: 1.6mm;
+            padding-left: 4.1mm;
         }
 
         /* "Foord global funds:" — white background, then two pink rows (black text).
@@ -1050,6 +1077,12 @@
             color: #000;
             margin-top: 2mm;
         }
+        /* The TER paragraph's margin collapses into this one. -2px: the 17px
+           TIC header (Trello 434) pushed the paragraph, notes and footer 2px
+           (0.53mm) below the reference. */
+        .tic-section .tic-table {
+            margin-bottom: calc(2.6mm - 2px);
+        }
 
         /* =====================================================
            FOOTER
@@ -1058,8 +1091,9 @@
            Merriweather body and Avenir Next Medium contact lines, all naartjie. */
         .footer {
             /* "Please visit" baseline at the reference y=254mm below the
-               re-spaced footnote block. */
-            margin-top: 4.8mm;
+               re-spaced footnote block (+1px since the Trello 434 page-2
+               table heights moved the rounding). */
+            margin-top: calc(4.8mm + 1px);
             padding-top: 5.5mm;
             border-top: none;
             position: relative;
@@ -1067,7 +1101,10 @@
         .footer::after {
             content: "";
             position: absolute;
-            top: 0;
+            /* Trello 434 ("increase space between the naartjie line and the
+               notes"): the rule sat 1.44mm above the reference underscore's
+               ink (247.24mm); the footer copy below it stays put. */
+            top: 1.44mm;
             left: 0.3mm;
             /* Reference rule: 14.1mm long, ~1px (150dpi) thick. */
             width: 14.1mm;
@@ -1526,12 +1563,15 @@
                             <div class="maturity-spread-block">
                                 <h3 class="section-heading">{{ $spread['title'] ?? 'MATURITY SPREAD %' }}</h3>
                                 <div class="maturity-spread-rows">
+                                    <svg class="maturity-spread-svg" aria-hidden="true">
+                                        @foreach ($spread['categories'] ?? [] as $i => $bucket)
+                                            <rect x="0" y="{{ round($i * 5.3, 2) }}mm" height="4.4mm" width="{{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%" />
+                                        @endforeach
+                                    </svg>
                                     @foreach ($spread['categories'] ?? [] as $bucket)
                                         <div class="maturity-spread-row">
                                             <div class="maturity-spread-label">{{ $bucket['name'] }}</div>
-                                            <div class="maturity-spread-track">
-                                                <div class="maturity-spread-bar" style="width: {{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%"></div>
-                                            </div>
+                                            <div class="maturity-spread-track"></div>
                                             <div class="maturity-spread-value">{{ $bucket['label'] ?? '' }}</div>
                                         </div>
                                     @endforeach

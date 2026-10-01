@@ -106,6 +106,49 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-inflation-income');
     }
 
+    public function test_inflation_income_prints_stats_sa_note_missing_from_stored_footnotes(): void
+    {
+        // Trello 387/422: Benchmark⁷ is decorated at render, so a fund imported
+        // before the importer added note 7 printed the marker without its note.
+        $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create([
+            'template' => 'show-inflation-income',
+            'fund_date' => '31 August 2026',
+            'performance_table' => [
+                'footnotes' => ['⁶ Net of fees and expenses.', 'Note: Totals may not cast perfectly due to rounding.'],
+            ],
+        ]);
+
+        $this->actingAs($user)->get(route('funds.show', $fund))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'Net of fees and expenses.',
+                'Source: Stats SA, performance as calculated by Foord (estimated for August 2026)',
+                'Note: Totals may not cast perfectly due to rounding.',
+            ]);
+    }
+
+    public function test_inflation_income_does_not_duplicate_stored_stats_sa_note(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create([
+            'template' => 'show-inflation-income',
+            'fund_date' => '31 August 2026',
+            'performance_table' => [
+                'footnotes' => [
+                    '⁶ Net of fees and expenses.',
+                    '⁷ Source: Stats SA, performance as calculated by Foord (estimated for July 2026)',
+                    'Note: Totals may not cast perfectly due to rounding.',
+                ],
+            ],
+        ]);
+
+        $html = $this->actingAs($user)->get(route('funds.show', $fund))->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($html, 'Source: Stats SA'));
+        $this->assertStringContainsString('(estimated for July 2026)', $html);
+    }
+
     public function test_internal_pdf_view_uses_global_equity_page_template(): void
     {
         // The global equity page template is itself the print layout, like

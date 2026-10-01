@@ -188,17 +188,22 @@
             font-size: 22.5pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 2.9mm 0;
+            /* Trello 426: the standfirst sits closer under the title —
+               5.84mm baseline to baseline, as on the August sheet (was 7.41). */
+            margin: 0 0 1.33mm 0;
             line-height: 1.05;
         }
 
+        /* Trello 426: the standfirst ends on the tables' right edge
+           (203.46mm) so its lines break where the August sheet's do —
+           "The" and "that is" start lines 3 and 4. */
         .fund-banner .description {
             font-family: 'Merriweather', Georgia, serif;
             font-weight: 400;
             font-size: 9pt;
             line-height: 11.3pt;
             letter-spacing: 0.01em;
-            margin: 0;
+            margin: 0 3.54mm 0 0;
             color: var(--white);
         }
 
@@ -384,7 +389,9 @@
         /* The two header columns right-align on the change and variance
            columns below them (168.8mm and 202.0mm on the reference). */
         .ps-header .ps-header-change { width: 34.6mm; }
-        .ps-header .ps-header-variance { width: 33.6mm; }
+        /* Trello 426: the variance column right-aligns on the tables' right
+           edge (203.46mm) — it overhung by 0.7mm. */
+        .ps-header .ps-header-variance { width: 33.6mm; padding-right: 0.7mm; }
 
         .ps-row {
             display: flex;
@@ -440,6 +447,7 @@
 
         .ps-variance {
             width: 33.6mm;
+            padding-right: 0.7mm;
             text-align: right;
             flex-shrink: 0;
         }
@@ -696,8 +704,10 @@
             padding-top: 0.76mm;
             padding-bottom: 0.76mm;
         }
-        /* The TER note follows 1.8mm tighter than the shared table gutter. */
-        .tic-table .table-wrapper { margin-bottom: 0.8mm; }
+        /* Trello 426: breathing room between the naartjie total row and the
+           TER note — 3.05mm to the note's cap tops (was 1.85mm; August
+           sheet 2.0mm, which Carla found too tight). */
+        .tic-table .table-wrapper { margin-bottom: 2mm; }
 
         /* === Chart === */
         .chart-wrapper {
@@ -1166,11 +1176,24 @@
            1mm section gap and untracked body copy. Trello 429: gaps and
            tracking now come from partials/global-fixes (1.85mm, untracked);
            the 7pt feeder headings dropping to the reference's 6pt/6.8pt
-           leaves room for most of the wider gap. This sheet has 23 sidebar
-           items, so at 1.85mm the ISIN line sat 3.9mm off the page foot;
-           1.75mm lands it at ~291mm like the 823 reference. */
-        .sidebar-section { margin-bottom: 1.75mm !important; }
-        .sidebar-section:last-child { margin-bottom: 0 !important; }
+           leaves room for most of the wider gap.
+           Trello 426: the sheet now takes fund 35's full 1.85mm gap. The
+           copy column runs 0.9mm wider (to 56.9mm; the reference's lines
+           reach 55.9mm) so DISTRIBUTIONS breaks after "which the" on two
+           lines as in the reference, which pays for the wider gaps and the
+           larger heading below: the ISIN line still ends at ~291mm.
+           The top pad drops 0.25mm so the larger heading's cap tops stay
+           level with PORTFOLIO STRUCTURE % (card 429's column-tops rule). */
+        .sidebar { padding-top: 4.6mm; padding-right: 3.1mm; }
+
+        /* QC card 281 (checklist "font size and weight for 'minimum
+           disclosure…'"): the heading is set larger than the row labels,
+           Avenir Next Medium 7.5pt on a 3.09mm pitch (reference 7.56pt).
+           Card 429's 6pt sidebar-heading rule had flattened it. */
+        .sidebar-section.mdd-heading h3 {
+            font-size: 7.5pt !important;
+            line-height: 8.75pt !important;
+        }
 
         /* QC card 281 (24 Sept): page-2 type too dark — the reference sets
            the allocation, contributors, policy and fee-rate copy in dark

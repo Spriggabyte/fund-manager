@@ -287,8 +287,9 @@
             padding-left: 1.2mm;
         }
 
-        /* The TOP 10 header row sits 1.3mm under its heading (reference). */
-        .top10-table .section-heading { margin-bottom: 1.9mm; }
+        /* Trello 433: the TOP 10 header row sits closer under its heading
+           (heading → header baselines 5.3mm, as on the reference). */
+        .top10-table .section-heading { margin-bottom: 1.4mm; }
 
         /* 875 reference: bracketed qualifiers keep their mixed case
            ("(Effective exposure)") and render at the same size as the
@@ -315,7 +316,8 @@
         .two-col {
             display: flex;
             gap: 4.2mm;
-            margin-bottom: 2.0mm;
+            /* PORTFOLIO PERFORMANCE % heading at y=236mm (reference 236.1). */
+            margin-bottom: 3.06mm;
         }
 
         .two-col .col-left { flex: 1; min-width: 0; }
@@ -342,9 +344,11 @@
 
         .ps-header .ps-header-title { flex: 1; }
 
+        /* Trello 433: the column headings are Medium on the reference, like
+           the section heading beside them (Regular read lighter). */
         .ps-header .ps-header-col {
             font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 400;
+            font-weight: 500;
             font-size: 7.5pt;
             line-height: 3.7mm;
             letter-spacing: 0.01em;
@@ -537,6 +541,10 @@
             padding-top: 0.44mm;
             padding-bottom: 0.44mm;
         }
+        /* Trello 433: the navy header row is one pixel taller (the body
+           rows' height). At 14px its caps could only sit half a pixel low
+           or half a pixel high; at 15px they centre exactly. */
+        .top10-table .foord-table th { padding-bottom: calc(0.44mm + 1px); }
         .top10-table .foord-table td:first-child,
         .top10-table .foord-table th:first-child {
             width: 30.16%;
@@ -570,8 +578,9 @@
         .top10-table .foord-table tbody tr:nth-child(9) td,
         .top10-table .foord-table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
 
-        /* Reference: the charts' headings sit 3.0mm under the top-10 table */
-        .top10-table { margin-bottom: 2.6mm; }
+        /* Reference: the charts' headings sit 3.0mm under the top-10 table
+           (the chart headings stay put after the card-433 TOP 10 changes). */
+        .top10-table { margin-bottom: 2.84mm; }
 
         /* Footnote 1 opens 1.1mm under the last performance row. */
         .perf-table-wrapper { margin-bottom: 0.3mm; }
@@ -628,9 +637,10 @@
             padding-top: 0.92mm;
             padding-bottom: 0.92mm;
         }
+        /* Trello 324: "Foord global funds:" starts on the same line as the
+           cell text above and below it (it sat 1.5mm further left). */
         .fee-rates-table .foord-table tr.global-funds-header td {
             background-color: var(--white);
-            padding-left: 0;
         }
         .fee-rates-table .foord-table tr.sub-item td {
             background-color: var(--naartjie-20);
@@ -659,23 +669,23 @@
         }
 
         /* === Charts === */
-        /* GEOGRAPHIC EQUITY EXPOSURE — grouped Fund vs MSCI ACWI column
-           chart. Reference plot box 64.1→131.9mm, 0% baseline at
-           y=219.0mm, 70% gridline at 185.5mm; bars 3.7mm wide, pairs
-           5.0mm apart on a 13.9mm category pitch. */
+        /* Trello 201/203/245/433: both charts are laid out on the reference
+           plot boxes, measured from the chart headings' baseline (H):
+           GEOGRAPHIC EQUITY EXPOSURE y-axis x=72.99mm, 0% axis H+38.7mm,
+           x-axis to 128.03mm; PORTFOLIO PERFORMANCE y-axis x=141.0mm, 100
+           axis H+40.5mm, x-axis to 195.0mm. The two y-axes start level at
+           H+4.6mm ("top align the graphs"; the reference has the geographic
+           one 2mm lower, the performance one 0.4mm higher). The canvases
+           open straight under the headings; the plot offsets are set in
+           the chart options below. */
         .geo-chart-wrapper {
-            height: 41.4mm;
+            height: 40.86mm;
             position: relative;
-            margin-top: 2.14mm;
         }
 
-        /* PORTFOLIO PERFORMANCE VS BENCHMARK — reference plot box
-           136.1→203.9mm, y 182.7→227.4mm, tight under its heading. */
         .chart-wrapper {
-            height: 46.2mm;
+            height: 44.81mm;
             position: relative;
-            margin-top: -0.3mm;
-            margin-bottom: 0.1mm;
         }
 
         .chart-wrapper canvas,
@@ -687,7 +697,9 @@
         .chart-ytitle {
             position: absolute;
             left: -9mm;
-            top: 18mm;
+            /* Reference: the caption opens 0.8mm under the axis top and
+               runs down 19.3mm (not centred on the plot). */
+            top: 11.9mm;
             width: 22mm;
             text-align: center;
             transform: rotate(-90deg);
@@ -703,7 +715,8 @@
             vertical-align: super;
         }
 
-        /* Hairline swatches (~1px at 150 dpi) and lighter slate legend text. */
+        /* Hairline swatches (~1px at 150 dpi); legend text dark navy, as on
+           the reference (Trello 203: the slate grey read too light). */
         .chart-legend {
             display: flex;
             flex-wrap: wrap;
@@ -712,7 +725,7 @@
             margin-top: 0.44mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 6pt;
-            color: #4d585e;
+            color: var(--dark-navy);
         }
 
         .chart-legend span {
@@ -725,7 +738,7 @@
            between its two items and 2.27mm between swatch and label; the
            performance legend sets 12.76mm and 0.46mm. Both centre on their
            plot box rather than on the column. */
-        .chart-legend.geo-legend { gap: 0.4mm 9.15mm; padding-left: 6.66mm; }
+        .chart-legend.geo-legend { gap: 0.4mm 9.15mm; padding-left: 6.66mm; margin-top: 1.76mm; }
         .chart-legend.geo-legend span { gap: 2.27mm; }
         .chart-legend.perf-legend { gap: 0.4mm 12.76mm; padding-right: 2.36mm; }
         .chart-legend.perf-legend span { gap: 0.46mm; }
@@ -841,9 +854,10 @@
         }
 
         .page2-section { margin-bottom: 5.6mm; }
-        /* Reference: the TER paragraph sits close under the TIC table. */
+        /* Trello 325/433: a space between the naartjie total row and the TER
+           paragraph (reference: row bottom → first baseline 5.1mm). */
         .page2-section.tic-table { margin-bottom: 11.7mm; }
-        .page2-section.tic-table .table-wrapper { margin-bottom: 0.4mm; }
+        .page2-section.tic-table .table-wrapper { margin-bottom: 2.3mm; }
 
         .page2-heading {
             font-family: 'Avenir Next', 'Lato', sans-serif;
@@ -1494,9 +1508,11 @@
                             </div>
 
                             {{-- Feeder reference: footnotes sit at the foot of
-                                 page 1, directly below the performance table. --}}
+                                 page 1, directly below the performance table
+                                 (Trello 433: last row → note 1 baselines 4.5mm),
+                                 numbers level with the headings at 65.2mm. --}}
                             @if(!empty($fund->data['mainContent']['performanceTable']['footnotes']))
-                                <div style="margin-top: 0.8mm;">
+                                <div style="margin-top: 1.3mm; margin-left: 1.2mm;">
                                     @foreach ($fund->data['mainContent']['performanceTable']['footnotes'] as $index => $note)
                                         <p class="footnote">
                                             <span x-data="editableField('mainContent.performanceTable.footnotes.{{ $index }}', '{!! addslashes($note) !!}')"
@@ -1830,12 +1846,28 @@
             lightBlue: '#7a9cb4'
         };
 
+        // Chart.js sizes are CSS px (1pt = 1.333px) and the canvases are
+        // positioned in mm, so the reference geometry is converted here.
+        const PX_PER_MM = 96 / 25.4;
+        const mmToPx = (mm) => mm * PX_PER_MM;
+        const chartFont = 'Avenir Next, Lato, sans-serif';
+
+        // Trello 203/433: the axis copy read small and light. The canvases
+        // are drawn at four device pixels per CSS px (the default two
+        // softened 6pt type in the PDF), and only once Avenir Next is
+        // loaded — a canvas drawn before the web font arrives keeps the
+        // fallback face.
+        Chart.defaults.devicePixelRatio = 4;
+        const chartFontsReady = document.fonts
+            ? Promise.all(['400 8px "Avenir Next"', '500 9px "Avenir Next"'].map(f => document.fonts.load(f))).catch(() => {})
+            : Promise.resolve();
+
         @if($hasGeoChart)
         // Grouped GEOGRAPHIC EQUITY EXPOSURE column chart (821 reference:
         // North America, EM Asia, Europe, Pacific; Fund red, MSCI ACWI navy,
         // 0-70% axis in 10% steps).
         const geoData = @json($fund->data['mainContent']['assetAllocation']['geographicEquityExposure']);
-        new Chart(document.getElementById('geoChart').getContext('2d'), {
+        chartFontsReady.then(() => new Chart(document.getElementById('geoChart').getContext('2d'), {
             type: 'bar',
             data: {
                 labels: geoData.map(d => d.name),
@@ -1844,10 +1876,8 @@
                         label: 'Fund',
                         data: geoData.map(d => d.fund),
                         backgroundColor: colors.naartjie,
-                        // Reference geometry: 3.7mm bars in an 8.8mm pair on
-                        // a 13.9mm category pitch (measured back off the
-                        // rendered output, which draws them narrower than the
-                        // nominal percentages suggest).
+                        // Reference geometry: 4.0mm bars 1.06mm apart on a
+                        // 13.76mm category pitch.
                         barPercentage: 0.788,
                         categoryPercentage: 0.747
                     },
@@ -1866,31 +1896,45 @@
                 animation: false,
                 plugins: { legend: { display: false }, tooltip: { enabled: true } },
                 scales: {
+                    // Trello 201/245: thin black axes with tick marks — 1.06mm
+                    // down at the category boundaries, 0.79mm left at every
+                    // 10% — and the reference's type: regions 5pt dark navy,
+                    // percentages 6pt black.
                     x: {
-                        grid: { display: false },
-                        border: { color: '#9a9a9a' },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: mmToPx(1.06), tickColor: '#000', lineWidth: 0.5, offset: true },
+                        border: { color: '#000', width: 0.5 },
+                        // Pins the 0% axis 38.66mm under the heading baseline.
+                        afterFit: (scale) => { scale.height = mmToPx(3.7); },
                         ticks: {
-                            font: { size: 5.5, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353'
+                            font: { size: 6.72, family: chartFont },
+                            color: colors.darkNavy,
+                            // Region baselines 2.57mm under the axis.
+                            padding: 0,
+                            maxRotation: 0,
+                            autoSkip: false
                         }
                     },
                     y: {
                         beginAtZero: true,
                         max: 70,
-                        grid: { display: false },
-                        border: { color: '#9a9a9a' },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: mmToPx(0.79), tickColor: '#000', lineWidth: 0.5 },
+                        border: { color: '#000', width: 0.5 },
+                        // y-axis at x=72.99mm (canvas opens at 64.0mm).
+                        afterFit: (scale) => { scale.width = mmToPx(8.99); },
                         ticks: {
                             stepSize: 10,
-                            padding: 7,
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
+                            // Labels end 1.62mm left of the ticks (70.58mm).
+                            padding: mmToPx(1.62),
+                            font: { size: 8, family: chartFont },
+                            color: '#000',
                             callback: (value) => value + '%'
                         }
                     }
                 },
-                layout: { padding: { right: 14 } }
+                // 70% line H+4.6mm; x-axis ends at 128.03mm.
+                layout: { padding: { top: mmToPx(3.1), right: mmToPx(4.12), left: 0, bottom: 0 } }
             }
-        });
+        }));
         @endif
 
         @if($hasPerfChart)
@@ -1907,59 +1951,78 @@
         };
 
         // End value annotation plugin — the reference prints the closing cash
-        // value beside each line ("R 529" / "R 304").
+        // value beside each line ("R 529" / "R 304"): Avenir Next Medium
+        // 6.77pt in the series colour, tracked +0.1mm, opening 1.15mm right
+        // of the last point with its caps centred on it (Trello 203/245).
         const endValuePlugin = {
             id: 'endValueAnnotation',
             afterDraw(chart) {
                 const { ctx } = chart;
+                const size = 9.03;
+                const labels = [];
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
                     if (meta.hidden) return;
                     const lastPoint = meta.data[meta.data.length - 1];
                     if (!lastPoint) return;
                     const lastValue = dataset.data[dataset.data.length - 1];
-                    const label = 'R ' + Math.round(lastValue).toLocaleString();
-                    ctx.save();
-                    ctx.font = 'bold 7px Avenir Next, Lato, sans-serif';
-                    ctx.fillStyle = dataset.borderColor;
-                    ctx.textAlign = 'left';
-                    // Reference: the label opens 2.75mm right of the series'
-                    // last point, on its baseline.
-                    ctx.fillText(label, lastPoint.x + 10, lastPoint.y - 1);
-                    ctx.restore();
+                    labels.push({
+                        text: 'R ' + Math.round(lastValue).toLocaleString('en-US'),
+                        color: dataset.borderColor,
+                        x: lastPoint.x + mmToPx(1.15),
+                        y: lastPoint.y + 0.25 * size
+                    });
                 });
+                // Keep two close closing values a line apart.
+                labels.sort((a, b) => a.y - b.y);
+                for (let i = 1; i < labels.length; i++) {
+                    const gap = labels[i].y - labels[i - 1].y;
+                    if (gap < size * 1.1) {
+                        const push = (size * 1.1 - gap) / 2;
+                        labels[i - 1].y -= push;
+                        labels[i].y += push;
+                    }
+                }
+                ctx.save();
+                ctx.font = '500 ' + size + 'px ' + chartFont;
+                ctx.letterSpacing = mmToPx(0.1) + 'px';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'alphabetic';
+                labels.forEach(l => {
+                    ctx.fillStyle = l.color;
+                    ctx.fillText(l.text, l.x, l.y);
+                });
+                ctx.restore();
             }
         };
 
-        // The reference's plot tops out on the higher series' closing value;
-        // Chart.js would otherwise round the axis up to the next hundred.
+        // The reference's axis runs 1.71mm above the higher series' closing
+        // high (4.7% of the 36mm plot); Chart.js would otherwise round the
+        // axis up to the next hundred.
         const seriesMax = Math.max(...chartData.flatMap(d => [d.fund ?? 0, d.benchmark ?? 0]));
 
-        // Scoped to this chart only — registering it globally also draws the
-        // end labels on the geographic column chart.
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        // QC card 291: the "100" baseline label sits just above the x-axis,
-        // to the left of the y-axis, instead of straddling the axis line.
-        // The scale's own tick label is kept but transparent so the axis
-        // keeps its width; this plugin draws the visible one.
+        // QC card 291 / Trello 245: the "100" baseline label is black 6pt,
+        // standing on the x-axis 1.02mm left of the y-axis. The scale's own
+        // tick label is kept transparent so the axis keeps its width; this
+        // plugin draws the visible one.
         const hundredLabelPlugin = {
             id: 'hundredLabel',
             afterDraw(chart) {
                 const { ctx, scales } = chart;
                 if (!scales.y || !scales.x) return;
-                const t = scales.y.options.ticks || {};
-                const f = t.font || {};
                 ctx.save();
-                ctx.font = (f.size || 6) + 'px ' + (f.family || 'Avenir Next, Lato, sans-serif');
-                ctx.fillStyle = '#535353';
+                ctx.font = '8px ' + chartFont;
+                ctx.fillStyle = '#000';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'alphabetic';
-                ctx.fillText('100', scales.y.right - (t.padding === undefined ? 3 : t.padding), scales.y.getPixelForValue(100) - 1.5);
+                ctx.fillText('100', scales.x.left - mmToPx(1.02), scales.y.getPixelForValue(100));
                 ctx.restore();
             }
         };
 
-        new Chart(ctx, {
+        // Scoped to this chart only — registering the plugins globally also
+        // draws the end labels on the geographic column chart.
+        chartFontsReady.then(() => new Chart(document.getElementById('performanceChart').getContext('2d'), {
             type: 'line',
             plugins: [endValuePlugin, hundredLabelPlugin],
             data: {
@@ -1969,7 +2032,8 @@
                         label: 'Fund',
                         data: chartData.map(d => d.fund),
                         borderColor: colors.naartjie,
-                        borderWidth: 1.5,
+                        // Reference lines 1.24pt.
+                        borderWidth: 1.65,
                         pointRadius: 0,
                         tension: 0.3,
                         fill: false
@@ -1978,7 +2042,7 @@
                         label: 'Benchmark',
                         data: chartData.map(d => d.benchmark),
                         borderColor: colors.darkNavy,
-                        borderWidth: 1.5,
+                        borderWidth: 1.65,
                         pointRadius: 0,
                         tension: 0.3,
                         fill: false
@@ -1996,16 +2060,26 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: 3, tickColor: '#000' },
+                        grid: { drawOnChartArea: false, drawTicks: true, tickLength: mmToPx(0.79), tickColor: '#000' },
                         border: { color: '#000' },
+                        // Pins the 100 axis 40.49mm under the heading baseline.
+                        // Chart.js also reserves half the "May 14" label plus
+                        // the tick padding left of the plot, which would push
+                        // the y-axis off 141.0mm; the label has room anyway.
+                        afterFit: (scale) => {
+                            scale.height = mmToPx(5.82);
+                            scale.paddingLeft = 0;
+                            scale.paddingRight = 0;
+                        },
                         // Tick marks only under the labelled dates (Chart.js draws a
                         // mark per tick, so unlabelled months are dropped here).
                         afterBuildTicks: axis => { axis.ticks = axis.ticks.filter(t => t.value % 24 === 1); },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
-                            color: '#535353',
-                            // Reference: date labels open 2.8mm under the baseline
-                            padding: 8,
+                            // Trello 245: dates 6pt black (were 4.5pt grey).
+                            font: { size: 8, family: chartFont },
+                            color: '#000',
+                            // Date baselines 4.87mm under the axis.
+                            padding: 8.25,
                             maxRotation: 0,
                             autoSkip: false,
                             // 821 reference ticks: May 14, May 16, … May 26 —
@@ -2025,24 +2099,27 @@
                         type: 'linear',
                         grid: { display: false, drawTicks: false, tickLength: 0 },
                         border: { color: '#000' },
+                        // y-axis at x=141.0mm (canvas opens at 136.1mm).
+                        afterFit: (scale) => { scale.width = mmToPx(4.9); },
                         ticks: {
-                            font: { size: 6, family: 'Avenir Next, Lato, sans-serif' },
+                            font: { size: 8, family: chartFont },
                             color: 'rgba(0,0,0,0)',
                             padding: 3,
-                            callback: (value) => value === 100 ? '100' : null // QC card 291: visible \"100\" drawn by hundredLabelPlugin
+                            callback: (value) => value === 100 ? '100' : null // QC card 291: visible "100" drawn by hundredLabelPlugin
                         },
                         min: 100,
-                        max: seriesMax,
+                        max: 100 + (seriesMax - 100) / (1 - 0.047),
                         beginAtZero: false
                     }
                 },
                 layout: {
-                    // The right padding holds the R 529 / R 304 end labels;
-                    // the top padding keeps the higher label inside the box.
-                    padding: { right: 37, top: 27 }
+                    // Axis top H+4.6mm, level with the geographic chart's;
+                    // the right padding holds the R 529 / R 304 end labels
+                    // (x-axis ends at 195.03mm).
+                    padding: { top: mmToPx(3.1), right: mmToPx(8.97), left: 0, bottom: 0 }
                 }
             }
-        });
+        }));
         @endif
     </script>
     @endif

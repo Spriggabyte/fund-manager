@@ -153,8 +153,11 @@
             color: var(--white);
             height: 34mm;
             box-sizing: border-box;
-            /* Reference title block sits ~1.5mm lower inside the navy band. */
-            padding: 5.1mm 6mm 0 7.75mm;
+            /* Reference title block sits ~1.5mm lower inside the navy band.
+               Card 424: +0.45mm here and +0.2mm under the title put the
+               title and standfirst baselines on the Aug sheet's (39.25 /
+               45.01mm; they printed 0.6mm high). */
+            padding: 5.55mm 6mm 0 7.75mm;
             margin: 0;
             width: 100%;
         }
@@ -165,7 +168,7 @@
             font-size: 23pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 1.1mm 0;
+            margin: 0 0 1.3mm 0;
             line-height: 1.05;
         }
 
@@ -405,10 +408,15 @@
            centred legend beneath the plot. */
         .maturity-section {
             /* Lands PORTFOLIO STATISTICS on the reference y≈135.7mm. */
-            margin-bottom: 10.4mm;
+            margin-bottom: 7.4mm;
         }
+        /* Cards 396 / 424: at 52mm the legend's baseline fell 6px below the
+           SVG's bottom edge, so "Fund" / "Benchmark" printed cut in half.
+           The extra 3mm (11px) sits under the legend: the chart's
+           marginBottom and legend.y absorb it, so the plot and legend stay
+           put, and the section's margin gives it back. */
         .maturity-chart-wrapper {
-            height: 52mm;
+            height: 55mm;
             position: relative;
         }
         .maturity-chart-wrapper > div {
@@ -566,26 +574,38 @@
         /* =====================================================
            BOND PAGE 2 — monthly performance grid + footnotes
            ===================================================== */
-        /* MONTHLY PERFORMANCE % — year label column + JAN..DEC + YTD. */
+        /* MONTHLY PERFORMANCE % — year label column + JAN..DEC + YTD.
+           Card 424: headers and figures 7.5pt, as on the Aug sheet (7.56pt
+           both, 4.15mm row pitch); they were 6.5 / 7pt. Body rows are
+           exactly 15px (8.5pt line + padding) on the 1px rule, a whole-px
+           16px (4.23mm) pitch: at a fractional pitch Chrome painted the
+           grey bands alternately 14 / 15px tall. */
         .monthly-table table th {
-            font-size: 6.5pt;
-            padding: 0.6mm 0.7mm;
+            font-size: 7.5pt;
+            padding: 0.42mm 0.7mm;
         }
         .monthly-table table th:first-child {
             width: 7%;
         }
         .monthly-table table td {
-            font-size: 7pt;
-            padding: 0.7mm 0.7mm;
+            font-size: 7.5pt;
+            padding: 0.42mm 0.7mm calc(3.6667px - 0.42mm);
         }
+        /* The 7.5pt grid is ~2.6mm shorter than the old 7pt one; the margin
+           takes it back so FEE RATES and everything under it stay on their
+           previous whole-px positions (swept in print layout). */
         .monthly-section {
-            margin-bottom: 6mm;
+            margin-bottom: 8.63mm;
         }
 
         /* The numbered footnote block sits between the TER paragraph and
            the footer. */
         .page2-footnotes {
-            margin-top: 54.4mm;
+            /* Was 54.4mm; card 424's taller TIC header (+0.3mm) and 7.5pt
+               monthly grid are taken back here. 53.99 puts every footnote
+               and footer baseline back on its previous whole-px position
+               (swept in print layout). */
+            margin-top: 53.99mm;
         }
         /* 826 reference: Avenir Next Regular 7pt on a 3.05mm (8.6pt) pitch,
            uniform between and within footnotes. Lato read noticeably bolder
@@ -628,8 +648,14 @@
             padding-left: 1mm;
             padding-right: 1mm;
         }
+        /* Card 424: 12 / 36 MONTHS 7.5pt (Aug sheet 7.56pt; was 6pt),
+           cap-centred in the navy bar by partials/table-centring. The bar
+           is 4.5mm (17px; Aug sheet 4.41mm): on the old 16px bar the caps
+           could only get to within 0.12mm of centre. */
         .tic-table table th {
-            font-size: 6pt;
+            font-size: 7.5pt;
+            padding-top: 0.75mm;
+            padding-bottom: 0.75mm;
         }
         .tic-table table td {
             /* Reference labels ~7% larger than 7pt ("Total expense ratio
@@ -1219,7 +1245,9 @@
                 @endif
                 </span>
             </h1>
-            <p class="fund-description"><span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['fund']['description'] ?? '' }}</span></p>
+            {{-- Card 424: a one- or two-letter word ("is", "a") never ends a
+                 line on its own — it is tied to the word after it. --}}
+            <p class="fund-description"><span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! preg_replace('/(?<=^|\s)(\p{L}{1,2})\s+(?=\S)/u', '$1&nbsp;', e($fund->data['fund']['description'] ?? '')) !!}</span></p>
         </div>
 
         <!-- Main Content -->
@@ -1904,7 +1932,7 @@
                 Highcharts.chart('maturityChart', {
                     chart: {
                         type: 'column', backgroundColor: 'transparent', animation: false,
-                        spacing: [0, 0, 0, 0], marginTop: 18.4, marginBottom: 39.6, marginRight: 13.7, marginLeft: 31.8,
+                        spacing: [0, 0, 0, 0], marginTop: 18.4, marginBottom: 50.6, marginRight: 13.7, marginLeft: 31.8,
                     },
                     title: { text: null },
                     xAxis: {
@@ -1939,7 +1967,9 @@
                     legend: {
                         itemStyle: { ...matFont, fontWeight: 'normal' },
                         symbolWidth: 4.6, symbolHeight: 4.6, symbolPadding: 8.7, symbolRadius: 0,
-                        itemDistance: 33.4, margin: 0, padding: 0, x: 5, y: 3,
+                        // y: legend baseline on the reference's 125.7mm, 5px
+                        // clear of the chart's bottom edge (cards 396 / 424).
+                        itemDistance: 33.4, margin: 0, padding: 0, x: 5, y: -8,
                         squareSymbol: true,
                     },
                     tooltip: { enabled: false },

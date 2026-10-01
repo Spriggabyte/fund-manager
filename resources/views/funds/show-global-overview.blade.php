@@ -11,6 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     @include('funds.partials.avenir-fonts')
     <style>
+        /* Static TrueType Merriweather (as show-income): Google Fonts serves
+           a variable font that Chromium's PDF backend embeds as Type3
+           (Trello 402: banner and footer copy looked tight / heavy). */
+        @font-face {
+            font-family: 'Merriweather TT';
+            src: url('{{ asset('fonts/Merriweather/Merriweather-Regular.ttf') }}') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
         /* =====================================================
            FOORD FUND OVERVIEW: GLOBAL — two-page multi-fund summary
            (fund code GLB), cloned from show-local-overview with the
@@ -119,44 +130,60 @@
                line 1mm under the title box). */
             margin: 0 0 2.0mm 0;
         }
+        /* Trello 402: the reference's 9pt, tracked a little more open than
+           the Publisher sheet (0.03em; line 1 still ends at "track"). */
         .sheet-description {
-            font-family: 'Merriweather', Georgia, serif;
+            font-family: 'Merriweather TT', 'Merriweather', Georgia, serif;
             font-weight: 400;
-            font-size: 9.2pt;
+            font-size: 9pt;
             line-height: 4.0mm;
-            letter-spacing: 0.005em;
+            letter-spacing: 0.03em;
             margin-left: 0.7mm;
             color: var(--white);
         }
 
         /* ---------- Grey section bands ---------- */
+        /* Trello 391 / 402: heading centred top to bottom in its band. The
+           cap-centred Avenir twin (partials/avenir-fonts) centres the caps
+           in the line box; centreOverviewText() below trims the whole-pixel
+           rounding, using the symmetric 1mm paddings as its travel. */
         .band {
             height: 7.0mm;
             margin-left: 9.9mm;
             width: 190mm;
             background-color: var(--band-grey);
             color: var(--white);
-            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-family: 'Avenir Next Cap', 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
             font-size: 8pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
             display: flex;
             align-items: center;
-            padding-left: 1.0mm;
+            padding: 1.0mm 0 1.0mm 1.0mm;
         }
         /* Publisher places the synopsis/strategy bands and the footer bars
            1.3mm further right than the tables (11.2mm vs 9.9mm). */
         .band.band-shifted { margin-left: 11.2mm; width: 190.7mm; }
 
         /* ---------- Performance grid ---------- */
+        /* Trello 402: every white line in the two tables is exactly 1px
+           (0.75pt). Chrome paints cell backgrounds on whole pixels, so the
+           old 0.35/0.38/0.4mm gaps (1.3–1.5px) came out 1px or 2px (even 3px)
+           depending on where they fell; a whole-pixel gap between fractional
+           edges always rounds to itself. The width/height given up by the
+           thinner gaps goes back into the cells, so columns end and rows
+           repeat exactly where they did. */
         .perf {
+            --row-comp: calc(0.38mm - 1px);
+            /* n rows carry the compensation but only n − 1 gaps shrank. */
+            margin-bottom: calc(0mm - var(--row-comp));
             margin-left: 9.9mm;
             width: 189.2mm;
             display: grid;
-            grid-template-columns: 11.7mm 1.7mm 77.7mm repeat(6, 0.35mm 16.0mm);
+            grid-template-columns: 11.7mm 1.7mm 77.7mm repeat(6, 1px calc(16.35mm - 1px));
             grid-auto-rows: auto;
-            row-gap: 0.38mm;
+            row-gap: 1px;
             font-size: 8pt;
         }
         .perf .cell {
@@ -164,10 +191,13 @@
             align-items: center;
             overflow: hidden;
             white-space: nowrap;
-            height: 8.7mm;
-            /* Trello 373: centre the text top to bottom — flex-centred
-               Avenir leaves more space below the ink than above. */
-            padding-top: 0.55mm;
+            height: calc(8.7mm + var(--row-comp));
+            /* Trello 373 / 391: text centred top to bottom — cap-centred
+               face, symmetric padding, whole-pixel trim by
+               centreOverviewText(). */
+            font-family: 'Avenir Next Cap', 'Avenir Next', 'Lato', sans-serif;
+            padding-top: 0.5mm;
+            padding-bottom: 0.5mm;
         }
         .perf .head {
             background-color: var(--dark-navy);
@@ -176,14 +206,14 @@
             font-size: 7.55pt;
             text-transform: uppercase;
             justify-content: center;
-            height: 5.59mm;
+            height: calc(5.59mm + var(--row-comp));
         }
         .perf .head.head-label { grid-column: 1 / span 3; }
         .perf .cell.label { padding-left: 1.4mm; }
         /* Prose-only fourth row under a fund: "(SA Feeder Fund: …)" */
-        .perf .row-feeder .cell { background-color: var(--naartjie-20); height: 4.83mm; grid-column: 3 / -1; }
+        .perf .row-feeder .cell { background-color: var(--naartjie-20); height: calc(4.83mm + var(--row-comp)); grid-column: 3 / -1; }
         /* Publisher's benchmark rows are a touch shorter than the fund/peer rows. */
-        .perf .row-benchmark .cell { height: 8.2mm; }
+        .perf .row-benchmark .cell { height: calc(8.2mm + var(--row-comp)); }
         .perf .cell.value { justify-content: flex-end; padding-right: 1.75mm; }
         .perf .row-fund .cell { background-color: var(--naartjie-20); }
         .perf .row-peer .cell { background-color: var(--peer-grey); }
@@ -219,12 +249,14 @@
         /* Spacer rows: the gap between funds inside a group (2.2mm) and
            between groups (3.9mm) — implemented as explicit grid rows so the
            group label can span them. */
-        .perf .spacer-head { grid-column: 1 / -1; height: 2.6mm; }
-        .perf .spacer-fund { grid-column: 2 / -1; height: 2.5mm; }
-        .perf .spacer-group { grid-column: 1 / -1; height: 3.5mm; }
+        .perf .spacer-head { grid-column: 1 / -1; height: calc(2.6mm + var(--row-comp)); }
+        .perf .spacer-fund { grid-column: 2 / -1; height: calc(2.5mm + var(--row-comp)); }
+        .perf .spacer-group { grid-column: 1 / -1; height: calc(3.5mm + var(--row-comp)); }
 
+        /* Trello 402: source notes 3.2mm closer to the table so they read as
+           part of it (the synopsis band's margin takes the 3.2mm back). */
         .perf-footnotes {
-            margin: 4.6mm 0 0 24.6mm;
+            margin: 1.4mm 0 0 24.6mm;
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-size: 6.1pt;
             line-height: 2.6mm;
@@ -258,13 +290,16 @@
             line-height: 4.13mm;
             color: #000;
         }
+        /* Trello 402: a 1.0mm (3.78px) dot was snapped to 3×3, 3×4, 4×3 or
+           4×4px depending on its position — ovals of different sizes. A
+           whole-pixel box always paints at that size; same centre as before. */
         .bullet-col li::before {
             content: '';
             position: absolute;
-            left: 1.4mm;
-            top: 1.55mm;
-            width: 1.0mm;
-            height: 1.0mm;
+            left: calc(1.9mm - 2px);
+            top: calc(2.05mm - 2px);
+            width: 4px;
+            height: 4px;
             border-radius: 50%;
             background-color: var(--naartjie);
         }
@@ -278,8 +313,13 @@
             height: 7.0mm;
             background-color: var(--dark-navy);
             color: var(--white);
-            font-family: 'Merriweather', Georgia, serif;
-            font-size: 8.35pt;
+            /* Trello 402: static Merriweather at the reference's 8pt, tracked
+               open to match the banner copy. */
+            font-family: 'Merriweather TT', 'Merriweather', Georgia, serif;
+            font-size: 8pt;
+            letter-spacing: 0.03em;
+            /* The static face's line box sits its caps 0.3mm above centre. */
+            padding-top: 0.6mm;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -320,13 +360,15 @@
             line-height: 3.2mm;
         }
         .geo .geo-legend li { position: relative; padding-left: 3.3mm; white-space: nowrap; }
+        /* Whole-pixel dots (see .bullet-col li::before): 1.5mm painted as
+           5×6 or 6×6px. */
         .geo .geo-legend li::before {
             content: '';
             position: absolute;
-            left: 0.2mm;
-            top: 0.85mm;
-            width: 1.5mm;
-            height: 1.5mm;
+            left: calc(0.95mm - 3px);
+            top: calc(1.6mm - 3px);
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background-color: var(--dot, #000);
         }
@@ -340,14 +382,17 @@
         .geo .geo-footnotes sup { font-size: 4.3pt; vertical-align: super; line-height: 0; margin-right: 0.3mm; }
 
         /* ---------- Page 2: asset allocation grid ---------- */
+        /* 1px white lines, cells widened/heightened to keep the pitch — see .perf. */
         .aa {
+            --row-comp: calc(0.4mm - 1px);
+            margin-bottom: calc(0mm - var(--row-comp));
             margin-left: 9.8mm;
             margin-top: 3.5mm;
             width: 189.3mm;
             display: grid;
-            grid-template-columns: 46.8mm repeat(3, 0.4mm 47.1mm);
+            grid-template-columns: 46.8mm repeat(3, 1px calc(47.5mm - 1px));
             grid-auto-rows: auto;
-            row-gap: 0.4mm;
+            row-gap: 1px;
             font-size: 8pt;
         }
         .aa .cell {
@@ -356,7 +401,11 @@
             overflow: hidden;
             white-space: nowrap;
             background-color: var(--row-grey);
-            height: 3.81mm;
+            height: calc(3.81mm + var(--row-comp));
+            /* Centred top to bottom as .perf .cell (Trello 374 / 391). */
+            font-family: 'Avenir Next Cap', 'Avenir Next', 'Lato', sans-serif;
+            padding-top: 0.3mm;
+            padding-bottom: 0.3mm;
         }
         .aa .head {
             background-color: var(--dark-navy);
@@ -364,32 +413,36 @@
             font-weight: 500;
             text-transform: uppercase;
             /* Trello 374: the three fund columns are right-aligned (headers
-               and values 3.4mm in from the column edge, as the reference)
-               and every cell's text is centred top to bottom. */
+               and values 3.4mm in from the column edge, as the reference).
+               Trello 402: the two header lines set solid (8pt on 8pt, the
+               designer's sample: 7.8pt pitch), block centred in the cell. */
             justify-content: flex-end;
             text-align: right;
-            line-height: 3.9mm;
-            padding: 0.5mm 3.4mm 0 0;
+            line-height: 8pt;
+            padding: 0.5mm 3.4mm 0.5mm 0;
             white-space: normal;
-            height: 7.7mm;
+            height: calc(7.7mm + var(--row-comp));
         }
         .aa .head.head-label { justify-content: flex-start; text-align: left; padding-left: 1.2mm; }
-        /* Avenir's line box sits the cap-to-baseline ink ~0.3mm above the
-           cell centre; the top padding re-centres it (Trello 374). */
-        .aa .cell:not(.head) { padding-top: 0.64mm; }
         .aa .cell.label { padding-left: 1.2mm; }
         .aa .cell.value { justify-content: flex-end; padding-right: 3.4mm; }
         .aa .row-total .cell { background-color: var(--naartjie); color: var(--white); font-weight: 500; text-transform: uppercase; }
-        .aa .row-muted .cell { font-style: italic; }
+        /* The cap-centred twin has no italic faces; keep the real italic. */
+        .aa .row-muted .cell { font-style: italic; font-family: 'Avenir Next', 'Lato', sans-serif; }
         .row-contents { display: contents; }
 
         .sector-block { margin-left: 9.9mm; width: 190mm; margin-top: 2.6mm; }
-        #sectorChart { width: 190mm; height: 70mm; margin-top: 4.5mm; }
+        /* Trello 402: the sector names sit 7px (1.85mm) closer to the axis
+           (labelY below); the box is 7px shorter so the plot keeps its size
+           and the legend comes up with the names. */
+        #sectorChart { width: 190mm; height: calc(70mm - 7px); margin-top: 4.5mm; }
 
+        /* Trello 402: cap top level with the chart legend's "Fund" /
+           "Benchmark" (was 271.6mm, beside the QR block). */
         .rounding-note {
             position: absolute;
             left: 15.7mm;
-            top: 271.6mm;
+            top: 257.9mm;
             font-family: 'Lato', 'Avenir Next', sans-serif;
             font-size: 5.1pt;
             line-height: 2.2mm;
@@ -410,7 +463,8 @@
         .qr-block .qr-text { padding: 0 5mm; }
         .qr-block .qr-url { white-space: nowrap; }
         .qr-block .qr-heading { color: var(--naartjie); text-transform: uppercase; }
-        .qr-block a { color: var(--white); text-decoration: none; font-size: 7.2pt; }
+        /* Trello 402: the URL at the block's one size (it was 7.2pt). */
+        .qr-block a { color: var(--white); text-decoration: none; }
         .qr-image {
             position: absolute;
             left: 181.4mm;
@@ -614,7 +668,7 @@
 
         @foreach (['synopsis', 'strategy'] as $si => $section)
             @php $block = $p2[$section] ?? []; @endphp
-            <div class="band band-shifted" style="margin-top: {{ $si === 0 ? '4.6mm' : '5.9mm' }};">
+            <div class="band band-shifted" style="margin-top: {{ $si === 0 ? '7.8mm' : '5.9mm' }};">
                 <span x-data="editableField('page2Content.{{ $section }}.title', '{{ $attr($block['title'] ?? mb_strtoupper($section)) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $block['title'] ?? mb_strtoupper($section) }}</span>&nbsp;(<span x-data="editableField('page2Content.{{ $section }}.quarter', '{{ $attr($block['quarter'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $block['quarter'] ?? '' }}</span>)
             </div>
             <div class="bullet-cols">
@@ -895,10 +949,74 @@
                 tickInterval: 5, minMax: 35,
                 spacing: [4, 2, 0, 0],
                 labelSize: '5.5pt', axisSize: '6pt', legendSize: '6pt',
-                legendGap: 37, legendMargin: 8, labelY: 22,
+                legendGap: 37, legendMargin: 8, labelY: 15,
                 // Trello 229: a clear gap between the Fund and Benchmark bars.
                 pointPadding: 0.09, groupPadding: 0.14,
             });
+        });
+    </script>
+    <script>
+        // Trello 391 / 402: band headings and table text centred top to
+        // bottom. The same idea as partials/table-centring (which only walks
+        // <table> rows): Chrome paints a box's edges and its text baseline at
+        // whole pixels, so per element predict both painted positions (from
+        // the top of the element's own page — each PDF page is its own grid)
+        // and move whole pixels of padding from bottom to top until the cap
+        // height sits within half a pixel of the middle. Heights never change.
+        function centreOverviewText() {
+            var CAP = 0.708; // Avenir Next cap height / em
+            function textNodes(el) {
+                var out = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+                    acceptNode: function (n) {
+                        return /[0-9A-Za-z]/.test(n.nodeValue) && !n.parentElement.closest('sup') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+                    }
+                });
+                while (w.nextNode()) out.push(w.currentNode);
+                return out;
+            }
+            // A text line's box ends at baseline + descent: 0 for the
+            // cap-centred twin, 25% (pinned, rounded to px) for Avenir Next.
+            function baselineAt(node, last) {
+                var range = document.createRange();
+                range.selectNodeContents(node);
+                var rects = range.getClientRects();
+                if (!rects.length) return null;
+                var cs = getComputedStyle(node.parentElement);
+                var descent = /^"?Avenir Next Cap/.test(cs.fontFamily) ? 0 : Math.round(0.25 * parseFloat(cs.fontSize));
+                return rects[last ? rects.length - 1 : 0].bottom - descent;
+            }
+            function offset(el) {
+                var nodes = textNodes(el);
+                if (!nodes.length) return null;
+                var shift = -el.closest('.page').getBoundingClientRect().top;
+                var r = el.getBoundingClientRect();
+                var b0 = baselineAt(nodes[0], false), b1 = baselineAt(nodes[nodes.length - 1], true);
+                if (b0 === null || b1 === null) return null;
+                var capTop = Math.round(b0 + shift) - CAP * parseFloat(getComputedStyle(nodes[0].parentElement).fontSize);
+                var base = Math.round(b1 + shift);
+                var mid = (Math.round(r.top + shift) + Math.round(r.bottom + shift)) / 2;
+                return Math.round(mid - (capTop + base) / 2);
+            }
+            function move(el, d) {
+                if (!d) return;
+                var cs = getComputedStyle(el), pt = parseFloat(cs.paddingTop), pb = parseFloat(cs.paddingBottom);
+                d = Math.max(-pt, Math.min(pb, d));
+                el.style.paddingTop = (pt + d) + 'px';
+                el.style.paddingBottom = (pb - d) + 'px';
+            }
+            document.querySelectorAll('.page .band, .page .perf .cell, .page .aa .cell').forEach(function (el) {
+                move(el, offset(el));
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!document.fonts) return centreOverviewText();
+            // Measure only once the faces the cells use are in.
+            Promise.all(['400', '500', '600'].map(function (w) {
+                return document.fonts.load(w + ' 8pt "Avenir Next Cap"');
+            }).concat(document.fonts.load('italic 400 8pt "Avenir Next"')))
+                .catch(function () {})
+                .then(function () { return document.fonts.ready; })
+                .then(centreOverviewText);
         });
     </script>
     <!-- ==================== EDIT MODE (screen only) ==================== -->
