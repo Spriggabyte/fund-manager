@@ -1032,12 +1032,17 @@
            288.3; right edge 200mm. R/R1 (phone only) keep the measured
            layout above. Card 448: the leaf top sits level with the T. line
            (top: 0) like every other global sheet, not 1.1mm below its
-           baseline as in the August B reference. */
-        .page2-content.p2-spread { padding-bottom: 7.43mm; }
-        .p2-spread .footer-divider { padding-top: 4.01mm; }
+           baseline as in the August B reference. Card 448 (v4): the whole
+           naartjie block takes the Australian feeder's placement (fund 50,
+           Carla's reference) — rule 251.35, copy 260.09/263.52, free of
+           charge 270.67, T./E./www 276.49/280.19/284.16, leaf 273.84–283.37mm
+           with its right edge at 200.55mm. */
+        .page2-content.p2-spread { padding-bottom: 11.67mm; }
+        .p2-spread .footer-divider { padding-top: 5.87mm; }
         .p2-spread .footer-info { margin-bottom: 3.56mm; }
-        .p2-spread .footer-contact { margin-top: 3.83mm; } /* collapses with the 3.56mm above */
-        .p2-spread .footer-leaf { right: 2.98mm; }
+        .p2-spread .footer-info + .footer-info { margin-bottom: 2.24mm; }
+        .p2-spread .footer-contact { margin-top: 0; }
+        .p2-spread .footer-leaf { right: 2.45mm; }
     </style>
     @include('funds.partials.global-intl-fixes')
     @include('funds.partials.screen-centre')
