@@ -854,10 +854,11 @@
             text-align: left;
         }
 
-        /* Hyperlinks render gold with an underline (measured #c09000) */
+        /* Trello 460 (global): URLs and email addresses take the type
+           setting of the copy around them — no gold, no underline. */
         .ref-link {
-            color: #c09000;
-            text-decoration: underline;
+            color: inherit;
+            text-decoration: none;
         }
 
         .info-sidebar-content p:last-child { margin-bottom: 0; }

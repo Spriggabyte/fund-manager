@@ -316,8 +316,12 @@
         .two-col {
             display: flex;
             gap: 4.2mm;
-            /* PORTFOLIO PERFORMANCE % heading at y=236mm (reference 236.1). */
-            margin-bottom: 3.06mm;
+            /* PORTFOLIO PERFORMANCE % heading at y=236mm (reference 236.1).
+               Trello 460: 1px tighter, so with the two nudges above the
+               section sits 3px (0.8mm) higher and "Note: Totals…" clears
+               the bottom margin (baseline 6.5mm off the page foot; the
+               reference has 6.36mm, staging had 5.7mm). */
+            margin-bottom: calc(3.06mm - 1px);
         }
 
         .two-col .col-left { flex: 1; min-width: 0; }
@@ -333,7 +337,10 @@
            at 168.5mm and the variance at 202.8mm; rows on a 4.0mm
            pitch with 2.4mm bars.
            ===================================================== */
-        .ps-section { margin-bottom: 3.5mm; }
+        /* Trello 460: 1px tighter (TOP 10 heading 127.0mm, reference
+           126.98) — the first of three 1px nudges that lift the page-1
+           notes clear of the bottom margin. */
+        .ps-section { margin-bottom: calc(3.5mm - 1px); }
 
         .ps-header {
             display: flex;
@@ -579,8 +586,9 @@
         .top10-table .foord-table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
 
         /* Reference: the charts' headings sit 3.0mm under the top-10 table
-           (the chart headings stay put after the card-433 TOP 10 changes). */
-        .top10-table { margin-bottom: 2.84mm; }
+           (the chart headings stay put after the card-433 TOP 10 changes).
+           Trello 460: 1px tighter, charts' headings at 180.2mm (ref 180.24). */
+        .top10-table { margin-bottom: calc(2.84mm - 1px); }
 
         /* Footnote 1 opens 1.1mm under the last performance row. */
         .perf-table-wrapper { margin-bottom: 0.3mm; }
@@ -833,10 +841,11 @@
             text-align: left;
         }
 
-        /* Hyperlinks render gold with an underline (measured #c09000) */
+        /* Trello 460 (global): URLs and email addresses take the type
+           setting of the copy around them — no gold, no underline. */
         .ref-link {
-            color: #c09000;
-            text-decoration: underline;
+            color: inherit;
+            text-decoration: none;
         }
 
         .info-sidebar-content p:last-child { margin-bottom: 0; }

@@ -1186,6 +1186,29 @@
            level with PORTFOLIO STRUCTURE % (card 429's column-tops rule). */
         .sidebar { padding-top: 4.6mm; padding-right: 3.1mm; }
 
+        /* Trello 459 (Carla's notes v2): the 7.5pt heading below pushed the
+           ISIN line 1.33mm (5px) under the bottom margin, which is the main
+           column's last baseline ("Note: Totals may…", 289.98mm). Chrome
+           snaps text to whole px, so the 5px can only come out of whole
+           gaps: six copy→heading gaps print 4.23mm instead of 4.50mm.
+           The line boxes are whole px so that nothing else moves. Global's
+           6.8pt/8.2pt are fractional, and Blink floors the half-leading, so
+           a fractional sum let a 1px step land inside a section (on the
+           first try EQUITY INDICATOR printed 2.91mm heading→copy).
+           - Heading 8px box: heading→copy 10px (2.65mm) in every section.
+             A 9px box gives 11px.
+           - Copy 11px (8.25pt): every pitch 2.91mm. 8.2pt printed one
+             2.65mm pitch inside PORTFOLIO ORIENTATION.
+           - Gap 2.04mm: the middle of the 2.033–2.047mm window that ends
+             the ISIN line on 289.98mm. It is larger than global's 1.85mm
+             only because the heading box shrank by 1px. MDD→CLASS keeps
+             its 4.24mm (16px), hence the MDD block's 1px less. */
+        .sidebar-section { margin-bottom: 2.04mm !important; }
+        .sidebar-section.mdd-heading { margin-bottom: calc(2.04mm - 1px) !important; }
+        .sidebar-section h3 { line-height: 8px !important; }
+        .sidebar-section p,
+        .sidebar-section .sidebar-value { line-height: 11px !important; }
+
         /* QC card 281 (checklist "font size and weight for 'minimum
            disclosure…'"): the heading is set larger than the row labels,
            Avenir Next Medium 7.5pt on a 3.09mm pitch (reference 7.56pt).

@@ -175,7 +175,9 @@
             font-size: 22.5pt;
             letter-spacing: 0.01em;
             text-transform: uppercase;
-            margin: 0 0 2.9mm 0;
+            /* Trello 443: the standfirst sits closer under the title —
+               5.67mm baseline to baseline, as on the August sheet (was 7.41). */
+            margin: 0 0 1.16mm 0;
             line-height: 1.05;
         }
 
@@ -188,6 +190,7 @@
             margin: 0;
             color: var(--white);
         }
+        .fund-banner .description .nobr { white-space: nowrap; }
 
         /* === Main body layout === */
         .main-body {
@@ -205,8 +208,9 @@
             max-width: 60mm;
             background-color: transparent;
             /* Trello 429: top of the first line of copy level with the
-               right-hand column's (cap tops aligned across the two columns). */
-            padding: 5.38mm 4mm 4mm 8mm;
+               right-hand column's (cap tops aligned across the two columns).
+               Trello 443: 0.21mm less for the 7.5pt MDD heading's caps. */
+            padding: 5.17mm 4mm 4mm 8mm;
             overflow: hidden;
         }
 
@@ -538,6 +542,17 @@
         .geo-table .foord-table th {
             padding-top: 0.42mm;
             padding-bottom: 0.42mm;
+        }
+        /* Trello 443: the TOTAL / EQUITY / CASH heads sat 0.5px low in a
+           14px navy bar — an even bar cannot centre 7.5pt caps, so the bar
+           is 15px (as on the top-10 table) and grows upwards: the table
+           starts 1px higher, the heads print 1px higher and the rows below
+           don't move. */
+        .geo-table .table-wrapper { margin-top: -1px; }
+        .geo-table .foord-table th {
+            line-height: 11px;
+            padding-top: 2px;
+            padding-bottom: 2px;
         }
 
         /* Top 10 — SECURITY 40.1%, ASSET CLASS 28.3% (left), MARKET and
@@ -897,6 +912,9 @@
         .contributors-table td:first-child { width: 35%; }
         /* QC card 247: the names column is left-aligned (reference x=114.7mm). */
         .contributors-table td:last-child { text-align: left; padding-left: 1.4mm; }
+        /* Trello 443: same 8pt as the FEE RATES and TOTAL INVESTMENT CHARGE
+           tables (reference 8.04pt; it was the table body's 7.5pt). */
+        .contributors-table .foord-table td { font-size: 8pt; }
         /* Block spacing measured off the reference: contributors → policy
            17.9mm, policy → fee rates 19.1mm, fee rates → TIC 31.7mm. */
         .contributors-table { margin-bottom: 6.7mm; }
@@ -1077,6 +1095,16 @@
         .btn-muted:hover { background: var(--dark-grey); }
     </style>
     @include('funds.partials.global-fixes')
+    <style>
+        /* Trello 443 (Helena, 1 Oct): MINIMUM DISCLOSURE DOCUMENT is set
+           Avenir Next Medium 7.5pt — larger than the 6pt row headings — on
+           every Prescient sheet (card 244's size; card 429's 6pt
+           sidebar-heading rule had flattened it). */
+        .sidebar-section.mdd-heading h3 {
+            font-size: 7.5pt !important;
+            line-height: 8.65pt !important;
+        }
+    </style>
     @include('funds.partials.screen-centre')
 </head>
 <body class="@if(request()->has('pdf')) pdf-mode @endif" x-data="fundEditor()">
@@ -1164,11 +1192,23 @@
                           @click="editMode && startEdit()"
                           :class="editMode ? 'editable' : ''">{{ mb_strtoupper($mainName) }}</span>
                 </h1>
+                @php
+                    // Trello 443: "South African" and "a hard-currency" start
+                    // a line instead of ending one — hyphenated compounds
+                    // never split at the hyphen, and short words (and
+                    // "South") keep to the word after them. Same rule as the
+                    // 809 sheet (Trello 436). Twin of the `standfirst`
+                    // display formatter below.
+                    $standfirst = function (string $text): string {
+                        $html = preg_replace('/(\S+-\S+)/u', '<span class="nobr">$1</span>', e($text));
+
+                        return preg_replace('/(^|\s)(\p{L}{1,2}|South)\s+(?=\S)/u', '$1$2&nbsp;', $html);
+                    };
+                @endphp
                 <p class="description">
-                    <span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}')"
+                    <span x-data="editableField('fund.description', '{{ addslashes($fund->data['fund']['description'] ?? '') }}', 'standfirst')"
                           @click="editMode && startEdit()"
-                          :class="editMode ? 'editable' : ''"
-                          x-text="value"></span>
+                          :class="editMode ? 'editable' : ''">{!! $standfirst($fund->data['fund']['description'] ?? '') !!}</span>
                 </p>
             </div>
 
@@ -1927,6 +1967,13 @@
             headingSuffix(value) {
                 return String(value).replace(/\s*\(([^)]+)\)/, ' <span class="title-suffix">($1)</span>');
             },
+            // Standfirst phrases kept together (Trello 443) — see $standfirst.
+            standfirst(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/(\S+-\S+)/gu, '<span class="nobr">$1</span>')
+                    .replace(/(^|\s)(\p{L}{1,2}|South)\s+(?=\S)/gu, '$1$2&nbsp;');
+            },
             // Reference: URLs and email addresses render naartjie
             linkify(value) {
                 return String(value)
@@ -2114,8 +2161,19 @@
 
         Chart.register(endValuePlugin, baselineAxisPlugin, hundredLabelPlugin);
 
+        // Trello 443 asked whether the light-grey "R 96" is the line's
+        // colour: it is (#c9c9c9 for both; the August sheet uses #ccc for
+        // both), it just reads paler as small type. The canvas is drawn at
+        // four device pixels per CSS px for crisper type, as on the 821
+        // sheet (Trello 433), and only once Avenir Next is loaded — a
+        // canvas drawn first keeps the fallback face.
+        Chart.defaults.devicePixelRatio = 4;
+        const chartFontsReady = document.fonts
+            ? Promise.all(['400 8px "Avenir Next"', '500 9px "Avenir Next"'].map(f => document.fonts.load(f))).catch(() => {})
+            : Promise.resolve();
+
         const ctx = document.getElementById('performanceChart').getContext('2d');
-        new Chart(ctx, {
+        chartFontsReady.then(() => new Chart(ctx, {
             type: 'line',
             data: {
                 labels: chartData.map(d => d.date),
@@ -2223,7 +2281,7 @@
                     padding: { right: 36, top: 10 }
                 }
             }
-        });
+        }));
     </script>
     @endif
 </body>

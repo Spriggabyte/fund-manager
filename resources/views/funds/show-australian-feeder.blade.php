@@ -900,15 +900,12 @@
         /* Reference gap before the published-on line: 1.44mm of extra lead. */
         .info-sidebar-content p:nth-of-type(5) { margin-bottom: 1.64mm; }
 
-        /* Hyperlinks render gold with an underline (measured #c09000) */
+        /* Trello 460 (global): URLs and email addresses take the type
+           setting of the copy around them — no gold, no underline. */
         .ref-link {
-            color: #c09000;
-            text-decoration: underline;
+            color: inherit;
+            text-decoration: none;
         }
-
-        /* Card 445: the grey column's www.foord.com takes the copy's navy
-           (underline included) instead of the gold link colour. */
-        .info-sidebar .ref-link { color: inherit; }
 
         .info-sidebar-content p:last-child { margin-bottom: 0; }
 
