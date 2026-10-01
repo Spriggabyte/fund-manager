@@ -1036,13 +1036,16 @@
            naartjie block takes the Australian feeder's placement (fund 50,
            Carla's reference) — rule 251.35, copy 260.09/263.52, free of
            charge 270.67, T./E./www 276.49/280.19/284.16, leaf 273.84–283.37mm
-           with its right edge at 200.55mm. */
+           with its right edge at 200.55mm. The leaf hangs from the foot of
+           the contact block (bottom, not top) so its tip stays 0.79mm above
+           the last contact baseline however many lines print: a T.-only
+           footer (blank email/website) dropped it 5.7mm below the text. */
         .page2-content.p2-spread { padding-bottom: 11.67mm; }
         .p2-spread .footer-divider { padding-top: 5.87mm; }
         .p2-spread .footer-info { margin-bottom: 3.56mm; }
         .p2-spread .footer-info + .footer-info { margin-bottom: 2.24mm; }
         .p2-spread .footer-contact { margin-top: 0; }
-        .p2-spread .footer-leaf { right: 2.45mm; }
+        .p2-spread .footer-leaf { top: auto; bottom: 1.97mm; right: 2.45mm; }
     </style>
     @include('funds.partials.global-intl-fixes')
     @include('funds.partials.screen-centre')
