@@ -1484,9 +1484,15 @@
                                             if ($arrowChar && ! $arrowClass) {
                                                 $arrowClass = $arrowChar === '▲' ? 'change-arrow-up' : 'change-arrow-down';
                                             }
+                                            // Trello 458: note ³ (TIPS) hangs off the ILB row. Rows
+                                            // imported before the importer named it get it here.
+                                            $rowName = (string) $row['name'];
+                                            if (strcasecmp(trim($rowName), 'Inflation linked bonds') === 0) {
+                                                $rowName = trim($rowName).'/TIPS³';
+                                            }
                                         @endphp
                                         <tr>
-                                            <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['name'] }}</span></td>
+                                            <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($rowName) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $normaliseSupers(e($rowName)) !!}</span></td>
                                             <td>{{ $row['sa'] ?? '' }}</td>
                                             <td>{{ $row['foreign'] ?? '' }}</td>
                                             <td>{{ $row['total'] ?? '' }}</td>

@@ -127,7 +127,8 @@ class ExcelImportFlexIncomeTest extends TestCase
         $this->assertSame('3', $rows['Cash and call']['total']);
         $this->assertSame('30', $rows['Money market']['total']);
         // A total within rounding of SA + FOREIGN is the feed's own figure.
-        $this->assertSame('25', $rows['Inflation linked bonds']['total']);
+        // The row carries note ³ (TIPS), as on the Publisher sheet (Trello 458).
+        $this->assertSame('25', $rows['Inflation linked bonds/TIPS³']['total']);
 
         $this->assertSame('(6)', $structure['foreignCurrencyHedge']);
     }

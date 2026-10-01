@@ -455,6 +455,25 @@
             white-space: nowrap;
             padding-right: 0.5mm;
         }
+        /* QC card 454 ("nudge headings and totals up so they're centred in
+           their rows"): Chrome paints the bands and the text baseline on
+           whole pixels, so in an even band (header 16px, TOTAL 14px) the
+           7.5pt caps can only sit 0.46px low or 0.54px high, and the
+           table-centring script left them low. Odd whole-px bands (15px,
+           header and TOTAL alike, as near-equal as the reference's) let it
+           centre them exactly. The header gives up its 0.87px at the top
+           (the container's padding takes it back), so the data rows don't
+           move; the TOTAL's extra 0.95px comes off the container's margin,
+           so nothing below moves either. */
+        .structure-table.table-container {
+            padding-top: calc(8.5pt + 1.2mm - 15px);
+            margin-bottom: calc(2.6mm + 8.5pt + 0.72mm - 15px);
+        }
+        .structure-table table th,
+        .structure-table table tr.total-row td {
+            padding-top: calc((15px - 8.5pt) / 2);
+            padding-bottom: calc((15px - 8.5pt) / 2);
+        }
 
         /* Portfolio statistics — label/value pairs, no header row. */
         .stats-table table th:first-child,
@@ -568,6 +587,24 @@
         .credit-tables table td {
             height: 4.25mm;
         }
+        /* QC card 454: odd 15px header and TOTAL bands (were 16px) so the
+           centring script can centre their caps exactly — see the structure
+           table above. The header gives up its 0.87px at the top and the
+           TOTAL its 1.06px at the bottom; the container's padding and margin
+           take both back, so the data rows and the chart row below stay
+           put. */
+        .credit-tables .table-container {
+            padding-top: calc(8.5pt + 1.2mm - 15px);
+            margin-bottom: calc(4.25mm - 15px);
+        }
+        .credit-tables table th,
+        .credit-tables table tr.total-row td {
+            padding-top: calc((15px - 8.5pt) / 2);
+            padding-bottom: calc((15px - 8.5pt) / 2);
+        }
+        .credit-tables table tr.total-row td {
+            height: 15px;
+        }
         /* % value column — narrow, right-aligned like the reference. */
         .credit-tables table th:last-child,
         .credit-tables table td:last-child {
@@ -661,7 +698,9 @@
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
             font-size: 7.5pt;
-            padding: 0.35mm 0.7mm;
+            /* QC card 454: an odd 15px band (was 14px) so the centring
+               script can centre the caps exactly (reference header 15.5px). */
+            padding: calc((15px - 8.5pt) / 2) 0.7mm;
         }
         .monthly-table table th:first-child {
             width: 7%;
@@ -1010,10 +1049,7 @@
             padding-top: 0.82mm;
             padding-bottom: 0.42mm;
         }
-        .credit-tables table th {
-            padding-top: 0.75mm;
-            padding-bottom: 0.45mm;
-        }
+        /* (The credit header's padding is set with its TOTAL — card 454.) */
         .credit-tables table td {
             padding-top: 0.76mm;
             padding-bottom: 0.48mm;

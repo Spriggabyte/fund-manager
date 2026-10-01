@@ -447,6 +447,9 @@ class FactsheetImporter extends AbstractExcelImporter
                 'INFLATION_LINKED_BONDS' => 'Inflation linked bonds',
             ];
             if (! $isIncome) {
+                // 824 note ³ (Treasury inflation-protected securities) hangs
+                // off this row, as on the earlier Publisher sheet (Trello 458).
+                $categories['INFLATION_LINKED_BONDS'] = 'Inflation linked bonds/TIPS³';
                 $categories += [
                     'PREFERENCE_SHARES' => 'Preference shares',
                     'CONVERTIBLE_BONDS' => 'Convertible bonds',
