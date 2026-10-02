@@ -1556,32 +1556,32 @@
                 <!-- Total Investment Charge -->
                 @if(isset($fund->data['fees']['totalInvestmentCharge']))
                     <div class="tic-section">
-                        <h3 class="section-heading">{{ $fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %' }}</h3>
+                        <h3 class="section-heading"><span x-data="editableField('fees.totalInvestmentCharge.title', '{{ addslashes($fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['fees']['totalInvestmentCharge']['title'] ?? 'TOTAL INVESTMENT CHARGE %' }}</span></h3>
 
                         <div class="table-container tic-table">
                             <table>
                                 <thead>
                                     <tr>
-                                        @foreach ($fund->data['fees']['totalInvestmentCharge']['headers'] as $header)
+                                        @foreach ($fund->data['fees']['totalInvestmentCharge']['headers'] as $hIndex => $header)
                                             {{-- The B2 reference stars the "36 MONTHS*" column header
                                                  (the footnote applies to the whole estimated 36-month
                                                  column, not just the TER row) — not the TER row label. --}}
-                                            <th>{{ $header }}@if(isset($fund->data['fees']['totalInvestmentCharge']['footnote']) && str_contains($header, '36'))*@endif</th>
+                                            <th><span x-data="editableField('fees.totalInvestmentCharge.headers.{{ $hIndex }}', '{{ addslashes($header) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $header }}</span>@if(isset($fund->data['fees']['totalInvestmentCharge']['footnote']) && str_contains($header, '36'))*@endif</th>
                                         @endforeach
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $row)
+                                    @foreach ($fund->data['fees']['totalInvestmentCharge']['rows'] as $rowIndex => $row)
                                         <tr>
-                                            <td>{{ $row['name'] }}</td>
-                                            <td>{{ $fmt($row['12m'] ?? '', 2) }}</td>
-                                            <td>{{ $fmt($row['36m'] ?? '', 2) }}</td>
+                                            <td><span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['name'] }}</span></td>
+                                            <td><span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.12m', '{{ $fmt($row['12m'] ?? '', 2) }}', 'twoDecimals')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row['12m'] ?? '', 2) }}</span></td>
+                                            <td><span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.36m', '{{ $fmt($row['36m'] ?? '', 2) }}', 'twoDecimals')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row['36m'] ?? '', 2) }}</span></td>
                                         </tr>
                                     @endforeach
                                     <tr class="total-row">
-                                        <td>{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] ?? 'Total investment charge' }}</td>
-                                        <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? '', 2) }}</td>
-                                        <td>{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? '', 2) }}</td>
+                                        <td><span x-data="editableField('fees.totalInvestmentCharge.total.name', '{{ addslashes($fund->data['fees']['totalInvestmentCharge']['total']['name'] ?? 'Total investment charge') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['fees']['totalInvestmentCharge']['total']['name'] ?? 'Total investment charge' }}</span></td>
+                                        <td><span x-data="editableField('fees.totalInvestmentCharge.total.12m', '{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? '', 2) }}', 'twoDecimals')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? '', 2) }}</span></td>
+                                        <td><span x-data="editableField('fees.totalInvestmentCharge.total.36m', '{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? '', 2) }}', 'twoDecimals')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? '', 2) }}</span></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1890,6 +1890,11 @@
         }
         // Display formatters re-create the styled server rendering after an edit.
         const editableFormatters = {
+            // TIC values print to two decimals, as the blade's $fmt does.
+            twoDecimals(value) {
+                const s = String(value).trim();
+                return /^-?\d*\.?\d+$/.test(s) ? Number(s).toFixed(2) : s;
+            },
             fundName(value) {
                 const m = String(value).match(/^(.+?)\s*[\u2014\u2013-]\s*(CLASS\s+[A-Z][0-9]*)$/i);
                 if (!m) return String(value).toUpperCase();

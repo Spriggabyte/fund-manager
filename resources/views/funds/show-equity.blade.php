@@ -1305,13 +1305,13 @@
                                                       x-text="value"></span>
                                             </td>
                                             <td>
-                                                <span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.12m', '{{ $fmtTic($row['12m'] ?? null) }}')"
+                                                <span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.12m', '{{ $fmtTic($row['12m'] ?? null) }}', 'twoDecimals')"
                                                       @click="editMode && startEdit()"
                                                       :class="editMode ? 'editable' : ''"
                                                       x-text="value"></span>
                                             </td>
                                             <td>
-                                                <span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.36m', '{{ $fmtTic($row['36m'] ?? null) }}')"
+                                                <span x-data="editableField('fees.totalInvestmentCharge.rows.{{ $rowIndex }}.36m', '{{ $fmtTic($row['36m'] ?? null) }}', 'twoDecimals')"
                                                       @click="editMode && startEdit()"
                                                       :class="editMode ? 'editable' : ''"
                                                       x-text="value"></span>
@@ -1326,13 +1326,13 @@
                                                   x-text="value"></span>
                                         </td>
                                         <td>
-                                            <span x-data="editableField('fees.totalInvestmentCharge.total.12m', '{{ $fmtTic($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? null) }}')"
+                                            <span x-data="editableField('fees.totalInvestmentCharge.total.12m', '{{ $fmtTic($fund->data['fees']['totalInvestmentCharge']['total']['12m'] ?? null) }}', 'twoDecimals')"
                                                   @click="editMode && startEdit()"
                                                   :class="editMode ? 'editable' : ''"
                                                   x-text="value"></span>
                                         </td>
                                         <td>
-                                            <span x-data="editableField('fees.totalInvestmentCharge.total.36m', '{{ $fmtTic($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? null) }}')"
+                                            <span x-data="editableField('fees.totalInvestmentCharge.total.36m', '{{ $fmtTic($fund->data['fees']['totalInvestmentCharge']['total']['36m'] ?? null) }}', 'twoDecimals')"
                                                   @click="editMode && startEdit()"
                                                   :class="editMode ? 'editable' : ''"
                                                   x-text="value"></span>
@@ -1508,6 +1508,11 @@
         // after Alpine mounts, so markup inside it (the small class suffix)
         // has to be re-applied here or it is lost on both web and PDF.
         const editableFormatters = {
+            // TIC values print to two decimals, as the blade's $fmt does.
+            twoDecimals(value) {
+                const s = String(value).trim();
+                return /^-?\d*\.?\d+$/.test(s) ? Number(s).toFixed(2) : s;
+            },
             fundName(value) {
                 const m = String(value).match(/^(.+?)\s*[\u2014\u2013-]\s*(CLASS\s+[A-Z][0-9]*)$/i);
                 if (!m) return String(value);
