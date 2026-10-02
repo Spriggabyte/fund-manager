@@ -464,6 +464,9 @@
             text-align: right;
         }
         .perf-table table th:first-child { text-align: left; width: 20%; }
+        /* 15/10/7/5/3/1 YRS share one width (auto layout gave the columns
+           holding "-22.5"-style values 1mm more than the rest). */
+        .perf-table table th:nth-child(n+4):nth-child(-n+9) { width: 9.69mm; }
         .perf-table table td {
             font-size: 7.5pt;
             line-height: 2.75mm;

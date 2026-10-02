@@ -763,6 +763,12 @@
             line-height: 0;
             vertical-align: super;
         }
+        /* Fund 13 (817 Class A) only, reviewer WhatsApp 2 Oct 2026: the
+           caption's closing bracket ends level with the top of the y axis
+           (its ink sat 0.78mm above it). Class B2 keeps 10.38mm. */
+        .charts-row.flex-class-a .chart-ytitle {
+            top: 11.16mm;
+        }
 
         .chart-explanation {
             font-family: 'Avenir Next', 'Lato', sans-serif;
@@ -1065,6 +1071,7 @@
             background: transparent; border: none; outline: none; width: 100%;
             font-family: inherit; font-size: inherit; font-weight: inherit;
             color: inherit; line-height: inherit; letter-spacing: inherit;
+            text-align: inherit;
         }
         .notification {
             position: fixed; top: 1rem; right: 1rem; z-index: 50;
@@ -1335,7 +1342,8 @@
             <div class="main-content">
                 <!-- Asset Allocation Table -->
                 @if(isset($fund->data['mainContent']['assetAllocation']))
-                    <h3 class="section-heading">{!! $renderHeading($fund->data['mainContent']['assetAllocation']['title'] ?? 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)') !!}</h3>
+                    @php $aaTitle = $fund->data['mainContent']['assetAllocation']['title'] ?? 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)'; @endphp
+                    <h3 class="section-heading"><span x-data="editableField('mainContent.assetAllocation.title', '{{ addslashes($aaTitle) }}', 'titleSuffix')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $renderHeading($aaTitle) !!}</span></h3>
                     @if(isset($fund->data['mainContent']['assetAllocation']['subtitle']))
                         <p class="section-subheading"><span x-data="editableField('mainContent.assetAllocation.subtitle', '{{ addslashes($fund->data['mainContent']['assetAllocation']['subtitle']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['mainContent']['assetAllocation']['subtitle'] }}</span></p>
                     @endif
@@ -1344,17 +1352,23 @@
                         <table>
                             <thead>
                                 <tr>
-                                    @foreach ($fund->data['mainContent']['assetAllocation']['headers'] as $header)
-                                        <th>{!! $renderTh(strip_tags((string) $header)) !!}</th>
+                                    @foreach ($fund->data['mainContent']['assetAllocation']['headers'] as $hIndex => $header)
+                                        <th><span x-data="editableField('mainContent.assetAllocation.headers.{{ $hIndex }}', '{{ addslashes(strip_tags((string) $header)) }}', 'thLimit')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $renderTh(strip_tags((string) $header)) !!}</span></th>
                                     @endforeach
                                 </tr>
                             </thead>
                             @php
                                 $aaHeaders = $fund->data['mainContent']['assetAllocation']['headers'] ?? [];
+                                $aaFirstRow = $fund->data['mainContent']['assetAllocation']['rows'][0] ?? [];
                                 $aaColumnKeys = [];
                                 $keyMap = ['SA (100)' => 'sa', 'FOREIGN (45)' => 'foreign', 'TOTAL' => 'total', 'CHANGE' => 'change'];
-                                foreach (array_slice($aaHeaders, 1) as $h) {
-                                    $aaColumnKeys[] = $keyMap[strtoupper(trim($h))] ?? strtolower(preg_replace('/[^a-zA-Z]/', '', $h) ?: 'col');
+                                foreach (array_slice($aaHeaders, 1) as $i => $h) {
+                                    $key = $keyMap[strtoupper(trim($h))] ?? strtolower(preg_replace('/[^a-zA-Z]/', '', $h) ?: 'col');
+                                    // A header relabelled in edit mode keeps its column's data.
+                                    if (! array_key_exists($key, $aaFirstRow) && isset(['sa', 'foreign', 'total', 'change'][$i])) {
+                                        $key = ['sa', 'foreign', 'total', 'change'][$i];
+                                    }
+                                    $aaColumnKeys[] = $key;
                                 }
                             @endphp
                             <tbody>
@@ -1364,9 +1378,7 @@
                                         @foreach ($aaColumnKeys as $colKey)
                                             @if ($colKey === 'change')
                                                 @php
-                                                    $dir = $row['changeDirection'] ?? '';
                                                     $raw = trim((string)($row['change'] ?? ''));
-                                                    $arrowClass = $dir === 'up' ? 'change-arrow-up' : ($dir === 'down' ? 'change-arrow-down' : '');
                                                     if (preg_match('/^([▲▼])\s*(.*)$/u', $raw, $cm)) {
                                                         $arrowChar = $cm[1];
                                                         $numPart = $cm[2];
@@ -1374,12 +1386,13 @@
                                                         $arrowChar = '';
                                                         $numPart = $raw;
                                                     }
+                                                    // The triangle's colour follows its shape, so a change
+                                                    // edited in edit mode never leaves changeDirection stale.
+                                                    $arrowClass = $arrowChar === '▲' ? 'change-arrow-up' : 'change-arrow-down';
                                                 @endphp
-                                                <td class="change-cell">
-                                                    @if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 9" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,9 5,0 10,9' : '0,0 10,0 5,9' }}"/></svg>@endif<span class="change-num">{{ $numPart }}</span>
-                                                </td>
+                                                <td class="change-cell"><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes($raw) }}', 'changeArrow')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">@if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 9" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,9 5,0 10,9' : '0,0 10,0 5,9' }}"/></svg>@endif<span class="change-num">{{ $numPart }}</span></span></td>
                                             @else
-                                                <td>{{ $fmt($row[$colKey] ?? '', 1) }}</td>
+                                                <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.{{ $colKey }}', '{{ addslashes($fmt($row[$colKey] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row[$colKey] ?? '', 1) }}</span></td>
                                             @endif
                                         @endforeach
                                     </tr>
@@ -1387,9 +1400,13 @@
                                 @if(isset($fund->data['mainContent']['assetAllocation']['total']))
                                     @php $aaTotal = $fund->data['mainContent']['assetAllocation']['total']; @endphp
                                     <tr class="total-row">
-                                        <td>{{ $aaTotal['name'] ?? 'TOTAL' }}</td>
+                                        <td><span x-data="editableField('mainContent.assetAllocation.total.name', '{{ addslashes($aaTotal['name'] ?? 'TOTAL') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $aaTotal['name'] ?? 'TOTAL' }}</span></td>
                                         @foreach ($aaColumnKeys as $colKey)
-                                            <td>{{ $colKey !== 'change' ? $fmt($aaTotal[$colKey] ?? '', 1) : '' }}</td>
+                                            @if ($colKey === 'change')
+                                                <td></td>
+                                            @else
+                                                <td><span x-data="editableField('mainContent.assetAllocation.total.{{ $colKey }}', '{{ addslashes($fmt($aaTotal[$colKey] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($aaTotal[$colKey] ?? '', 1) }}</span></td>
+                                            @endif
                                         @endforeach
                                     </tr>
                                 @endif
@@ -1427,7 +1444,7 @@
 
                 <!-- Charts -->
                 @if(isset($fund->data['mainContent']['charts']))
-                    <div class="charts-row">
+                    <div class="charts-row {{ ($fund->class_code ?? '') === 'A' ? 'flex-class-a' : '' }}">
                         <div class="chart-container">
                             <h4 class="chart-title">{{ $fund->data['mainContent']['charts']['leftTitle'] ?? 'INVESTMENT STRATEGY VS REG 28 PORTFOLIOS' }}</h4>
                             <div class="chart-wrapper">
@@ -1741,6 +1758,9 @@
             const portfolioData = @json($fund->data['mainContent']['charts']['portfolioData'] ?? []);
             const strategyLabels = @json($fund->data['mainContent']['charts']['strategyLabels'] ?? ['Fund', 'Foord Regulation 28']);
             const portfolioLabels = @json($fund->data['mainContent']['charts']['portfolioLabels'] ?? ['Fund', 'Benchmark']);
+            // Fund 13 (817 Class A) only — reviewer WhatsApp 2 Oct 2026. Class
+            // B2 shares this template and keeps the layout it was signed off on.
+            const flexClassA = @json(($fund->class_code ?? '') === 'A');
 
             const colors = {
                 naartjie: '#d25347',
@@ -1790,6 +1810,14 @@
                 const yMax = maxVal;
                 const yMin = Math.min(100, minVal) * 0.99;
 
+                // End-of-line "R 647" label; y moves it off its line end.
+                const endLabel = (color, y = 0) => [{
+                    enabled: true, align: 'left', verticalAlign: 'middle', x: 3, y: y,
+                    style: { fontSize: '9px', fontWeight: '500', color: color, textOutline: 'none' },
+                    formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
+                    crop: false, overflow: 'allow', allowOverlap: true,
+                }];
+
                 const dates = data.map(d => d.date);
                 const tickPositions = (function () {
                     const idxByDate = {};
@@ -1820,6 +1848,36 @@
                         // 16px depending on the page, moving the axis against the CSS
                         // "Cash Value" caption (card 440).
                         marginLeft: 16,
+                        ...(flexClassA ? {
+                            // More axis below the 100 line: the plot floor rises 6px
+                            // (auto margin 22 → 28) so the 2008 dip clears the date
+                            // labels instead of running into "Apr 08". The dates and
+                            // legend keep their place in the SVG.
+                            marginBottom: 28,
+                            events: {
+                                load: function () {
+                                    // Dates on one baseline, 155px down the SVG, in
+                                    // both charts (18px under the 100 line put them
+                                    // 1.7px apart, the 100 line sitting at a
+                                    // different height in each chart).
+                                    this.xAxis[0].update({ labels: { y: 155 - this.yAxis[0].toPixels(100) } }, false);
+                                    // End labels: the top one stays on its line end
+                                    // (card 440's heading gap); a lower one moves down
+                                    // to a 12px pitch when the lines finish close
+                                    // together (R 647 / R 597 printed over each other).
+                                    const ends = this.series
+                                        .map(s => ({ s, plotY: s.points[s.points.length - 1].plotY }))
+                                        .sort((a, b) => a.plotY - b.plotY);
+                                    let prevY = ends[0].plotY;
+                                    ends.slice(1).forEach(e => {
+                                        const shift = Math.max(0, prevY + 12 - e.plotY);
+                                        if (shift > 0) e.s.update({ dataLabels: endLabel(e.s.color, shift) }, false);
+                                        prevY = e.plotY + shift;
+                                    });
+                                    this.redraw();
+                                },
+                            },
+                        } : {}),
                     },
                     title: { text: null },
                     xAxis: {
@@ -1894,12 +1952,7 @@
                     },
                     series: seriesDefs.map(s => ({
                         name: s.name, data: data.map(d => d[s.key]), color: s.color,
-                        dataLabels: [{
-                            enabled: true, align: 'left', verticalAlign: 'middle', x: 3, y: 0,
-                            style: { fontSize: '9px', fontWeight: '500', color: s.color, textOutline: 'none' },
-                            formatter: function () { return this.point.index === this.series.data.length - 1 ? formatCashLabel(this.y) : null; },
-                            crop: false, overflow: 'allow', allowOverlap: true,
-                        }],
+                        dataLabels: endLabel(s.color),
                     })),
                 });
             };
@@ -1950,6 +2003,46 @@
             },
             assetName(value) {
                 return String(value).replace(/\s*\(([^)]+)\)\s*$/, ' <span class="row-limit">($1)</span>');
+            },
+            // As the blade's $renderHeading / $renderTh.
+            titleSuffix(value) {
+                return String(value).replace(/\s*\(([^)]+)\)\s*$/, ' <span class="title-suffix">($1)</span>');
+            },
+            thLimit(value) {
+                return String(value).replace(/\s*\(([^)]+)\)\s*$/, ' <span class="th-limit">($1)</span>');
+            },
+            // Asset allocation values print to one decimal, as the blade's $fmt does.
+            oneDecimal(value) {
+                const s = String(value).trim();
+                return /^-?\d*\.?\d+$/.test(s) ? Number(s).toFixed(1) : s;
+            },
+            // "▲ 0.1" / "▼ 0.2" — the SVG triangle the blade draws, then the figure.
+            changeArrow(value) {
+                const m = String(value).trim().match(/^([▲▼])\s*(.*)$/);
+                if (!m) return '<span class="change-num">' + String(value).trim() + '</span>';
+                const up = m[1] === '▲';
+                return '<svg class="' + (up ? 'change-arrow-up' : 'change-arrow-down') + '" viewBox="0 0 10 9" aria-label="' + m[1] + '">'
+                    + '<polygon fill="currentColor" points="' + (up ? '0,9 5,0 10,9' : '0,0 10,0 5,9') + '"/></svg>'
+                    + '<span class="change-num">' + m[2] + '</span>';
+            }
+        };
+        // Input normalisers, run before saving, so retyping a figure as it
+        // already prints ("100" for "100.0") is not a change. A change can
+        // be typed as a signed figure ("-0.2", "+0.1", "0.1") and is stored
+        // the way the importer writes it ("▼ 0.2"); an unsigned zero gets no
+        // triangle.
+        const editableParsers = {
+            oneDecimal(value) {
+                return editableFormatters.oneDecimal(value);
+            },
+            changeArrow(value) {
+                const s = String(value).trim();
+                const m = s.match(/^([▲▼+-])?\s*(\d*\.?\d+)$/);
+                if (!m) return s;
+                const n = Number(m[2]);
+                if (m[1] === '▲' || m[1] === '▼') return m[1] + ' ' + n.toFixed(1);
+                if (n === 0) return n.toFixed(1);
+                return (m[1] === '-' ? '▼ ' : '▲ ') + n.toFixed(1);
             }
         };
         function editableField(fieldPath, initialValue, formatter) {
@@ -1981,6 +2074,8 @@
                     }
                 },
                 async saveEdit() {
+                    const parse = this.formatter && editableParsers[this.formatter];
+                    if (parse) this.value = parse(this.value);
                     if (this.saving || this.value === this.originalValue) { this.cancelEdit(); return; }
                     this.saving = true;
                     try {

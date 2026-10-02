@@ -1462,16 +1462,16 @@
                                                                   :class="editMode ? 'editable' : ''"
                                                                   x-text="value"></span>
                                                         </td>
-                                                        <td>{{ $geoFmt($row['total']) }}</td>
-                                                        <td>{{ $geoFmt($row['equity']) }}</td>
-                                                        <td>{{ $geoFmt($row['cash']) }}</td>
+                                                        @foreach (['total', 'equity', 'cash'] as $geoCol)
+                                                            <td><span x-data="editableField('mainContent.assetAllocation.geographicExposure.{{ $rowIndex }}.{{ $geoCol }}', '{{ $row[$geoCol] ?? '' }}', 'zeroDash')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $geoFmt($row[$geoCol] ?? '') }}</span></td>
+                                                        @endforeach
                                                     </tr>
                                                 @endforeach
                                                 <tr class="total-row">
-                                                    <td>{{ $geoTotals['name'] ?? 'TOTAL' }}</td>
-                                                    <td>{{ $geoTotals['total'] ?? '' }}</td>
-                                                    <td>{{ $geoTotals['equity'] ?? '' }}</td>
-                                                    <td>{{ $geoTotals['cash'] ?? '' }}</td>
+                                                    <td><span x-data="editableField('mainContent.assetAllocation.geographicTotals.name', '{{ addslashes($geoTotals['name'] ?? 'TOTAL') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $geoTotals['name'] ?? 'TOTAL' }}</span></td>
+                                                    @foreach (['total', 'equity', 'cash'] as $geoCol)
+                                                        <td><span x-data="editableField('mainContent.assetAllocation.geographicTotals.{{ $geoCol }}', '{{ $geoTotals[$geoCol] ?? '' }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $geoTotals[$geoCol] ?? '' }}</span></td>
+                                                    @endforeach
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1862,6 +1862,11 @@
             twoDecimals(value) {
                 const s = String(value).trim();
                 return /^-?\d*\.?\d+$/.test(s) ? Number(s).toFixed(2) : s;
+            },
+            // Geographic exposure zeros print as a dash, as the blade's $geoFmt does.
+            zeroDash(value) {
+                const s = String(value).trim();
+                return /^-?\d*\.?\d+$/.test(s) && Number(s) === 0 ? '-' : s;
             },
             fundName(value) {
                 const m = String(value).match(/^(.+?)\s*[—–-]\s*(CLASS\s+[A-Z][0-9]*)$/i);
