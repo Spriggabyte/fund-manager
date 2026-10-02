@@ -222,6 +222,15 @@ class FactsheetImporter extends AbstractExcelImporter
             $fund->last_distributions = $dist;
         }
 
+        // EQUITY INDICATOR dot count (filled of 10). The feed moves it month
+        // to month (818: 6 in the Aug 2026 export, 5 in Sept); the templates'
+        // `?? n` fallbacks only cover funds never imported since this mapping.
+        // ERR / blank / out-of-range values keep the stored count.
+        $equityIndicator = trim((string) ($data['EQUITY_INDICATOR'] ?? ''));
+        if (ctype_digit($equityIndicator) && (int) $equityIndicator <= ($fund->equity_indicator_total ?? 10)) {
+            $fund->equity_indicator_filled = (int) $equityIndicator;
+        }
+
         if (isset($data['TER_FOR_FUND_FINANCIAL_YEAR_END'])) {
             $this->updateTerFootnote($fund, $data);
         }

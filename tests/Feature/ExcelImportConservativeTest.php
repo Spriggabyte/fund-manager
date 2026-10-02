@@ -151,4 +151,37 @@ class ExcelImportConservativeTest extends TestCase
         );
         $this->assertSame('³ Net of fees and expenses', $fund->performance_table['footnotes'][0]);
     }
+
+    public function test_factsheet_import_maps_equity_indicator_dot_count(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-conservative']);
+
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['EQUITY_INDICATOR', '5'],
+        ], 'conservative-equity-indicator');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $this->assertSame(5, $fund->equity_indicator_filled);
+    }
+
+    public function test_factsheet_import_keeps_equity_indicator_when_feed_value_unusable(): void
+    {
+        $fund = Fund::factory()->create([
+            'template' => 'show-conservative',
+            'equity_indicator_filled' => 6,
+        ]);
+
+        foreach (['ERR', '', '11', 'six'] as $i => $value) {
+            $path = $this->makeXlsx([
+                ['Code', 'Value'],
+                ['EQUITY_INDICATOR', $value],
+            ], "conservative-equity-indicator-bad-{$i}");
+
+            (new FactsheetImporter)->import($fund, $path);
+
+            $this->assertSame(6, $fund->equity_indicator_filled, "EQUITY_INDICATOR '{$value}'");
+        }
+    }
 }

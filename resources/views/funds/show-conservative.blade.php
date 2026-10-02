@@ -712,10 +712,14 @@
             display: inline-block;
             width: 1.4mm;
             height: 1.31mm;
-            /* Bottom of the triangle sits ~0.6mm above the digit baseline. */
-            vertical-align: 0.55mm;
-            /* Reference gap between triangle and value is ~1mm. */
-            margin-right: 0.6mm;
+            /* Reviewer (2 Oct 2026): triangles slightly lower and further
+               from the numbers. The 1.55mm global-fixes triangle now stands on
+               the digit baseline, inside the 1.87mm cap height. Before, it sat
+               0.58mm above the baseline and poked 0.23mm over the caps. Chrome
+               snaps this offset to whole px, so 0.15mm only moved it 1px. The
+               ink gap to the digit is now ~1.3mm (was 0.7mm). */
+            vertical-align: 0;
+            margin-right: 1.2mm;
             overflow: visible;
         }
         td.change-cell .change-arrow-up { fill: #000; }
