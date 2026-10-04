@@ -326,8 +326,15 @@
             gap: 4.1mm;
         }
 
-        .two-col.top-row { margin-bottom: 5.2mm; }
-        .two-col.mid-row { margin-bottom: 3.8mm; }
+        /* WhatsApp 2 Oct 2026: page 1 ended too low (perf table foot
+           290.25mm; the 12-row table is two rows taller than 875's). Gaps
+           from geo TOTAL row, chart legend and last TOP 10 row to the next
+           heading's cap top were 6.20 / 5.41 / 5.94mm; now an even 5.14 /
+           5.15 / 5.15mm, table foot 288.13mm (fund 36's, card 444). Moves
+           are whole px (−4 / −1 / −3) so every table row keeps its pixel
+           phase and its cap centring. */
+        .two-col.top-row { margin-bottom: calc(5.2mm - 4px); }
+        .two-col.mid-row { margin-bottom: calc(3.8mm - 1px); }
         .two-col .col-left { flex: 0 0 69mm; min-width: 0; }
         .two-col .col-right { flex: 1 1 0; min-width: 0; }
 
@@ -586,7 +593,9 @@
         .top10-table .foord-table tbody tr:nth-child(9) td,
         .top10-table .foord-table tbody tr:nth-child(10) td { background-color: var(--row-grey-4); }
 
-        .top10-table { margin-bottom: 5mm; }
+        /* −3px: see .two-col.top-row. Collapses with the inner
+           .table-wrapper's 2.6mm, so this is the whole gap. */
+        .top10-table { margin-bottom: calc(5mm - 3px); }
 
         /* Performance table — column grid measured off the 875 reference
            (separators at 533/644/760/833/908/982/1056/1130 px @150 dpi):
@@ -990,6 +999,7 @@
             color: inherit;
             line-height: inherit;
             letter-spacing: inherit;
+            text-align: inherit;
         }
 
         .notification {
@@ -1351,12 +1361,19 @@
                                                     /* The stored change already carries the arrow glyph
                                                        ('▼ 2.4') — display only the number; the arrow is
                                                        drawn by the change-up/down ::before. Zero changes
-                                                       show no arrow (reference). */
+                                                       show no arrow (reference). The glyph sets the
+                                                       direction (a quick edit only rewrites `change`);
+                                                       changeDirection covers glyph-less values. */
                                                     $changeNumber = trim(str_replace(['▲', '▼'], '', (string) ($row['change'] ?? '')));
                                                     $isZeroChange = is_numeric($changeNumber) && (float) $changeNumber == 0.0;
-                                                    $changeClass = $isZeroChange ? '' : ((($row['changeDirection'] ?? '') === 'up') ? 'change-up' : ((($row['changeDirection'] ?? '') === 'down') ? 'change-down' : ''));
+                                                    $changeDir = str_contains((string) ($row['change'] ?? ''), '▲') ? 'up' : (str_contains((string) ($row['change'] ?? ''), '▼') ? 'down' : ($row['changeDirection'] ?? ''));
+                                                    $changeClass = $isZeroChange ? '' : ($changeDir === 'up' ? 'change-up' : ($changeDir === 'down' ? 'change-down' : ''));
                                                 @endphp
-                                                <span class="alloc-change {{ $changeClass }}">{{ $changeNumber }}</span>
+                                                <span class="alloc-change {{ $changeClass }}"
+                                                      x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes((string) ($row['change'] ?? '')) }}', 'changeArrow')"
+                                                      data-direction="{{ $row['changeDirection'] ?? '' }}"
+                                                      @click="editMode && startEdit()"
+                                                      :class="{ editable: editMode, 'change-up': allocChangeClass(value, $el.dataset.direction) === 'change-up', 'change-down': allocChangeClass(value, $el.dataset.direction) === 'change-down' }">{{ $changeNumber }}</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -1397,16 +1414,19 @@
                                                                   :class="editMode ? 'editable' : ''"
                                                                   x-text="value"></span>
                                                         </td>
-                                                        <td>{{ $geoFmt($row['total']) }}</td>
-                                                        <td>{{ $geoFmt($row['equity']) }}</td>
-                                                        <td>{{ $geoFmt($row['cash']) }}</td>
+                                                        @foreach (['total', 'equity', 'cash'] as $colKey)
+                                                            <td><span x-data="editableField('mainContent.assetAllocation.geographicExposure.{{ $rowIndex }}.{{ $colKey }}', '{{ addslashes((string) ($row[$colKey] ?? '')) }}', 'geoDash')"
+                                                                      @click="editMode && startEdit()"
+                                                                      :class="editMode ? 'editable' : ''">{{ $geoFmt($row[$colKey] ?? '') }}</span></td>
+                                                        @endforeach
                                                     </tr>
                                                 @endforeach
                                                 <tr class="total-row">
-                                                    <td>{{ $geoTotals['name'] ?? 'TOTAL' }}</td>
-                                                    <td>{{ $geoTotals['total'] ?? '' }}</td>
-                                                    <td>{{ $geoTotals['equity'] ?? '' }}</td>
-                                                    <td>{{ $geoTotals['cash'] ?? '' }}</td>
+                                                    @foreach (['name' => 'TOTAL', 'total' => '', 'equity' => '', 'cash' => ''] as $colKey => $colDefault)
+                                                        <td><span x-data="editableField('mainContent.assetAllocation.geographicTotals.{{ $colKey }}', '{{ addslashes((string) ($geoTotals[$colKey] ?? $colDefault)) }}')"
+                                                                  @click="editMode && startEdit()"
+                                                                  :class="editMode ? 'editable' : ''">{{ $geoTotals[$colKey] ?? $colDefault }}</span></td>
+                                                    @endforeach
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1855,8 +1875,42 @@
                     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                     .replace(/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/g,
                         '<span class="ref-link">$1</span>');
+            },
+            // Geographic exposure: zero prints as a dash, as the blade's $geoFmt.
+            geoDash(value) {
+                const s = String(value).trim();
+                return /^-?\d*\.?\d+$/.test(s) && Number(s) === 0 ? '-' : s;
+            },
+            // Asset allocation change: the number only — the triangle is the
+            // .alloc-change ::before, switched by allocChangeClass().
+            changeArrow(value) {
+                return String(value).replace(/[▲▼]/g, '').trim();
             }
         };
+        // Input normalisers, run before saving. A change can be typed as a
+        // signed figure ("-0.2", "+0.1", "0.1") and is stored the way the
+        // importer writes it ("▼ 0.2"). A zero is stored as "▲ 0.0" like the
+        // importer's: a bare "0.0" would be saved as the number 0 (and print
+        // "0"); zero prints without a triangle either way.
+        const editableParsers = {
+            changeArrow(value) {
+                const s = String(value).trim();
+                const m = s.match(/^([▲▼+-])?\s*(\d*\.?\d+)$/);
+                if (!m) return s;
+                const n = Number(m[2]);
+                if (m[1] === '▲' || m[1] === '▼') return m[1] + ' ' + n.toFixed(1);
+                return (m[1] === '-' ? '▼ ' : '▲ ') + n.toFixed(1);
+            }
+        };
+        // As the blade: the glyph sets the triangle, the stored
+        // changeDirection covers glyph-less values, zero gets none.
+        function allocChangeClass(value, fallbackDirection) {
+            const s = String(value);
+            const num = s.replace(/[▲▼]/g, '').trim();
+            if (/^-?\d*\.?\d+$/.test(num) && Number(num) === 0) return '';
+            const dir = s.includes('▲') ? 'up' : (s.includes('▼') ? 'down' : fallbackDirection);
+            return dir === 'up' ? 'change-up' : (dir === 'down' ? 'change-down' : '');
+        }
         function editableField(fieldPath, initialValue, formatter) {
             return {
                 fieldPath: fieldPath,
@@ -1871,7 +1925,7 @@
                         this.editing = true;
                         this.$nextTick(() => {
                             const span = this.$el;
-                            span.innerHTML = `<input type="text" class="edit-input" value="${this.value.replace(/"/g, '&quot;')}" />`;
+                            span.innerHTML = `<input type="text" class="edit-input" value="${String(this.value).replace(/"/g, '&quot;')}" />`;
                             const input = span.querySelector('.edit-input');
                             if (input) {
                                 input.focus();
@@ -1886,6 +1940,8 @@
                     }
                 },
                 async saveEdit() {
+                    const parse = this.formatter && editableParsers[this.formatter];
+                    if (parse) this.value = parse(this.value);
                     if (this.saving || this.value === this.originalValue) { this.cancelEdit(); return; }
                     this.saving = true;
                     try {
@@ -2002,6 +2058,7 @@
                 // whole px (up to 0.8px off the line end), a translate does not.
                 endLabelLayer.textContent = '';
                 const layerRect = endLabelLayer.getBoundingClientRect();
+                const labels = [];
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
                     if (meta.hidden) return;
@@ -2015,10 +2072,23 @@
                     probe.className = 'baseline-probe';
                     span.appendChild(probe);
                     endLabelLayer.appendChild(span);
-                    const probeRect = probe.getBoundingClientRect();
-                    const dx = lastPoint.x + 4 - (span.getBoundingClientRect().left - layerRect.left);
-                    const dy = lastPoint.y + middleToBaseline - (probeRect.bottom - layerRect.top);
-                    span.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+                    labels.push({
+                        span,
+                        dx: lastPoint.x + 4 - (span.getBoundingClientRect().left - layerRect.left),
+                        baseline: lastPoint.y + middleToBaseline,
+                        probeBottom: probe.getBoundingClientRect().bottom - layerRect.top,
+                    });
+                });
+
+                // WhatsApp 2 Oct: lines that finish close together printed
+                // their labels over each other (Sept: $ 235 on $ 210). The top
+                // label stays on its line end; a lower one moves down to the
+                // reference's tightest pitch, 2.26mm ($ 241 over $ 209 in Aug).
+                const minPitch = 2.26 * 96 / 25.4;
+                labels.sort((a, b) => a.baseline - b.baseline);
+                labels.forEach((l, i) => {
+                    if (i > 0) l.baseline = Math.max(l.baseline, labels[i - 1].baseline + minPitch);
+                    l.span.style.transform = 'translate(' + l.dx + 'px, ' + (l.baseline - l.probeBottom) + 'px)';
                 });
             }
         };

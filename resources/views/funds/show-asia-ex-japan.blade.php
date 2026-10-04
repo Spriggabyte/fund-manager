@@ -30,8 +30,10 @@
              - row 2 pairs a GEOGRAPHIC COUNTRY EXPOSURE pie beside the
                PORTFOLIO PERFORMANCE VS BENCHMARK chart, in place of
                878's grouped GEOGRAPHIC EQUITY EXPOSURE column chart
-             - the performance table's periods are 3 YRS / 1 YR /
-               6 MTHS / 3 MTHS, not 878's set
+             - the performance table's periods were 3 YRS / 1 YR /
+               6 MTHS / 3 MTHS; since the 2 Oct 2026 WhatsApp amend
+               they match 878's set (5 YRS / 3 YRS / 1 YR / YTD /
+               THIS MONTH)
            ===================================================== */
 
         /* Foord Brand Colors — greys measured from the published reference PDF.
@@ -540,16 +542,11 @@
         .top10-table { margin-bottom: 5.2mm; }
         .top10-table .foord-table { margin-top: 1.2mm; }
 
-        /* Performance table — name/cash/since-inception widths carried over
-           from the 878 grid; the six period columns (3 YRS … THIS MONTH)
-           corrected here. 878's CSS only set nth-child(4)-(7), leaving YTD
-           and THIS MONTH unset — table-layout: fixed then split the small
-           leftover width 50/50 between them, which was far too little for
-           "MONTH" and clipped it against the page edge. The 879 reference
-           (measured off its bbox layout) keeps these six columns close to
-           equal width, so all six are given explicit, near-equal widths
-           here, with a little extra on THIS MONTH so "MONTH" clears on its
-           own line. Re-tune in Task 10's mm pass if needed. */
+        /* Performance table — WhatsApp amend 2 Oct 2026: 5 YRS added and
+           6 MTHS / 3 MTHS removed, giving 878's period set (SINCE
+           INCEPTION / 5 YRS / 3 YRS / 1 YR / YTD / THIS MONTH), so the
+           column grid is 878's too: 9.02/8.96/8.72/8.78 for 5 YRS … YTD,
+           and THIS MONTH takes the remaining 11.35%. */
         .perf-table th {
             font-size: 8.03pt;
             line-height: 10.9pt;
@@ -568,12 +565,10 @@
         }
         .perf-table th:nth-child(2) { width: 14.03%; }
         .perf-table th:nth-child(3) { width: 15.12%; }
-        .perf-table th:nth-child(4) { width: 7.6%; }
-        .perf-table th:nth-child(5) { width: 7.4%; }
-        .perf-table th:nth-child(6) { width: 7.6%; }
-        .perf-table th:nth-child(7) { width: 7.4%; }
-        .perf-table th:nth-child(8) { width: 7.6%; }
-        .perf-table th:last-child { width: 9.23%; }
+        .perf-table th:nth-child(4) { width: 9.02%; }
+        .perf-table th:nth-child(5) { width: 8.96%; }
+        .perf-table th:nth-child(6) { width: 8.72%; }
+        .perf-table th:nth-child(7) { width: 8.78%; }
         .perf-table td {
             color: #000;
             font-size: 8.03pt;

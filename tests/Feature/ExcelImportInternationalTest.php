@@ -136,4 +136,109 @@ class ExcelImportInternationalTest extends TestCase
 
         $this->assertSame('$382.2 million', $fund->portfolio_size);
     }
+
+    /**
+     * Fund 37 as published for Aug 2026, before the Sept import.
+     */
+    private function trustWithPublishedLows(): Fund
+    {
+        return Fund::factory()->create([
+            'template' => 'show-international-trust',
+            'performance_table' => [
+                'rows' => [
+                    ['name' => 'Fund', '1yr' => 19.5],
+                    ['name' => 'Fund highest', 'sinceInception' => 47.3, '10yrs' => 41.9, '5yrs' => 41.9, '3yrs' => 41.9, '1yr' => 19.5],
+                    ['name' => 'Fund lowest', 'sinceInception' => -31.6, '10yrs' => -13.7, '5yrs' => -13.7, '3yrs' => -2.0, '1yr' => 19.5],
+                ],
+            ],
+        ]);
+    }
+
+    private function rollingRow(Fund $fund, string $name): array
+    {
+        return collect($fund->performance_table['rows'])->firstWhere('name', $name);
+    }
+
+    public function test_impossible_minus_100_lows_keep_the_stored_cells_and_the_one_year_return(): void
+    {
+        $fund = $this->trustWithPublishedLows();
+
+        // 874B export of 2 Oct 2026: every FOORD_LOWEST_* was -100.0.
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['FOORD_1Y_TO_D', '8.9'],
+            ['FOORD_HIGHEST_INCEPTION', '47.3'],
+            ['FOORD_HIGHEST_Y10', '41.9'],
+            ['FOORD_HIGHEST_Y5', '41.9'],
+            ['FOORD_HIGHEST_Y3', '41.9'],
+            ['FOORD_HIGHEST_Y1', '8.9'],
+            ['FOORD_LOWEST_INCEPTION', '-100.0'],
+            ['FOORD_LOWEST_Y10', '-100.0'],
+            ['FOORD_LOWEST_Y5', '-100.0'],
+            ['FOORD_LOWEST_Y3', '-100.0'],
+            ['FOORD_LOWEST_Y1', '-100.0'],
+        ], 'trust-lows-minus-100');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $lowest = $this->rollingRow($fund, 'Fund lowest');
+        $this->assertEquals(-31.6, $lowest['sinceInception']);
+        $this->assertEquals(-13.7, $lowest['10yrs']);
+        $this->assertEquals(-13.7, $lowest['5yrs']);
+        $this->assertEquals(-2.0, $lowest['3yrs']);
+        $this->assertEquals(8.9, $lowest['1yr']);
+
+        // The highest row passes the 1-year check and imports as sent.
+        $highest = $this->rollingRow($fund, 'Fund highest');
+        $this->assertEquals(8.9, $highest['1yr']);
+        $this->assertEquals(47.3, $highest['sinceInception']);
+    }
+
+    public function test_lows_from_another_series_keep_the_stored_cells(): void
+    {
+        $fund = $this->trustWithPublishedLows();
+
+        // 874B export for Aug 2026: the lows' 1-year cell (-3.5) is 880A's
+        // 1-year return, not the fund's 19.5.
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['FOORD_1Y_TO_D', '19.5'],
+            ['FOORD_LOWEST_INCEPTION', '-33.5'],
+            ['FOORD_LOWEST_Y10', '-33.5'],
+            ['FOORD_LOWEST_Y5', '-33.5'],
+            ['FOORD_LOWEST_Y3', '-6.3'],
+            ['FOORD_LOWEST_Y1', '-3.5'],
+        ], 'trust-lows-off-series');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $lowest = $this->rollingRow($fund, 'Fund lowest');
+        $this->assertEquals(-31.6, $lowest['sinceInception']);
+        $this->assertEquals(-13.7, $lowest['10yrs']);
+        $this->assertEquals(-13.7, $lowest['5yrs']);
+        $this->assertEquals(-2.0, $lowest['3yrs']);
+        $this->assertEquals(19.5, $lowest['1yr']);
+    }
+
+    public function test_consistent_lows_import_from_the_feed(): void
+    {
+        $fund = $this->trustWithPublishedLows();
+
+        // 874B export for June 2026, wired to the fund's own series.
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['FOORD_1Y_TO_D', '14.1'],
+            ['FOORD_LOWEST_INCEPTION', '-31.6'],
+            ['FOORD_LOWEST_Y10', '-13.7'],
+            ['FOORD_LOWEST_Y5', '-13.7'],
+            ['FOORD_LOWEST_Y3', '-5.1'],
+            ['FOORD_LOWEST_Y1', '14.1'],
+        ], 'trust-lows-consistent');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $lowest = $this->rollingRow($fund, 'Fund lowest');
+        $this->assertEquals(-5.1, $lowest['3yrs']);
+        $this->assertEquals(14.1, $lowest['1yr']);
+    }
 }

@@ -1862,8 +1862,6 @@ class FactsheetImporter extends AbstractExcelImporter
 
         $fundRow = ['name' => 'Fund'];
         $benchmarkRow = ['name' => 'Benchmark'];
-        $highestRow = ['name' => 'Fund highest'];
-        $lowestRow = ['name' => 'Fund lowest'];
 
         foreach ($periods as $excelKey => $jsonKey) {
             $val = $data["FOORD_{$excelKey}"] ?? null;
@@ -1876,22 +1874,9 @@ class FactsheetImporter extends AbstractExcelImporter
             $fundRow['cashValue'] = $data['FOORD_CASH_VALUE'];
         }
 
-        // Highest/lowest rows
-        $hlPeriods = [
-            'Y1' => '1yr', 'Y2' => '2yrs', 'Y3' => '3yrs', 'Y5' => '5yrs',
-            'Y7' => '7yrs', 'Y10' => '10yrs', 'Y15' => '15yrs',
-            'Y20' => '20yrs', 'Y25' => '25yrs', 'INCEPTION' => 'sinceInception',
-        ];
-        foreach ($hlPeriods as $excelKey => $jsonKey) {
-            $hVal = $data["FOORD_HIGHEST_{$excelKey}"] ?? null;
-            $lVal = $data["FOORD_LOWEST_{$excelKey}"] ?? null;
-            if ($hVal !== null && $hVal !== '') {
-                $highestRow[$jsonKey] = $this->toNumber($hVal);
-            }
-            if ($lVal !== null && $lVal !== '') {
-                $lowestRow[$jsonKey] = $this->toNumber($lVal);
-            }
-        }
+        $storedRows = collect($fund->performance_table['rows'] ?? [])->keyBy('name');
+        $highestRow = $this->rollingReturnRow('Fund highest', 'FOORD_HIGHEST_', $data, $fundRow['1yr'] ?? null, $storedRows->get('Fund highest', []));
+        $lowestRow = $this->rollingReturnRow('Fund lowest', 'FOORD_LOWEST_', $data, $fundRow['1yr'] ?? null, $storedRows->get('Fund lowest', []));
 
         // Benchmark (COMP_1)
         foreach ($periods as $excelKey => $jsonKey) {
@@ -1995,6 +1980,50 @@ class FactsheetImporter extends AbstractExcelImporter
         }
 
         $fund->performance_table = $performanceTable;
+    }
+
+    /**
+     * A "Fund highest" / "Fund lowest" row: the highest or lowest actual
+     * 12-month return achieved in each period. A one-year period holds a
+     * single 12-month window, so the row's 1-year cell must equal the fund's
+     * 1-year return, as it does on every correctly wired feed. The 874
+     * export has failed that check since July 2026: its FOORD_LOWEST_* track
+     * another series (Y1–Y3 equal 880A's), and on 2 Oct 2026 they were -100.0
+     * throughout, a total loss no 12-month window can show. A row that fails
+     * the check, and any value at or below -100, keeps the stored cell; the
+     * 1-year cell takes the fund's own 1-year return.
+     */
+    private function rollingReturnRow(string $name, string $prefix, array $data, int|float|null $fundOneYear, array $stored): array
+    {
+        $periods = [
+            'Y1' => '1yr', 'Y2' => '2yrs', 'Y3' => '3yrs', 'Y5' => '5yrs',
+            'Y7' => '7yrs', 'Y10' => '10yrs', 'Y15' => '15yrs',
+            'Y20' => '20yrs', 'Y25' => '25yrs', 'INCEPTION' => 'sinceInception',
+        ];
+
+        $feed = [];
+        foreach ($periods as $excelKey => $jsonKey) {
+            $val = $data["{$prefix}{$excelKey}"] ?? null;
+            if ($val !== null && $val !== '') {
+                $feed[$jsonKey] = $this->toNumber($val);
+            }
+        }
+
+        $offSeries = $fundOneYear !== null && isset($feed['1yr'])
+            && round($feed['1yr'], 1) !== round($fundOneYear, 1);
+
+        $row = ['name' => $name];
+        foreach ($feed as $jsonKey => $value) {
+            if (! $offSeries && $value > -100) {
+                $row[$jsonKey] = $value;
+            } elseif ($jsonKey === '1yr' && $fundOneYear !== null) {
+                $row[$jsonKey] = $fundOneYear;
+            } elseif (isset($stored[$jsonKey]) && $stored[$jsonKey] > -100) {
+                $row[$jsonKey] = $stored[$jsonKey];
+            }
+        }
+
+        return $row;
     }
 
     private function mapTotalInvestmentCharge(Fund $fund, array $data): void

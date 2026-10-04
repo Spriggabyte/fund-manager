@@ -1958,7 +1958,29 @@
                 Highcharts.chart('rollingChart', {
                     // Reference plot top sits ~10mm below the heading (ours was
                     // 5mm) and the x labels ~1.5mm under the axis foot.
-                    chart: { type: 'column', backgroundColor: 'transparent', spacing: [19, 4, 4, 0], animation: false },
+                    chart: {
+                        type: 'column', backgroundColor: 'transparent', spacing: [19, 4, 4, 0], animation: false,
+                        events: {
+                            // Abutting bars drawn as separate shapes are each
+                            // anti-aliased, so PDF viewers show light hairline
+                            // seams between them (94 of 116 joins at 150dpi).
+                            // Redraw them as ONE path — a single fill, like the
+                            // reference's — and hide the per-point shapes.
+                            render: function () {
+                                const series = this.series[0];
+                                if (this.mergedBars) this.mergedBars.destroy();
+                                const d = [];
+                                series.points.forEach(p => {
+                                    if (!p.graphic) return;
+                                    d.push(p.graphic.element.getAttribute('d'));
+                                    p.graphic.hide();
+                                });
+                                this.mergedBars = this.renderer.path()
+                                    .attr({ d: d.join(' '), fill: series.color })
+                                    .add(series.group);
+                            },
+                        },
+                    },
                     title: { text: null },
                     xAxis: {
                         categories: rollingData.map(d => d.date),
@@ -1990,7 +2012,14 @@
                     legend: { enabled: false },
                     tooltip: { enabled: false },
                     plotOptions: {
-                        column: { pointPadding: 0, groupPadding: 0.02, borderWidth: 0 },
+                        // Bars abut, as in the reference. Highcharts rounds each
+                        // bar's left and right edge to whole px separately, so any
+                        // groupPadding (0.02 was ~0.03px here) opens a 1px white
+                        // gap wherever a .5 boundary falls inside the sliver: 8
+                        // "missing" bars on the 130-point series (WhatsApp 4 Oct).
+                        // Square tops as in the reference (Highcharts 11 rounds
+                        // column corners by default, notching neighbouring bars).
+                        column: { pointPadding: 0, groupPadding: 0, borderWidth: 0, borderRadius: 0 },
                         series: { animation: false },
                     },
                     series: [{ name: 'Fund', data: values, color: colors.naartjie }],

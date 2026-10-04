@@ -1181,6 +1181,7 @@
             font-family: inherit; font-size: inherit; font-weight: inherit;
             color: inherit; line-height: inherit; letter-spacing: inherit;
         }
+        .structure-table td:not(:first-child) .edit-input { text-align: right; }
         .notification {
             position: fixed; top: 1rem; right: 1rem; z-index: 50;
             transform: translateX(100%); transition: transform 0.3s ease-in-out;
@@ -1473,17 +1474,15 @@
                                 <tbody>
                                     @foreach ($structure['rows'] as $rowIndex => $row)
                                         @php
-                                            $dir = $row['changeDirection'] ?? '';
                                             $raw = trim((string) ($row['change'] ?? ''));
-                                            $arrowClass = $dir === 'up' ? 'change-arrow-up' : ($dir === 'down' ? 'change-arrow-down' : '');
                                             if (preg_match('/^([▲▼])\s*(.*)$/u', $raw, $cm)) {
                                                 [$arrowChar, $numPart] = [$cm[1], $cm[2]];
                                             } else {
                                                 [$arrowChar, $numPart] = ['', $raw];
                                             }
-                                            if ($arrowChar && ! $arrowClass) {
-                                                $arrowClass = $arrowChar === '▲' ? 'change-arrow-up' : 'change-arrow-down';
-                                            }
+                                            // The triangle follows the figure's own glyph, so a change
+                                            // edited in edit mode never leaves changeDirection stale.
+                                            $arrowClass = $arrowChar === '▲' ? 'change-arrow-up' : 'change-arrow-down';
                                             // Trello 458: note ³ (TIPS) hangs off the ILB row. Rows
                                             // imported before the importer named it get it here.
                                             $rowName = (string) $row['name'];
@@ -1493,20 +1492,20 @@
                                         @endphp
                                         <tr>
                                             <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($rowName) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $normaliseSupers(e($rowName)) !!}</span></td>
-                                            <td>{{ $row['sa'] ?? '' }}</td>
-                                            <td>{{ $row['foreign'] ?? '' }}</td>
-                                            <td>{{ $row['total'] ?? '' }}</td>
+                                            @foreach (['sa', 'foreign', 'total'] as $colKey)
+                                                <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.{{ $colKey }}', '{{ addslashes($row[$colKey] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row[$colKey] ?? '' }}</span></td>
+                                            @endforeach
                                             <td class="change-cell">
-                                                @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span><span class="change-value">{{ $numPart }}</span>@else{{ $numPart }}@endif
+                                                <span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes($raw) }}', 'changeArrow')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">@if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span><span class="change-value">{{ $numPart }}</span>@else{{ $numPart }}@endif</span>
                                             </td>
                                         </tr>
                                     @endforeach
                                     @if(isset($structure['total']))
                                         <tr class="total-row">
                                             <td>{{ $structure['total']['name'] ?? 'TOTAL' }}</td>
-                                            <td>{{ $structure['total']['sa'] ?? '' }}</td>
-                                            <td>{{ $structure['total']['foreign'] ?? '' }}</td>
-                                            <td>{{ $structure['total']['total'] ?? '' }}</td>
+                                            @foreach (['sa', 'foreign', 'total'] as $colKey)
+                                                <td><span x-data="editableField('mainContent.assetAllocation.total.{{ $colKey }}', '{{ addslashes($structure['total'][$colKey] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $structure['total'][$colKey] ?? '' }}</span></td>
+                                            @endforeach
                                             <td></td>
                                         </tr>
                                     @endif
@@ -1514,7 +1513,7 @@
                                         <tr class="fx-hedge-row">
                                             <td>Foreign currency hedge</td>
                                             <td></td>
-                                            <td>{{ $structure['foreignCurrencyHedge'] }}</td>
+                                            <td><span x-data="editableField('mainContent.assetAllocation.foreignCurrencyHedge', '{{ addslashes($structure['foreignCurrencyHedge']) }}', 'bracketNegative')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $structure['foreignCurrencyHedge'] }}</span></td>
                                             <td></td>
                                             <td></td>
                                         </tr>
@@ -1523,7 +1522,7 @@
                                         <tr class="fx-exposure-row">
                                             <td>Foreign currency exposure</td>
                                             <td></td>
-                                            <td>{{ $structure['foreignCurrencyExposure'] }}</td>
+                                            <td><span x-data="editableField('mainContent.assetAllocation.foreignCurrencyExposure', '{{ addslashes($structure['foreignCurrencyExposure']) }}', 'bracketNegative')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $structure['foreignCurrencyExposure'] }}</span></td>
                                             <td></td>
                                             <td></td>
                                         </tr>
@@ -2081,6 +2080,36 @@
             },
             assetName(value) {
                 return String(value).replace(/\s*\(([^)]+)\)\s*$/, ' <span class="row-limit">($1)</span>');
+            },
+            // "▲ 0.1" / "▼ 0.2" — the triangle the blade draws, then the figure.
+            changeArrow(value) {
+                const m = String(value).trim().match(/^([▲▼])\s*(.*)$/);
+                if (!m) return String(value).trim();
+                return '<span class="' + (m[1] === '▲' ? 'change-arrow-up' : 'change-arrow-down') + '">' + m[1] + '</span>'
+                    + '<span class="change-value">' + m[2] + '</span>';
+            }
+        };
+        // Input normalisers, run before saving. A change is typed as a signed
+        // figure ("-11.3", "+0.2", "0.9") and stored the way the importer
+        // writes it ("▼ 11.3"), so the triangle always follows the sign. A
+        // signed zero keeps its triangle (Foord prints "▼ 0.0" for a small
+        // fall that rounds to nil); an unsigned zero is no change, "-" (the
+        // server would store a bare "0.0" as the number 0).
+        const editableParsers = {
+            changeArrow(value) {
+                const s = String(value).trim();
+                const m = s.match(/^([▲▼+\-−])?\s*(\d*\.?\d+)$/);
+                if (!m) return s;
+                const n = Number(m[2]).toFixed(1);
+                if (m[1] === '▲' || m[1] === '+') return '▲ ' + n;
+                if (m[1] === '▼' || m[1] === '-' || m[1] === '−') return '▼ ' + n;
+                return Number(m[2]) === 0 ? '-' : '▲ ' + n;
+            },
+            // The FX hedge prints negatives in brackets: "-6" is stored as "(6)".
+            bracketNegative(value) {
+                const s = String(value).trim();
+                const m = s.match(/^[\-−]\s*(\d*\.?\d+)$/);
+                return m ? '(' + m[1] + ')' : s;
             }
         };
         function editableField(fieldPath, initialValue, formatter) {
@@ -2112,6 +2141,8 @@
                     }
                 },
                 async saveEdit() {
+                    const parse = this.formatter && editableParsers[this.formatter];
+                    if (parse) this.value = parse(this.value);
                     if (this.saving || this.value === this.originalValue) { this.cancelEdit(); return; }
                     this.saving = true;
                     try {

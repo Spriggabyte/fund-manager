@@ -1401,9 +1401,9 @@
                                         @else
                                             <tr>
                                                 <td>{{ $row['name'] }}@if(!empty($row['sup']))<sup>{{ $row['sup'] }}</sup>@endif</td>
-                                                <td><span x-data="editableField('mainContent.assetAllocation.portfolioStatistics.rows.{{ $rowIndex }}.fund', '{{ addslashes($row['fund'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['fund'] ?? '' }}</span></td>
-                                                <td><span x-data="editableField('mainContent.assetAllocation.portfolioStatistics.rows.{{ $rowIndex }}.benchmark', '{{ addslashes($row['benchmark'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['benchmark'] ?? '' }}</span></td>
-                                                <td><span x-data="editableField('mainContent.assetAllocation.portfolioStatistics.rows.{{ $rowIndex }}.relative', '{{ addslashes($row['relative'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['relative'] ?? '' }}</span></td>
+                                                <td><span x-data="editableField('mainContent.assetAllocation.portfolioStatistics.rows.{{ $rowIndex }}.fund', '{{ addslashes($fmt($row['fund'] ?? '', 2)) }}', 'twoDecimals')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row['fund'] ?? '', 2) }}</span></td>
+                                                <td><span x-data="editableField('mainContent.assetAllocation.portfolioStatistics.rows.{{ $rowIndex }}.benchmark', '{{ addslashes($fmt($row['benchmark'] ?? '', 2)) }}', 'twoDecimals')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row['benchmark'] ?? '', 2) }}</span></td>
+                                                <td><span x-data="editableField('mainContent.assetAllocation.portfolioStatistics.rows.{{ $rowIndex }}.relative', '{{ addslashes($fmt($row['relative'] ?? '', 2)) }}', 'twoDecimals')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row['relative'] ?? '', 2) }}</span></td>
                                             </tr>
                                         @endif
                                     @endforeach

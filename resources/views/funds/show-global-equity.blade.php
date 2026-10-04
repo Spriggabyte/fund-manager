@@ -531,20 +531,23 @@
             padding: 1.3mm 0.5mm;
             vertical-align: bottom;
         }
-        /* Name column widened so "MSCI AC World Index" holds one line
-           (877 reference). */
+        /* Column grid = 877 R/B/R1 reference (Aug 2026), cell edges within
+           0.5mm: name 30.8, cash 17.4, since inception 18.7, 10/5/3 yrs
+           11.5/11.6/11.1, 1 yr/YTD 10.8, THIS MONTH 14.1mm. The old 24% name
+           column left THIS MONTH 11.1mm and "MONTH" (10.8mm) clipped its H
+           (WhatsApp 2 Oct). Name keeps ~0.9mm over "MSCI AC World Index". */
         .perf-table th:first-child {
             text-align: left;
-            width: 24%;
+            width: 22.5%;
             padding-left: 1.5mm;
         }
-        .perf-table th:nth-child(2) { width: 12.6%; }
-        .perf-table th:nth-child(3) { width: 13.2%; }
+        .perf-table th:nth-child(2) { width: 12.7%; }
+        .perf-table th:nth-child(3) { width: 13.7%; }
         .perf-table th:nth-child(4) { width: 8.4%; }
         .perf-table th:nth-child(5) { width: 8.5%; }
-        .perf-table th:nth-child(6) { width: 8.4%; }
-        .perf-table th:nth-child(7) { width: 8.4%; }
-        .perf-table th:nth-child(8) { width: 8.4%; }
+        .perf-table th:nth-child(6) { width: 8.1%; }
+        .perf-table th:nth-child(7) { width: 7.9%; }
+        .perf-table th:nth-child(8) { width: 7.9%; }
         .perf-table td {
             color: #000;
             font-size: 8pt;
