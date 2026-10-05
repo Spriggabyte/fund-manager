@@ -728,6 +728,33 @@
             height: 100% !important;
         }
 
+        /* WhatsApp 5 Oct: the end-of-line cash values are HTML over the
+           canvas so they print as vector text in the series colour (fund 37
+           card 451). Drawn into the canvas they were part of a ~190 dpi
+           bitmap and printed soft and paler than the lines. endValuePlugin
+           positions the spans. */
+        .chart-end-labels {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .chart-end-labels span {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 7.5pt;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+        .chart-end-labels .baseline-probe {
+            display: inline-block;
+            width: 0;
+            height: 0;
+        }
+
         .chart-ytitle {
             position: absolute;
             left: -6.2mm; /* QC card 291: caption ~0.9mm off the axis */
@@ -1491,6 +1518,7 @@
                                     <div class="chart-wrapper">
                                         <div class="chart-ytitle">Cash Value<sup>2</sup> (R&rsquo;000)</div>
                                         <canvas id="performanceChart"></canvas>
+                                        <div class="chart-end-labels" aria-hidden="true"></div>
                                     </div>
                                     {{-- Legend colours per the 875 reference: Fund red, US inflation
                                          dark navy, World equities steel blue, World bonds light grey --}}
@@ -1992,17 +2020,26 @@
             return monthNames[parseInt(m[2], 10) - 1] + ' ' + m[1].slice(-2);
         };
 
-        // End value annotation plugin
+        // End value annotation plugin. WhatsApp 5 Oct: the labels are spans
+        // in .chart-end-labels (vector text in the PDF), each on the
+        // baseline the canvas text used (3px above the line end).
+        const endLabelLayer = document.querySelector('#performanceChart + .chart-end-labels');
         const endValuePlugin = {
             id: 'endValueAnnotation',
             afterDraw(chart) {
-                const { ctx } = chart;
+                if (!endLabelLayer) return;
                 // Reference prints the end-of-line cash values at body size
                 // (~7.5pt) — card 251. At that size neighbouring series
                 // (US inflation / World bonds) would collide, so the labels
                 // are spread apart top-to-bottom, keeping their order.
                 const fontPx = 10;
                 const minGap = fontPx + 1;
+
+                // Spans are laid out at the layer's origin and moved with a
+                // transform: a fractional `top` snaps the text baseline to a
+                // whole px, a translate does not.
+                endLabelLayer.textContent = '';
+                const layerRect = endLabelLayer.getBoundingClientRect();
                 const labels = [];
                 chart.data.datasets.forEach((dataset, i) => {
                     const meta = chart.getDatasetMeta(i);
@@ -2010,27 +2047,25 @@
                     const lastPoint = meta.data[meta.data.length - 1];
                     if (!lastPoint) return;
                     const lastValue = dataset.data[dataset.data.length - 1];
+                    const span = document.createElement('span');
+                    span.textContent = 'R ' + Math.round(lastValue).toLocaleString();
+                    span.style.color = dataset.labelColor || dataset.borderColor;
+                    const probe = document.createElement('i');
+                    probe.className = 'baseline-probe';
+                    span.appendChild(probe);
+                    endLabelLayer.appendChild(span);
                     labels.push({
-                        text: 'R ' + Math.round(lastValue).toLocaleString(),
-                        color: dataset.labelColor || dataset.borderColor,
-                        x: lastPoint.x + 4,
-                        y: lastPoint.y - 3,
+                        span,
+                        dx: lastPoint.x + 4 - (span.getBoundingClientRect().left - layerRect.left),
+                        baseline: lastPoint.y - 3,
+                        probeBottom: probe.getBoundingClientRect().bottom - layerRect.top,
                     });
                 });
-                labels.sort((a, b) => a.y - b.y);
-                for (let i = 1; i < labels.length; i++) {
-                    if (labels[i].y - labels[i - 1].y < minGap) {
-                        labels[i].y = labels[i - 1].y + minGap;
-                    }
-                }
-                ctx.save();
-                ctx.font = `500 ${fontPx}px Avenir Next, Lato, sans-serif`;
-                ctx.textAlign = 'left';
-                labels.forEach(l => {
-                    ctx.fillStyle = l.color;
-                    ctx.fillText(l.text, l.x, l.y);
+                labels.sort((a, b) => a.baseline - b.baseline);
+                labels.forEach((l, i) => {
+                    if (i > 0) l.baseline = Math.max(l.baseline, labels[i - 1].baseline + minGap);
+                    l.span.style.transform = 'translate(' + l.dx + 'px, ' + (l.baseline - l.probeBottom) + 'px)';
                 });
-                ctx.restore();
             }
         };
 

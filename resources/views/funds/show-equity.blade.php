@@ -426,6 +426,33 @@
         .chart-wrapper { position: relative; }
         canvas { display: block; width: 100%; }
 
+        /* WhatsApp 5 Oct: the PORTFOLIO end-of-line cash values are HTML over
+           the canvas so they print as vector text in the series colour, like
+           the reference (AvenirNext-Medium 6.75pt). Drawn into the canvas they
+           were part of a ~190 dpi bitmap and printed soft. endLabelPlugin
+           positions the spans (fund 37 card 451 pattern). */
+        .chart-end-labels {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .chart-end-labels span {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-family: 'Avenir Next', 'Lato', sans-serif;
+            font-size: 9px;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+        .chart-end-labels .baseline-probe {
+            display: inline-block;
+            width: 0;
+            height: 0;
+        }
+
         /* ── Monthly Chart Legend ── */
         .monthly-legend {
             display: flex;
@@ -1055,6 +1082,7 @@
                             <h3 class="section-heading">PORTFOLIO PERFORMANCE VS BENCHMARK</h3>
                             <div class="chart-wrapper">
                                 <canvas id="portfolioChart" style="height: 48mm;"></canvas>
+                                <div class="chart-end-labels" aria-hidden="true"></div>
                             </div>
                         </div>
                     @endif
@@ -1694,10 +1722,14 @@
 
         // Annotation plugin for end-of-line labels. Labels are nudged apart
         // when the series converge (the log scale squeezes them together).
+        // WhatsApp 5 Oct: the labels are spans in .chart-end-labels (vector
+        // text in the PDF), on the baseline the canvas text used.
         const endLabelPlugin = {
             id: 'endLabels',
             afterDraw(chart) {
                 const { ctx: c, data } = chart;
+                const layer = chart.canvas.parentNode.querySelector('.chart-end-labels');
+                if (!layer) return;
                 const MIN_GAP = 9;
                 const labels = data.datasets.map((ds, i) => {
                     const vals = ds.data;
@@ -1719,13 +1751,33 @@
                         labels[i].y += shift;
                     }
                 }
+                // Each label's y is the middle of its em box (the canvas used
+                // textBaseline 'middle'); the gap between the 'middle' and
+                // 'alphabetic' ink ascents converts it to the baseline.
                 c.save();
                 c.font = "500 9px 'Avenir Next', Lato, sans-serif";
-                c.textAlign = 'left';
-                c.textBaseline = 'middle';
+                // Spans are laid out at the layer's origin and moved with a
+                // transform: a fractional `top` snaps the text baseline to a
+                // whole px, a translate does not.
+                layer.textContent = '';
+                const layerRect = layer.getBoundingClientRect();
+                const canvasRect = chart.canvas.getBoundingClientRect();
                 labels.forEach(l => {
-                    c.fillStyle = l.color;
-                    c.fillText(l.text, l.x, l.y);
+                    c.textBaseline = 'alphabetic';
+                    const ascAlpha = c.measureText(l.text).actualBoundingBoxAscent;
+                    c.textBaseline = 'middle';
+                    const ascMiddle = c.measureText(l.text).actualBoundingBoxAscent;
+                    const baseline = canvasRect.top - layerRect.top + l.y - ascMiddle + ascAlpha;
+                    const span = document.createElement('span');
+                    span.textContent = l.text;
+                    span.style.color = l.color;
+                    const probe = document.createElement('i');
+                    probe.className = 'baseline-probe';
+                    span.appendChild(probe);
+                    layer.appendChild(span);
+                    const dx = canvasRect.left - layerRect.left + l.x - (span.getBoundingClientRect().left - layerRect.left);
+                    const dy = baseline - (probe.getBoundingClientRect().bottom - layerRect.top);
+                    span.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
                 });
                 c.restore();
             }
