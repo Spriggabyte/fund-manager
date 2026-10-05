@@ -69,6 +69,34 @@ class FundDataSyncTest extends TestCase
         $this->assertSame('replacement with more bytes', Storage::disk('local')->get('fund-data/2026-06/817/817A_FACTSHEET.xlsx'));
     }
 
+    public function test_redownloads_same_size_file_when_remote_is_newer(): void
+    {
+        // Foord's 2 Oct 821B2 re-send changed EQUITY_INDICATOR "10" → "9"
+        // with an identical byte count, so a size-only check skipped it.
+        Storage::disk('sftp')->put('2026-06/817/817A_FACTSHEET.xlsx', 'EQ=9');
+        Storage::disk('local')->put('fund-data/2026-06/817/817A_FACTSHEET.xlsx', 'EQ=8');
+        touch(Storage::disk('local')->path('fund-data/2026-06/817/817A_FACTSHEET.xlsx'), strtotime('2026-10-02 10:27'));
+        touch(Storage::disk('sftp')->path('2026-06/817/817A_FACTSHEET.xlsx'), strtotime('2026-10-02 13:22'));
+
+        $report = $this->sync();
+
+        $this->assertSame(['fund-data/2026-06/817/817A_FACTSHEET.xlsx'], $report['downloaded']);
+        $this->assertSame('EQ=9', Storage::disk('local')->get('fund-data/2026-06/817/817A_FACTSHEET.xlsx'));
+    }
+
+    public function test_skips_same_size_file_when_local_copy_is_newer(): void
+    {
+        Storage::disk('sftp')->put('2026-06/817/817A_FACTSHEET.xlsx', 'same-bytes');
+        Storage::disk('local')->put('fund-data/2026-06/817/817A_FACTSHEET.xlsx', 'same-bytes');
+        touch(Storage::disk('sftp')->path('2026-06/817/817A_FACTSHEET.xlsx'), strtotime('2026-10-02 10:27'));
+        touch(Storage::disk('local')->path('fund-data/2026-06/817/817A_FACTSHEET.xlsx'), strtotime('2026-10-02 13:22'));
+
+        $report = $this->sync();
+
+        $this->assertSame([], $report['downloaded']);
+        $this->assertSame(['fund-data/2026-06/817/817A_FACTSHEET.xlsx'], $report['skipped']);
+    }
+
     public function test_month_filter_limits_sync_to_that_month(): void
     {
         Storage::disk('sftp')->put('2026-05/817/817A_FACTSHEET.xlsx', 'may');

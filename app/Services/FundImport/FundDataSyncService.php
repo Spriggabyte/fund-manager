@@ -3,6 +3,7 @@
 namespace App\Services\FundImport;
 
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\StorageAttributes;
 use Throwable;
 
 /**
@@ -11,8 +12,10 @@ use Throwable;
  * Remote layout: {YYYY-MM}/{fund_code}/*.xlsx (relative to the sftp disk root).
  * Local layout:  fund-data/{YYYY-MM}/{fund_code}/*.xlsx on the local disk.
  *
- * Idempotent: a file is only downloaded when missing locally or when the
- * remote size differs (handles replaced/late-arriving exports on re-runs).
+ * Idempotent: a file is only downloaded when missing locally, when the
+ * remote size differs, or when the remote copy is newer than the local one
+ * (handles replaced/late-arriving exports on re-runs — a re-send can keep
+ * the exact byte count, e.g. 821B2 Sept EQUITY_INDICATOR "10" → "9").
  */
 class FundDataSyncService
 {
@@ -90,11 +93,20 @@ class FundDataSyncService
             $report['months'][] = $month;
 
             foreach ($remote->directories($month) as $fundDir) {
-                foreach ($remote->files($fundDir) as $remotePath) {
+                // One SFTP listing per folder carries each file's size and
+                // mtime, instead of a stat round-trip per file.
+                $files = $remote->listContents($fundDir, false)
+                    ->filter(fn (StorageAttributes $attributes): bool => $attributes->isFile())
+                    ->sortByPath();
+
+                foreach ($files as $file) {
+                    $remotePath = $file->path();
                     $target = self::LOCAL_ROOT."/{$month}/".basename($fundDir).'/'.basename($remotePath);
 
                     try {
-                        if ($local->exists($target) && $local->size($target) === $remote->size($remotePath)) {
+                        if ($local->exists($target)
+                            && $local->size($target) === ($file->fileSize() ?? $remote->size($remotePath))
+                            && ($file->lastModified() ?? $remote->lastModified($remotePath)) <= $local->lastModified($target)) {
                             $report['skipped'][] = $target;
 
                             continue;
