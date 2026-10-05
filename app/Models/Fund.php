@@ -543,7 +543,9 @@ class Fund extends Model
             if ($i === count($keys) - 1) {
                 if ($value === '' || $value === null) {
                     unset($current[$key]);
-                } elseif (is_numeric($value) && ! in_array($key, $stringFields)) {
+                } elseif (is_numeric($value) && ! in_array($key, $stringFields)
+                    // An explicit "+" is printed ("+2.0" in the fee examples), so keep it.
+                    && ! (is_string($value) && str_starts_with(ltrim($value), '+'))) {
                     $current[$key] = is_float($value + 0) ? (float) $value : (int) $value;
                 } else {
                     $current[$key] = $value;

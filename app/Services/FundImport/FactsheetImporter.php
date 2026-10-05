@@ -1505,8 +1505,10 @@ class FactsheetImporter extends AbstractExcelImporter
             return sprintf('(%s%s%%)', $change >= 0 ? '+' : '', $change + 0);
         }
 
-        // The re-exported August 826 feed signs with a space ("+ 13.5%").
+        // The re-exported August 826 feed signs with a space ("+ 13.5%");
+        // the September export doubles the suffix on some buckets ("+5.8%%").
         $change = preg_replace('/^([+-])\s+/', '$1', trim((string) $change));
+        $change = preg_replace('/%{2,}/', '%', $change);
 
         return str_starts_with($change, '(') ? $change : "({$change})";
     }

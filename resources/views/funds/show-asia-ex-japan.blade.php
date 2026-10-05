@@ -1426,7 +1426,7 @@
                                                                   :class="editMode ? 'editable' : ''"
                                                                   x-text="value"></span>
                                                         </td>
-                                                        <td>{{ $fmt($row['percentage'] ?? '') }}</td>
+                                                        <td><span x-data="editableField('mainContent.topInvestments.rows.{{ $rowIndex }}.percentage', '{{ addslashes($fmt($row['percentage'] ?? '')) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row['percentage'] ?? '') }}</span></td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -1908,6 +1908,12 @@
                 }
                 return m[1].toUpperCase()
                     + '<span class="class-suffix"> — ' + m[2].toUpperCase() + '</span>';
+            },
+            // Top 10 % OF FUND cells print one decimal like the blade's $fmt
+            // ("5" → "5.0"); anything non-numeric passes through.
+            oneDecimal(value) {
+                const s = String(value).trim();
+                return /^-?\d*\.?\d+$/.test(s) ? Number(s).toFixed(1) : s;
             },
             headingSuffix(value) {
                 return intlFormatters.supDigits(intlFormatters.supInsideBracket(value)

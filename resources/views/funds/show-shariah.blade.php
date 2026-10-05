@@ -1079,7 +1079,8 @@
            The Shariah block and the footer sit at the SAME y on both class
            references (152.8mm and 248.3mm) even though the fee tables above
            them end 8mm apart, so they are placed rather than flowed. The TIC
-           section still flows under the fee-rates table. */
+           section still flows under the fee-rates table, and the Shariah
+           block drops below 152.8mm when that flow runs long (.fees-flow). */
         .fees-content {
             position: relative;
             padding-top: 28mm;
@@ -1179,11 +1180,17 @@
             margin-bottom: 0;
         }
 
-        .shariah-funds-section {
-            position: absolute;
-            top: 153mm;
-            left: 5.35mm;
-            right: 6mm;
+        /* The Shariah block is placed at 153mm (the July Class B reference),
+           but must never crowd a long TIC block: Class B3's two-line fee
+           values push its TER prose to 151mm. The fee/TIC flow therefore
+           takes at least the 125mm down to 153mm (28mm padding-top + 125mm),
+           and always keeps a bottom gap under its last line — 8.8mm, the
+           TER-to-heading gap on the June B3 reference. Class B is unchanged
+           (its TER ends at 134.5mm); B3's heading moves down. */
+        .fees-flow {
+            box-sizing: border-box;
+            min-height: 125mm;
+            padding-bottom: 8.7mm;
         }
 
         /* QC card 289: the reference sets this prose in black, not navy. */
@@ -1730,6 +1737,7 @@
 
             <!-- Fees Content -->
             <div class="fees-content">
+                <div class="fees-flow">
                 <!-- Fee Rates -->
                 @if(isset($fund->data['fees']['feeRates']))
                     <h3 class="section-heading">{{ $fund->data['fees']['feeRates']['title'] ?? 'FEE RATES' }}</h3>
@@ -1808,6 +1816,7 @@
                         @endif
                     </div>
                 @endif
+                </div>
 
 
                 <!-- Foord Shariah Funds — a section unique to the Shariah sheets
@@ -1815,9 +1824,9 @@
                      prose), sitting between the fee tables and the footer. -->
                 @if(isset($fund->data['page2Content']['shariahFunds']))
                     <div class="shariah-funds-section">
-                        <h3 class="section-heading">{{ $fund->data['page2Content']['shariahFunds']['title'] ?? 'FOORD SHARIAH FUNDS' }}</h3>
-                        @foreach ($fund->data['page2Content']['shariahFunds']['paragraphs'] ?? [] as $paragraph)
-                            <p class="fee-description">{{ $paragraph }}</p>
+                        <h3 class="section-heading"><span x-data="editableField('page2Content.shariahFunds.title', '{{ addslashes($fund->data['page2Content']['shariahFunds']['title'] ?? 'FOORD SHARIAH FUNDS') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['page2Content']['shariahFunds']['title'] ?? 'FOORD SHARIAH FUNDS' }}</span></h3>
+                        @foreach ($fund->data['page2Content']['shariahFunds']['paragraphs'] ?? [] as $index => $paragraph)
+                            <p class="fee-description"><span x-data="editableField('page2Content.shariahFunds.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $paragraph }}</span></p>
                         @endforeach
                     </div>
                 @endif

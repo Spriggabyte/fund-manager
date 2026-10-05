@@ -484,8 +484,9 @@
         /* Maturity spread — CSS bar list (labels left, naartjie bars,
            right-aligned value column at the block's right edge). */
         /* 1.04mm indent: the reference sets the bucket labels at x=137.48mm
-           against the block's own 136.42mm left edge. */
-        .maturity-spread-rows { margin-top: 2.65mm; padding-left: 1.04mm; position: relative; }
+           against the block's own 136.42mm left edge. margin-top puts the
+           first bar top 2.91mm under the heading baseline (ref 2.98mm). */
+        .maturity-spread-rows { margin-top: 2.385mm; padding-left: 1.04mm; position: relative; }
         /* Bar column = the track: after the 1.04mm indent + 16.6mm label,
            before the 8mm value column. */
         .maturity-spread-svg {
@@ -497,11 +498,15 @@
             overflow: visible;
             fill: var(--naartjie);
         }
+        /* 5 Oct 2026 (client WhatsApp, as Flex Income's QC card 340): back to
+           the 841 reference geometry, overriding the house bar spec (3.05mm
+           on 4.03mm): 4.5mm bars (ref 4.53mm) on a 5.3mm pitch (ref 5.30mm
+           bars / 5.33mm labels), so Perpetual sits level with Offshore
+           duration. */
         .maturity-spread-row {
             display: flex;
             align-items: center;
-            /* House bar spec (equity sector bars, fund 11): 4.03mm pitch. */
-            margin-bottom: 0.98mm; /* 3.05mm bar + 0.98 = 4.03 pitch */
+            margin-bottom: 0.8mm; /* 4.5mm bar + 0.8 = 5.3 pitch */
         }
         .maturity-spread-row:last-child { margin-bottom: 0; }
         .maturity-spread-label {
@@ -509,16 +514,16 @@
             min-width: 16.6mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-size: 7.5pt;
-            line-height: 3.05mm;
+            line-height: 4.5mm;
             color: #000;
         }
         .maturity-spread-track {
             flex: 1;
             min-width: 0;
         }
-        .maturity-spread-track { height: 3.05mm; }
+        .maturity-spread-track { height: 4.5mm; }
         .maturity-spread-value {
-            line-height: 3.05mm;
+            line-height: 4.5mm;
             width: 8mm;
             min-width: 8mm;
             text-align: right;
@@ -1574,14 +1579,14 @@
                             <div class="maturity-spread-block">
                                 <h3 class="section-heading">{{ $spread['title'] ?? 'MATURITY SPREAD %' }}</h3>
                                 <div class="maturity-spread-rows">
-                                    {{-- Trello 382: one SVG for every bar. Separate 3.05mm divs on
-                                         the 4.03mm pitch sat at different sub-pixel offsets, so
+                                    {{-- Trello 382: one SVG for every bar. Separate bar divs on
+                                         the row pitch sat at different sub-pixel offsets, so
                                          Chrome snapped some to 11px and others to 12px (bars
                                          looked unequal in the preview); SVG rects anti-alias
                                          instead of snapping. --}}
                                     <svg class="maturity-spread-svg" aria-hidden="true">
                                         @foreach ($spread['categories'] ?? [] as $i => $bucket)
-                                            <rect x="0" y="{{ round($i * 4.03, 2) }}mm" height="3.05mm" width="{{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%" />
+                                            <rect x="0" y="{{ round($i * 5.3, 2) }}mm" height="4.5mm" width="{{ $spreadMax > 0 ? round(((float) ($bucket['value'] ?? 0)) / $spreadMax * 100, 1) : 0 }}%" />
                                         @endforeach
                                     </svg>
                                     @foreach ($spread['categories'] ?? [] as $bucket)

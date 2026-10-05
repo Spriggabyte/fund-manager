@@ -1934,11 +1934,16 @@
 
             // Strategy — Rolling One-Year Return (left chart): solid naartjie
             // columns per the signed-off 818 reference — y-axis ticked every 5%
-            // from just below the series minimum (-1%, 4%, … 24%), no gridlines,
-            // a dark baseline at 0%, no legend, x labels every second December.
+            // from -1% (-1%, 4%, … 24%), no gridlines, a dark baseline at 0%,
+            // no legend, x labels every second December.
             if (rollingData.length > 0) {
                 const values = rollingData.map(d => d.value);
-                const rollMin = Math.floor(Math.min(...values, 0));
+                // The reference floor stays at -1% although Nov 2018 is -1.58%:
+                // that bar is cut off at the plot floor, level with Mar 2020's
+                // -1.14% (WhatsApp 4 Oct 2026). Only a dip more than 1% below
+                // the floor moves it down a 5% step, so a real fall still shows.
+                let rollMin = -1;
+                while (Math.min(...values) < rollMin - 1) rollMin -= 5;
                 const rollTicks = [];
                 for (let t = rollMin; t < Math.max(...values) + 5; t += 5) rollTicks.push(t);
 

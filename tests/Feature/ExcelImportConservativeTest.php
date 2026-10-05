@@ -42,18 +42,20 @@ class ExcelImportConservativeTest extends TestCase
         return $path;
     }
 
-    public function test_rolling_return_graph_import_maps_published_fund_series(): void
+    public function test_rolling_return_graph_import_maps_a_class_series(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-conservative']);
 
         // The export carries decimal fractions; leading months without a full
-        // one-year history are empty and must be skipped. The published series
-        // is the "<code> Fund Published" column, not the per-class ones.
+        // one-year history are empty and must be skipped. Every fact sheet
+        // (A, B2 and B3) plots the "<code> A Class" column, not "Fund
+        // Published", which runs 1–2.5% higher and hides the Oct/Nov 2018 and
+        // Mar 2020 negatives (WhatsApp 4 Oct 2026).
         $path = $this->makeXlsx([
-            ['Start Date', 'Description', '818 Fund Published', '818 A Class [iR]'],
-            [41609, 'Nov 2014 (1Y)', null, null],
-            [41640, 'Dec 2014 (1Y)', 0.0956252786, 0.0855522803],
-            [41671, 'Jan 2015 (1Y)', 0.1229, 0.1085],
+            ['Start Date', 'Description', '818 Fund Published', '818 A Class [iR]', '818 B2 Class [iD]'],
+            [41609, 'Nov 2014 (1Y)', null, null, null],
+            [41640, 'Dec 2014 (1Y)', 0.0956252786, 0.0855522803, 0.0899],
+            [41671, 'Jan 2015 (1Y)', 0.0031, -0.0114, -0.0070],
         ], 'rolling-test');
 
         (new RollingReturnGraphImporter)->import($fund, $path);
@@ -61,8 +63,8 @@ class ExcelImportConservativeTest extends TestCase
         $rolling = $fund->chart_data['rollingReturnData'];
 
         $this->assertCount(2, $rolling);
-        $this->assertSame(['date' => '2014-12', 'value' => 9.56], $rolling[0]);
-        $this->assertSame(['date' => '2015-01', 'value' => 12.29], $rolling[1]);
+        $this->assertSame(['date' => '2014-12', 'value' => 8.56], $rolling[0]);
+        $this->assertSame(['date' => '2015-01', 'value' => -1.14], $rolling[1]);
     }
 
     public function test_rolling_return_graph_import_starts_on_first_december_a_year_after_inception(): void

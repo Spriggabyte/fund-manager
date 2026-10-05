@@ -460,4 +460,31 @@ class ExcelImportBondTest extends TestCase
         $this->assertSame('(-12.3%)', $categories['7-12 Years']['change']);
         $this->assertSame('(-1.5%)', $categories['20+ Years']['change']);
     }
+
+    public function test_maturity_change_labels_collapse_a_doubled_percent(): void
+    {
+        // The September 2026 826 export doubles the suffix on some buckets
+        // ("+5.8%%") while the rest keep the spaced sign ("+ 17.5%").
+        $fund = Fund::factory()->create(['template' => 'show-bond']);
+
+        $path = $this->makeXlsx([
+            ['Code', 'Value'],
+            ['MONTH_END_DATE', '30 September 2026'],
+            ['LAST_QUARTER_END', '30 June 2026'],
+            ['MATURITY_0_TO_1_YEAR', '0'],
+            ['MAT_CHANGE_0_TO_1_YEARS', '+5.8%%'],
+            ['MATURITY_1_TO_3_YEARS', '1'],
+            ['MAT_CHANGE_1_TO_3_YEARS', '+18.0%%'],
+            ['MATURITY_3_TO_7_YEARS', '46'],
+            ['MAT_CHANGE_3_TO_7_YEARS', '+ 17.5%'],
+        ], 'bond-maturity-double-percent');
+
+        (new FactsheetImporter)->import($fund, $path);
+
+        $categories = collect($fund->chart_data['maturityData']['categories'])->keyBy('name');
+
+        $this->assertSame('(+5.8%)', $categories['0-1 Year']['change']);
+        $this->assertSame('(+18.0%)', $categories['1-3 Years']['change']);
+        $this->assertSame('(+17.5%)', $categories['3-7 Years']['change']);
+    }
 }

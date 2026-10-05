@@ -24,8 +24,9 @@ class RollingReturnGraphImporter extends AbstractExcelImporter
      * Source layout (Foord Performance Summary export, shared by every class):
      *   A: Start Date (Excel serial)
      *   B: Description — the period end, e.g. "Dec 2014 (1Y)"
-     *   C: "<code> Fund Published" — the published fund series (decimal fractions)
-     *   D+: per-class series (not published on the fact sheets)
+     *   C: "<code> Fund Published" — the fund-level series (not plotted)
+     *   D: "<code> A Class [iR]" — the series every class's fact sheet plots
+     *   E+: the other per-class series (not plotted)
      */
     public function import(Fund $fund, string $filePath): void
     {
@@ -36,11 +37,13 @@ class RollingReturnGraphImporter extends AbstractExcelImporter
             $headers[] = (string) $cell->getValue();
         }
 
-        // The fact sheets plot the published fund series; fall back to
-        // column C, its position in every export seen so far.
-        $valueCol = 2;
+        // The A, B2 and B3 fact sheets all plot the A Class series (decimal
+        // fractions); "Fund Published" runs 1–2.5% higher and turns the
+        // Oct 2018 and Mar 2020 negatives positive (WhatsApp 4 Oct 2026).
+        // Fall back to column D, its position in every export seen so far.
+        $valueCol = 3;
         foreach ($headers as $col => $header) {
-            if (str_contains(strtoupper($header), 'FUND PUBLISHED')) {
+            if (preg_match('/\bA CLASS\b/', strtoupper($header))) {
                 $valueCol = $col;
                 break;
             }

@@ -972,6 +972,8 @@
            SCREEN CHROME (edit mode) - not printed
            ===================================================== */
         .editable { cursor: text; transition: all 0.15s; min-height: 1em; }
+        /* A blank cell (e.g. a highest/lowest row's THIS MONTH) still needs a target. */
+        .editable:empty { display: inline-block; min-width: 2em; }
         .editable:hover {
             background-color: rgba(245, 158, 11, 0.1);
             outline: 1px dashed #f59e0b;
@@ -1231,7 +1233,8 @@
             <div class="main-content">
                 <!-- Asset Allocation Table -->
                 @if(isset($fund->data['mainContent']['assetAllocation']))
-                    <h3 class="section-heading">{!! $renderHeading($fund->data['mainContent']['assetAllocation']['title'] ?? 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)') !!}</h3>
+                    @php $aaTitle = $fund->data['mainContent']['assetAllocation']['title'] ?? 'ASSET ALLOCATION % (MAX LIMITS IN BRACKETS)'; @endphp
+                    <h3 class="section-heading"><span x-data="editableField('mainContent.assetAllocation.title', '{{ addslashes($aaTitle) }}', 'titleSuffix')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $renderHeading($aaTitle) !!}</span></h3>
                     @if(isset($fund->data['mainContent']['assetAllocation']['subtitle']))
                         <p class="section-subheading"><span x-data="editableField('mainContent.assetAllocation.subtitle', '{{ addslashes($fund->data['mainContent']['assetAllocation']['subtitle']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['mainContent']['assetAllocation']['subtitle'] }}</span></p>
                     @endif
@@ -1240,29 +1243,33 @@
                         <table>
                             <thead>
                                 <tr>
-                                    @foreach ($fund->data['mainContent']['assetAllocation']['headers'] as $header)
-                                        <th>{!! $renderTh(strip_tags((string) $header)) !!}</th>
+                                    @foreach ($fund->data['mainContent']['assetAllocation']['headers'] as $hIndex => $header)
+                                        <th><span x-data="editableField('mainContent.assetAllocation.headers.{{ $hIndex }}', '{{ addslashes(strip_tags((string) $header)) }}', 'thLimit')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $renderTh(strip_tags((string) $header)) !!}</span></th>
                                     @endforeach
                                 </tr>
                             </thead>
                             @php
                                 $aaHeaders = $fund->data['mainContent']['assetAllocation']['headers'] ?? [];
+                                $aaFirstRow = $fund->data['mainContent']['assetAllocation']['rows'][0] ?? [];
                                 $aaColumnKeys = [];
                                 $keyMap = ['SA (100)' => 'sa', 'FOREIGN (45)' => 'foreign', 'TOTAL' => 'total', 'CHANGE' => 'change'];
-                                foreach (array_slice($aaHeaders, 1) as $h) {
-                                    $aaColumnKeys[] = $keyMap[strtoupper(trim($h))] ?? strtolower(preg_replace('/[^a-zA-Z]/', '', $h) ?: 'col');
+                                foreach (array_slice($aaHeaders, 1) as $i => $h) {
+                                    $key = $keyMap[strtoupper(trim($h))] ?? strtolower(preg_replace('/[^a-zA-Z]/', '', $h) ?: 'col');
+                                    // A header relabelled in edit mode keeps its column's data.
+                                    if (! array_key_exists($key, $aaFirstRow) && isset(['sa', 'foreign', 'total', 'change'][$i])) {
+                                        $key = ['sa', 'foreign', 'total', 'change'][$i];
+                                    }
+                                    $aaColumnKeys[] = $key;
                                 }
                             @endphp
                             <tbody>
                                 @foreach ($fund->data['mainContent']['assetAllocation']['rows'] as $rowIndex => $row)
                                     <tr>
-                                        <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name'] ?? '') }}', 'assetName')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $renderAssetName($row) !!}</span></td>
+                                        <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name'] ?? '') }}', 'assetName')" data-limit="{{ $row['limit'] ?? '' }}" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $renderAssetName($row) !!}</span></td>
                                         @foreach ($aaColumnKeys as $colKey)
                                             @if ($colKey === 'change')
                                                 @php
-                                                    $dir = $row['changeDirection'] ?? '';
                                                     $raw = trim((string)($row['change'] ?? ''));
-                                                    $arrowClass = $dir === 'up' ? 'change-arrow-up' : ($dir === 'down' ? 'change-arrow-down' : '');
                                                     if (preg_match('/^([▲▼])\s*(.*)$/u', $raw, $cm)) {
                                                         $arrowChar = $cm[1];
                                                         $numPart = $cm[2];
@@ -1270,12 +1277,13 @@
                                                         $arrowChar = '';
                                                         $numPart = $raw;
                                                     }
+                                                    // The triangle's colour follows its shape, so a change
+                                                    // edited in edit mode never leaves changeDirection stale.
+                                                    $arrowClass = $arrowChar === '▲' ? 'change-arrow-up' : 'change-arrow-down';
                                                 @endphp
-                                                <td class="change-cell">
-                                                    @if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 10" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,10 5,0 10,10' : '0,0 10,0 5,10' }}"/></svg>@endif{{ $numPart }}
-                                                </td>
+                                                <td class="change-cell"><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes($raw) }}', 'changeArrow')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">@if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 10" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,10 5,0 10,10' : '0,0 10,0 5,10' }}"/></svg>@endif{{ $fmt($numPart, 1) }}</span></td>
                                             @else
-                                                <td>{{ $fmt($row[$colKey] ?? '', 1) }}</td>
+                                                <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.{{ $colKey }}', '{{ addslashes($fmt($row[$colKey] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row[$colKey] ?? '', 1) }}</span></td>
                                             @endif
                                         @endforeach
                                     </tr>
@@ -1283,9 +1291,13 @@
                                 @if(isset($fund->data['mainContent']['assetAllocation']['total']))
                                     @php $aaTotal = $fund->data['mainContent']['assetAllocation']['total']; @endphp
                                     <tr class="total-row">
-                                        <td>{{ $aaTotal['name'] ?? 'TOTAL' }}</td>
+                                        <td><span x-data="editableField('mainContent.assetAllocation.total.name', '{{ addslashes($aaTotal['name'] ?? 'TOTAL') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $aaTotal['name'] ?? 'TOTAL' }}</span></td>
                                         @foreach ($aaColumnKeys as $colKey)
-                                            <td>{{ $colKey !== 'change' ? $fmt($aaTotal[$colKey] ?? '', 1) : '' }}</td>
+                                            @if ($colKey === 'change')
+                                                <td></td>
+                                            @else
+                                                <td><span x-data="editableField('mainContent.assetAllocation.total.{{ $colKey }}', '{{ addslashes($fmt($aaTotal[$colKey] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($aaTotal[$colKey] ?? '', 1) }}</span></td>
+                                            @endif
                                         @endforeach
                                     </tr>
                                 @endif
@@ -1296,14 +1308,14 @@
 
                 <!-- Top 10 Investments -->
                 @if(isset($fund->data['mainContent']['topInvestments']))
-                    <h3 class="section-heading">{{ $fund->data['mainContent']['topInvestments']['title'] ?? 'TOP 10 INVESTMENTS' }}</h3>
+                    <h3 class="section-heading"><span x-data="editableField('mainContent.topInvestments.title', '{{ addslashes($fund->data['mainContent']['topInvestments']['title'] ?? 'TOP 10 INVESTMENTS') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['mainContent']['topInvestments']['title'] ?? 'TOP 10 INVESTMENTS' }}</span></h3>
 
                     <div class="table-container top10-table">
                         <table>
                             <thead>
                                 <tr>
-                                    @foreach ($fund->data['mainContent']['topInvestments']['headers'] as $header)
-                                        <th>{{ $header }}</th>
+                                    @foreach ($fund->data['mainContent']['topInvestments']['headers'] as $hIndex => $header)
+                                        <th><span x-data="editableField('mainContent.topInvestments.headers.{{ $hIndex }}', '{{ addslashes($header) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $header }}</span></th>
                                     @endforeach
                                 </tr>
                             </thead>
@@ -1311,9 +1323,9 @@
                                 @foreach ($fund->data['mainContent']['topInvestments']['rows'] as $idx => $row)
                                     <tr class="{{ ($row['highlight'] ?? false) || $idx < 2 ? 'highlight-row' : '' }}">
                                         <td><span x-data="editableField('mainContent.topInvestments.rows.{{ $idx }}.security', '{{ addslashes($row['security']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['security'] }}</span></td>
-                                        <td>{{ $row['assetClass'] }}</td>
-                                        <td>{{ $row['market'] }}</td>
-                                        <td>{{ $fmt($row['percentage'] ?? '', 1) }}</td>
+                                        <td><span x-data="editableField('mainContent.topInvestments.rows.{{ $idx }}.assetClass', '{{ addslashes($row['assetClass'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['assetClass'] ?? '' }}</span></td>
+                                        <td><span x-data="editableField('mainContent.topInvestments.rows.{{ $idx }}.market', '{{ addslashes($row['market'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['market'] ?? '' }}</span></td>
+                                        <td><span x-data="editableField('mainContent.topInvestments.rows.{{ $idx }}.percentage', '{{ addslashes($fmt($row['percentage'] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row['percentage'] ?? '', 1) }}</span></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -1365,14 +1377,17 @@
                     @endphp
                     {{-- Reference sets this heading's bracketed text at FULL heading size
                          (only ASSET ALLOCATION's "(MAX LIMITS IN BRACKETS)" is smaller). --}}
-                    <h3 class="section-heading">{!! $normaliseSupers(e($fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED¹)')) !!}</h3>
+                    @php $perfTitle = $fund->data['mainContent']['performanceTable']['title'] ?? 'PORTFOLIO PERFORMANCE % (PERIODS GREATER THAN ONE YEAR ARE ANNUALISED¹)'; @endphp
+                    <h3 class="section-heading"><span x-data="editableField('mainContent.performanceTable.title', '{{ addslashes($perfTitle) }}', 'supers')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $normaliseSupers(e($perfTitle)) !!}</span></h3>
 
                     <div class="table-container performance-table">
                         <table>
                             <thead>
                                 <tr>
-                                    @foreach ($perfHeaders as $header)
-                                        <th>{!! $header !!}</th>
+                                    {{-- A header's text picks its column's data ($perfKeyMap):
+                                         "<br>" breaks the line, so "20<br>YRS" shows 20 years. --}}
+                                    @foreach ($perfHeaders as $hIndex => $header)
+                                        <th><span x-data="editableField('mainContent.performanceTable.headers.{{ $hIndex }}', '{{ addslashes($header) }}', 'supers')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $header !!}</span></th>
                                     @endforeach
                                 </tr>
                             </thead>
@@ -1386,24 +1401,31 @@
                                     @php
                                         $nameStr = trim(strip_tags((string)$row['name']));
                                         $isTopFundRow = $idx === 0;
-                                        $displayName = $row['name'];
-                                        $lowerName = strtolower($nameStr);
-                                        // Reference sets a space before the markers: "Fund ³", "Benchmark ³,⁴".
+                                        $rawName = (string) $row['name'];
+                                        // The footnote marker sits outside the editable name, so
+                                        // renaming a row keeps it. (global-fixes closes the gap:
+                                        // "Fund³", "Benchmark³,⁴".)
+                                        $perfMarker = null;
                                         if (preg_match('/^fund\s+(highest|lowest)/i', $nameStr)) {
                                             // Highest/Lowest historical rows take footnotes 3 and 5.
-                                            if (strpos($displayName, '3,5') === false && strpos($displayName, '³,⁵') === false) {
-                                                $displayName .= ' <sup>3,5</sup>';
+                                            if (strpos($rawName, '3,5') === false && strpos($rawName, '³,⁵') === false) {
+                                                $perfMarker = '3,5';
                                             }
-                                        } elseif (stripos($nameStr, 'fund') === 0 && strpos($displayName, '³') === false && strpos($displayName, '<sup>3</sup>') === false) {
-                                            $displayName .= ' <sup>3</sup>';
-                                        } elseif (stripos($nameStr, 'benchmark') === 0 && strpos($displayName, '³,⁴') === false && strpos($displayName, '3,4') === false) {
-                                            $displayName .= ' <sup>3,4</sup>';
+                                        } elseif (stripos($nameStr, 'fund') === 0 && strpos($rawName, '³') === false && strpos($rawName, '<sup>3</sup>') === false) {
+                                            $perfMarker = '3';
+                                        } elseif (stripos($nameStr, 'benchmark') === 0 && strpos($rawName, '³,⁴') === false && strpos($rawName, '3,4') === false) {
+                                            $perfMarker = '3,4';
                                         }
                                     @endphp
                                     <tr class="{{ $isTopFundRow ? 'highlight-row' : '' }}">
-                                        <td>{!! $displayName !!}</td>
+                                        <td><span x-data="editableField('mainContent.performanceTable.rows.{{ $idx }}.name', '{{ addslashes($rawName) }}', 'supers')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{!! $rawName !!}</span>@if ($perfMarker)<sup>{{ $perfMarker }}</sup>@endif</td>
                                         @foreach ($perfColKeys as $colKey)
-                                            <td>{{ $colKey && isset($row[$colKey]) ? (in_array($colKey, ['cashValue']) ? $row[$colKey] : $fmt($row[$colKey], 1)) : '' }}</td>
+                                            @if ($colKey)
+                                                @php $perfCell = isset($row[$colKey]) ? ($colKey === 'cashValue' ? $row[$colKey] : $fmt($row[$colKey], 1)) : ''; @endphp
+                                                <td><span x-data="editableField('mainContent.performanceTable.rows.{{ $idx }}.{{ $colKey }}', '{{ addslashes($perfCell) }}', '{{ $colKey === 'cashValue' ? '' : 'oneDecimal' }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $perfCell }}</span></td>
+                                            @else
+                                                <td></td>
+                                            @endif
                                         @endforeach
                                     </tr>
                                     @if (stripos($nameStr, 'benchmark') === 0)
@@ -1452,28 +1474,29 @@
             <div class="fees-content">
                 <!-- Fee Rates -->
                 @if(isset($fund->data['fees']['feeRates']))
-                    <h3 class="section-heading">{{ $fund->data['fees']['feeRates']['title'] ?? 'FEE RATES' }}</h3>
+                    <h3 class="section-heading"><span x-data="editableField('fees.feeRates.title', '{{ addslashes($fund->data['fees']['feeRates']['title'] ?? 'FEE RATES') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['fees']['feeRates']['title'] ?? 'FEE RATES' }}</span></h3>
 
                     <div class="table-container fee-rates-table">
                         <table>
                             <tbody>
-                                @foreach ($fund->data['fees']['feeRates']['rates'] as $rate)
+                                @foreach ($fund->data['fees']['feeRates']['rates'] as $rIndex => $rate)
                                     <tr>
-                                        <td>{{ $rate['name'] }}</td>
-                                        <td>{{ $rate['value'] }}</td>
+                                        <td><span x-data="editableField('fees.feeRates.rates.{{ $rIndex }}.name', '{{ addslashes($rate['name']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $rate['name'] }}</span></td>
+                                        <td><span x-data="editableField('fees.feeRates.rates.{{ $rIndex }}.value', '{{ addslashes($rate['value']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $rate['value'] }}</span></td>
                                     </tr>
                                 @endforeach
                                 @if(isset($fund->data['fees']['feeRates']['globalFunds']))
                                     <tr class="global-funds-header">
-                                        <td colspan="2">{{ $fund->data['fees']['feeRates']['globalFunds']['title'] ?? 'Foord global funds:' }}</td>
+                                        <td colspan="2"><span x-data="editableField('fees.feeRates.globalFunds.title', '{{ addslashes($fund->data['fees']['feeRates']['globalFunds']['title'] ?? 'Foord global funds:') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['fees']['feeRates']['globalFunds']['title'] ?? 'Foord global funds:' }}</span></td>
                                     </tr>
-                                    @foreach ($fund->data['fees']['feeRates']['globalFunds']['funds'] as $gfund)
+                                    @foreach ($fund->data['fees']['feeRates']['globalFunds']['funds'] as $gIndex => $gfund)
                                         @php
                                             $gName = ltrim($gfund['name'], "- \t");
                                         @endphp
+                                        {{-- The "- " bullet is drawn here, so the edit is just the name. --}}
                                         <tr class="sub-item">
-                                            <td>- {{ $gName }}</td>
-                                            <td>{{ $gfund['value'] }}</td>
+                                            <td>- <span x-data="editableField('fees.feeRates.globalFunds.funds.{{ $gIndex }}.name', '{{ addslashes($gName) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $gName }}</span></td>
+                                            <td><span x-data="editableField('fees.feeRates.globalFunds.funds.{{ $gIndex }}.value', '{{ addslashes($gfund['value']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $gfund['value'] }}</span></td>
                                         </tr>
                                     @endforeach
                                 @endif
@@ -1536,39 +1559,39 @@
                 <!-- Performance Fee Examples -->
                 @if(isset($fund->data['fees']['performanceFeeExamples']))
                     <div class="pfe-section">
-                    <h3 class="section-heading">{{ $fund->data['fees']['performanceFeeExamples']['title'] ?? 'PERFORMANCE FEE EXAMPLES %' }}</h3>
+                    <h3 class="section-heading"><span x-data="editableField('fees.performanceFeeExamples.title', '{{ addslashes($fund->data['fees']['performanceFeeExamples']['title'] ?? 'PERFORMANCE FEE EXAMPLES %') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fund->data['fees']['performanceFeeExamples']['title'] ?? 'PERFORMANCE FEE EXAMPLES %' }}</span></h3>
 
                     <div class="table-container pfe-table pfe-cols-{{ max(0, count($fund->data['fees']['performanceFeeExamples']['headers'] ?? []) - 1) }}">
                         <table>
                             <thead>
                                 <tr>
-                                    @foreach ($fund->data['fees']['performanceFeeExamples']['headers'] as $header)
-                                        <th>{{ $header }}</th>
+                                    @foreach ($fund->data['fees']['performanceFeeExamples']['headers'] as $hIndex => $header)
+                                        <th><span x-data="editableField('fees.performanceFeeExamples.headers.{{ $hIndex }}', '{{ addslashes($header) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $header }}</span></th>
                                     @endforeach
                                 </tr>
                             </thead>
                             @php
-                                // Column letters come from the stored headers: Classes A
-                                // and B2 show four example columns (A–D), Class B3 three
-                                // (A–C, two-year rolling, 0.4% fee).
-                                $pfeCols = array_map(
-                                    fn ($h) => strtolower(trim($h)),
-                                    array_slice($fund->data['fees']['performanceFeeExamples']['headers'] ?? ['', 'A', 'B', 'C', 'D'], 1)
-                                );
+                                // One example column per stored header: Classes A and B2
+                                // show four (A–D), Class B3 three (A–C, two-year rolling,
+                                // 0.4% fee). Keyed by position, so a header relabelled in
+                                // edit mode keeps its column's data.
+                                $pfeCols = array_slice(['a', 'b', 'c', 'd'], 0, max(0, count($fund->data['fees']['performanceFeeExamples']['headers'] ?? ['', 'A', 'B', 'C', 'D']) - 1));
+                                $pfeTotal = $fund->data['fees']['performanceFeeExamples']['total'] ?? [];
                             @endphp
                             <tbody>
-                                @foreach ($fund->data['fees']['performanceFeeExamples']['rows'] as $row)
+                                @foreach ($fund->data['fees']['performanceFeeExamples']['rows'] as $rowIndex => $row)
                                     <tr>
-                                        <td>{{ $row['name'] }}</td>
+                                        <td><span x-data="editableField('fees.performanceFeeExamples.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['name'] }}</span></td>
                                         @foreach ($pfeCols as $col)
-                                            <td>{{ $fmt($row[$col] ?? '', 1) }}</td>
+                                            <td><span x-data="editableField('fees.performanceFeeExamples.rows.{{ $rowIndex }}.{{ $col }}', '{{ addslashes($fmt($row[$col] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row[$col] ?? '', 1) }}</span></td>
                                         @endforeach
                                     </tr>
                                 @endforeach
                                 <tr class="total-row">
-                                    <td>{{ $fund->data['fees']['performanceFeeExamples']['total']['name'] ?? 'Annual fee rate applied (excl. VAT)' }}</td>
+                                    <td><span x-data="editableField('fees.performanceFeeExamples.total.name', '{{ addslashes($pfeTotal['name'] ?? 'Annual fee rate applied (excl. VAT)') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $pfeTotal['name'] ?? 'Annual fee rate applied (excl. VAT)' }}</span></td>
                                     @foreach ($pfeCols as $col)
-                                        <td>{{ is_numeric($fund->data['fees']['performanceFeeExamples']['total'][$col] ?? null) ? $fmt($fund->data['fees']['performanceFeeExamples']['total'][$col], 1) : ($fund->data['fees']['performanceFeeExamples']['total'][$col] ?? '') }}</td>
+                                        {{-- Non-numeric totals ("0.5*" — minimum fee applies) print as stored. --}}
+                                        <td><span x-data="editableField('fees.performanceFeeExamples.total.{{ $col }}', '{{ addslashes($fmt($pfeTotal[$col] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($pfeTotal[$col] ?? '', 1) }}</span></td>
                                     @endforeach
                                 </tr>
                             </tbody>
@@ -1915,8 +1938,60 @@
                 if (!m) return String(value).toUpperCase();
                 return m[1].toUpperCase() + ' <span class="class-suffix">&mdash; ' + m[2].toUpperCase() + '</span>';
             },
-            assetName(value) {
-                return String(value).replace(/\s*\(([^)]+)\)\s*$/, ' <span class="row-limit">($1)</span>');
+            // As the blade's $renderAssetName: the row's stored limit, unless
+            // the name carries its own "(75)".
+            assetName(value, el) {
+                const s = String(value);
+                if (el && el.dataset.limit && !s.includes('(')) return s + ' <span class="row-limit">(' + el.dataset.limit + ')</span>';
+                return s.replace(/\s*\(([^)]+)\)\s*$/, ' <span class="row-limit">($1)</span>');
+            },
+            // As the blade's $renderHeading / $renderTh.
+            titleSuffix(value) {
+                return String(value).replace(/\s*\(([^)]+)\)\s*$/, ' <span class="title-suffix">($1)</span>');
+            },
+            thLimit(value) {
+                return String(value).replace(/\s*\(([^)]+)\)\s*$/, ' <span class="th-limit">($1)</span>');
+            },
+            // Table figures print to one decimal, as the blade's $fmt does; an
+            // explicit "+" is kept ("+2.0" in the fee examples).
+            oneDecimal(value) {
+                const s = String(value).trim();
+                if (!/^[+-]?\d*\.?\d+$/.test(s)) return s;
+                return (s[0] === '+' ? '+' : '') + Number(s).toFixed(1);
+            },
+            // "\u25b2 0.1" / "\u25bc 0.2" \u2014 the SVG triangle the blade draws, then the figure.
+            changeArrow(value) {
+                const m = String(value).trim().match(/^([\u25b2\u25bc])\s*(.*)$/);
+                if (!m) return editableFormatters.oneDecimal(value);
+                const up = m[1] === '\u25b2';
+                return '<svg class="' + (up ? 'change-arrow-up' : 'change-arrow-down') + '" viewBox="0 0 10 10" aria-label="' + m[1] + '">'
+                    + '<polygon fill="currentColor" points="' + (up ? '0,10 5,0 10,10' : '0,0 10,0 5,10') + '"/></svg>'
+                    + editableFormatters.oneDecimal(m[2]);
+            },
+            // Unicode superscript digits as <sup>, as global-fixes does on load
+            // ("VALUE\u00b2", "ANNUALISED\u00b9"); "<br>" in a header breaks the line.
+            supers(value) {
+                const map = {'\u2070': '0', '\u00b9': '1', '\u00b2': '2', '\u00b3': '3', '\u2074': '4', '\u2075': '5', '\u2076': '6', '\u2077': '7', '\u2078': '8', '\u2079': '9'};
+                return String(value).replace(/[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+(?:,[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)*/g, (run) => '<sup>' + run.replace(/[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]/g, (c) => map[c]) + '</sup>');
+            }
+        };
+        // Input normalisers, run before saving, so retyping a figure as it
+        // already prints ("100" for "100.0") is not a change. A change can
+        // be typed as a signed figure ("-0.2", "+0.1", "0.1") and is stored
+        // the way the importer writes it ("\u25bc 0.2"); an unsigned zero gets no
+        // triangle.
+        const editableParsers = {
+            oneDecimal(value) {
+                return editableFormatters.oneDecimal(value);
+            },
+            changeArrow(value) {
+                const s = String(value).trim();
+                const m = s.match(/^([\u25b2\u25bc+-])?\s*(\d*\.?\d+)$/);
+                if (!m) return s;
+                const n = Number(m[2]);
+                if (m[1] === '\u25b2' || m[1] === '\u25bc') return m[1] + ' ' + n.toFixed(1);
+                if (n === 0) return n.toFixed(1);
+                return (m[1] === '-' ? '\u25bc ' : '\u25b2 ') + n.toFixed(1);
             }
         };
         function editableField(fieldPath, initialValue, formatter) {
@@ -1948,6 +2023,8 @@
                     }
                 },
                 async saveEdit() {
+                    const parse = this.formatter && editableParsers[this.formatter];
+                    if (parse) this.value = parse(this.value);
                     if (this.saving || this.value === this.originalValue) { this.cancelEdit(); return; }
                     this.saving = true;
                     try {
@@ -1989,7 +2066,7 @@
                 updateDisplay() {
                     if (this.editing) return;
                     const fmt = this.formatter && editableFormatters[this.formatter];
-                    this.$el.innerHTML = fmt ? fmt(this.value) : this.value;
+                    this.$el.innerHTML = fmt ? fmt(this.value, this.$el) : this.value;
                 }
             }
         }
