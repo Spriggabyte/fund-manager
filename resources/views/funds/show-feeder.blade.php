@@ -397,8 +397,7 @@
         /* Reference (Equities row): value ends x=121.3mm, arrow centred at
            124.2mm, change number 127.2→131.6mm — the arrow sits centred in
            the gap between the % value and the change number. The arrow
-           slot flexes to fill whatever the number leaves, so it stays
-           centred for "3.9" and "13.9" alike. */
+           slot flexes to fill whatever the number leaves. */
         .alloc-change {
             width: 9.3mm;
             flex-shrink: 0;
@@ -414,10 +413,23 @@
             text-align: center;
         }
 
+        /* WhatsApp 6 Oct: the triangles stand on one vertical whatever the
+           figure's width. A "17.1" outgrew the old 4.4mm minimum and pulled
+           its triangle 0.45mm left of the "3.0" rows'. The box is now
+           exactly 4.4mm on every row; a figure that outgrows it, packed to its
+           end, overflows to the left rather than widening it. */
         .alloc-change-num {
             flex: 0 0 auto;
-            min-width: 4.4mm;
-            text-align: right;
+            width: 4.4mm;
+            display: flex;
+            justify-content: flex-end;
+        }
+        /* With a two-figure change (.is-wide) every row's box is as
+           wide as "00.0" (Avenir Next figures are tabular: 0.58em each, point
+           0.26em), so the triangles stay on one vertical, centred between the
+           % values and the widest change. */
+        div:has(> .alloc-row .alloc-change-num.is-wide) > .alloc-row .alloc-change-num {
+            width: 2em;
         }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
@@ -1400,7 +1412,7 @@
                                                     $changeClass = $isZeroChange ? '' : ((($row['changeDirection'] ?? '') === 'up') ? 'change-up' : ((($row['changeDirection'] ?? '') === 'down') ? 'change-down' : ''));
                                                 @endphp
                                                 <span class="alloc-change">
-                                                    <span class="alloc-arrow {{ $changeClass }}"></span><span class="alloc-change-num">{{ $changeNumber }}</span>
+                                                    <span class="alloc-arrow {{ $changeClass }}"></span><span class="alloc-change-num{{ preg_match_all('/\d/', (string) $changeNumber) >= 3 ? ' is-wide' : '' }}">{{ $changeNumber }}</span>
                                                 </span>
                                             </div>
                                         @endforeach

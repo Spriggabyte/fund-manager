@@ -823,6 +823,25 @@
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
 
+        /* WhatsApp 6 Oct: the triangles stand on one vertical whatever the
+           figure's width — a "17.1" used to push its triangle a whole figure
+           (~1.5mm) left of the "3.0" rows'. Every figure sits in a box as wide
+           as "00.0" (Avenir Next figures are tabular: 0.58em each, point
+           0.26em). In a table of one-figure changes the box overhangs the
+           triangle's gap by a figure, so a "0.0" keeps its reference place. */
+        td.change-cell .change-num {
+            display: inline-block;
+            min-width: 2em;
+            margin-left: -0.58em;
+            text-align: right;
+        }
+        /* A table with a two-figure change (.is-wide) drops the overhang: the
+           whole triangle column moves one figure left, so the widest change
+           keeps the reference gap instead of running into its triangle. */
+        table:has(.change-num.is-wide) td.change-cell .change-num {
+            margin-left: 0;
+        }
+
         /* =====================================================
            CHARTS SECTION
            ===================================================== */
@@ -1449,7 +1468,7 @@
                                                     <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.name', '{{ addslashes($row['name']) }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['name'] }}</span></td>
                                                     <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.value', '{{ addslashes($row['value'] ?? '') }}')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $row['value'] ?? '' }}</span></td>
                                                     <td class="change-cell">
-                                                        @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span>@endif {{ $numPart }}
+                                                        @if ($arrowChar)<span class="{{ $arrowClass }}">{{ $arrowChar }}</span>@endif <span class="change-num{{ preg_match_all('/\d/', (string) $numPart) >= 3 ? ' is-wide' : '' }}">{{ $numPart }}</span>
                                                     </td>
                                                 </tr>
                                             @endforeach

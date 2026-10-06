@@ -403,7 +403,24 @@
         }
         .alloc-arrow::before { flex-shrink: 0; }
 
-        .alloc-change-num { text-align: right; }
+        /* WhatsApp 6 Oct: the triangles stand on one vertical, as on the
+           reference's tab stop, whatever the figure's width — a "17.1" used to
+           shrink its slot and pull its triangle 0.76mm left of the "3.0"
+           rows'. Every figure sits in a box as wide as "00.0" (Avenir Next
+           figures are tabular: 0.58em each, point 0.26em). With one-figure
+           changes the box overhangs the slot by a figure, so the slot stays
+           as wide as a "0.0" leaves it (the reference position). */
+        .alloc-change-num {
+            min-width: 2em;
+            margin-left: -0.58em;
+            text-align: right;
+        }
+        /* A two-figure change (.is-wide) drops the overhang on every row: the
+           triangles stay on one vertical, centred between the % values and
+           the widest change. */
+        div:has(> .alloc-row .alloc-change-num.is-wide) > .alloc-row .alloc-change-num {
+            margin-left: 0;
+        }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
            stays black. Zero changes carry no arrow. */
@@ -1414,7 +1431,7 @@
                                                     $changeClass = $isZeroChange ? '' : ((($row['changeDirection'] ?? '') === 'up') ? 'change-up' : ((($row['changeDirection'] ?? '') === 'down') ? 'change-down' : ''));
                                                 @endphp
                                                 <span class="alloc-change">
-                                                    <span class="alloc-arrow {{ $changeClass }}"></span><span class="alloc-change-num">{{ $changeNumber }}</span>
+                                                    <span class="alloc-arrow {{ $changeClass }}"></span><span class="alloc-change-num{{ preg_match_all('/\d/', (string) $changeNumber) >= 3 ? ' is-wide' : '' }}">{{ $changeNumber }}</span>
                                                 </span>
                                             </div>
                                         @endforeach

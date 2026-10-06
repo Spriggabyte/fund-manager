@@ -669,6 +669,14 @@
             /* Avenir Next figures are tabular: 0.58em each, point 0.26em. */
             min-width: 2em;
         }
+        /* WhatsApp 6 Oct: a two-figure change ("17.1") filled the slot and
+           ran into its triangle. A table with one (.is-wide) moves the whole
+           triangle column one figure left, so the widest change keeps the
+           1.3mm gap and every triangle still lands on one vertical. */
+        table:has(.change-num.is-wide) td.change-cell .change-arrow-up,
+        table:has(.change-num.is-wide) td.change-cell .change-arrow-down {
+            margin-right: 1.3mm;
+        }
 
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
@@ -1390,7 +1398,7 @@
                                                     // edited in edit mode never leaves changeDirection stale.
                                                     $arrowClass = $arrowChar === '▲' ? 'change-arrow-up' : 'change-arrow-down';
                                                 @endphp
-                                                <td class="change-cell"><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes($raw) }}', 'changeArrow')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">@if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 9" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,9 5,0 10,9' : '0,0 10,0 5,9' }}"/></svg>@endif<span class="change-num">{{ $numPart }}</span></span></td>
+                                                <td class="change-cell"><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes($raw) }}', 'changeArrow')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">@if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 9" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,9 5,0 10,9' : '0,0 10,0 5,9' }}"/></svg>@endif<span class="change-num{{ preg_match_all('/\d/', (string) $numPart) >= 3 ? ' is-wide' : '' }}">{{ $numPart }}</span></span></td>
                                             @else
                                                 <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.{{ $colKey }}', '{{ addslashes($fmt($row[$colKey] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row[$colKey] ?? '', 1) }}</span></td>
                                             @endif
@@ -2017,13 +2025,15 @@
                 return /^-?\d*\.?\d+$/.test(s) ? Number(s).toFixed(1) : s;
             },
             // "▲ 0.1" / "▼ 0.2" — the SVG triangle the blade draws, then the figure.
+            // A two-figure change is .is-wide (moves the triangle column).
             changeArrow(value) {
+                const num = (t) => '<span class="change-num' + ((t.match(/\d/g) || []).length >= 3 ? ' is-wide' : '') + '">' + t + '</span>';
                 const m = String(value).trim().match(/^([▲▼])\s*(.*)$/);
-                if (!m) return '<span class="change-num">' + String(value).trim() + '</span>';
+                if (!m) return num(String(value).trim());
                 const up = m[1] === '▲';
                 return '<svg class="' + (up ? 'change-arrow-up' : 'change-arrow-down') + '" viewBox="0 0 10 9" aria-label="' + m[1] + '">'
                     + '<polygon fill="currentColor" points="' + (up ? '0,9 5,0 10,9' : '0,0 10,0 5,9') + '"/></svg>'
-                    + '<span class="change-num">' + m[2] + '</span>';
+                    + num(m[2]);
             }
         };
         // Input normalisers, run before saving, so retyping a figure as it

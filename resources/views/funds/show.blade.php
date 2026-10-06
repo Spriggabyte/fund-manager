@@ -650,6 +650,27 @@
         td.change-cell .change-arrow-up { color: #000; }
         td.change-cell .change-arrow-down { color: #7A9CB4; }
 
+        /* WhatsApp 6 Oct: the triangles stand on one vertical whatever the
+           figure's width — a "17.1" used to push its triangle a whole figure
+           (~1.5mm) left of the "3.0" rows'. Every figure sits in a box as wide
+           as "00.0" (Avenir Next figures are tabular: 0.58em each, point
+           0.26em). In a table of one-figure changes the box overhangs the
+           triangle's gap by a figure, so a "0.0" keeps its reference place. */
+        td.change-cell .change-num {
+            display: inline-block;
+            min-width: 2em;
+            margin-left: -0.58em;
+            text-align: right;
+        }
+        /* A table with a two-figure change (.is-wide) drops the overhang: the
+           whole triangle column moves one figure left, so the widest change
+           keeps the reference gap instead of running into its triangle. The
+           changeArrow formatter sets .is-wide after a quick edit, so :has()
+           re-places the column live. */
+        table:has(.change-num.is-wide) td.change-cell .change-num {
+            margin-left: 0;
+        }
+
         /* =====================================================
            CHARTS SECTION
            ===================================================== */
@@ -1281,7 +1302,7 @@
                                                     // edited in edit mode never leaves changeDirection stale.
                                                     $arrowClass = $arrowChar === '▲' ? 'change-arrow-up' : 'change-arrow-down';
                                                 @endphp
-                                                <td class="change-cell"><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes($raw) }}', 'changeArrow')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">@if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 10" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,10 5,0 10,10' : '0,0 10,0 5,10' }}"/></svg>@endif{{ $fmt($numPart, 1) }}</span></td>
+                                                <td class="change-cell"><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes($raw) }}', 'changeArrow')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">@if ($arrowChar)<svg class="{{ $arrowClass }}" viewBox="0 0 10 10" aria-label="{{ $arrowChar }}"><polygon fill="currentColor" points="{{ $arrowChar === '▲' ? '0,10 5,0 10,10' : '0,0 10,0 5,10' }}"/></svg>@endif<span class="change-num{{ preg_match_all('/\d/', (string) $fmt($numPart, 1)) >= 3 ? ' is-wide' : '' }}">{{ $fmt($numPart, 1) }}</span></span></td>
                                             @else
                                                 <td><span x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.{{ $colKey }}', '{{ addslashes($fmt($row[$colKey] ?? '', 1)) }}', 'oneDecimal')" @click="editMode && startEdit()" :class="editMode ? 'editable' : ''">{{ $fmt($row[$colKey] ?? '', 1) }}</span></td>
                                             @endif
@@ -1959,14 +1980,19 @@
                 if (!/^[+-]?\d*\.?\d+$/.test(s)) return s;
                 return (s[0] === '+' ? '+' : '') + Number(s).toFixed(1);
             },
-            // "\u25b2 0.1" / "\u25bc 0.2" \u2014 the SVG triangle the blade draws, then the figure.
+            // "\u25b2 0.1" / "\u25bc 0.2" \u2014 the SVG triangle the blade draws, then the
+            // figure in its .change-num box (one triangle column).
             changeArrow(value) {
                 const m = String(value).trim().match(/^([\u25b2\u25bc])\s*(.*)$/);
-                if (!m) return editableFormatters.oneDecimal(value);
+                const num = (v) => {
+                    const t = editableFormatters.oneDecimal(v);
+                    return '<span class="change-num' + ((t.match(/\d/g) || []).length >= 3 ? ' is-wide' : '') + '">' + t + '</span>';
+                };
+                if (!m) return num(value);
                 const up = m[1] === '\u25b2';
                 return '<svg class="' + (up ? 'change-arrow-up' : 'change-arrow-down') + '" viewBox="0 0 10 10" aria-label="' + m[1] + '">'
                     + '<polygon fill="currentColor" points="' + (up ? '0,10 5,0 10,10' : '0,0 10,0 5,10') + '"/></svg>'
-                    + editableFormatters.oneDecimal(m[2]);
+                    + num(m[2]);
             },
             // Unicode superscript digits as <sup>, as global-fixes does on load
             // ("VALUE\u00b2", "ANNUALISED\u00b9"); "<br>" in a header breaks the line.

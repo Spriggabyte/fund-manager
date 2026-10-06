@@ -394,6 +394,27 @@
             font-size: 8pt;
         }
 
+        /* WhatsApp 6 Oct: the triangles stand on one vertical, as on the
+           reference's tab stop, whatever the figure's width — a "17.1" used to
+           shrink the ::before slot and pull its triangle 0.82mm left of the
+           "3.0" rows'. Every figure sits in a box as wide as "00.0" (Avenir
+           Next figures are tabular: 0.58em each, point 0.26em). With
+           one-figure changes the box overhangs the slot by a figure, so the
+           slot stays as wide as a "0.0" leaves it (the reference position). */
+        .alloc-change-num {
+            display: inline-block;
+            min-width: 2em;
+            margin-left: -0.58em;
+            text-align: right;
+        }
+        /* A two-figure change (.is-wide) drops the overhang on every row: the
+           triangles stay on one vertical, centred between the % values and
+           the widest change. The changeArrow formatter sets .is-wide after a
+           quick edit, so :has() re-places the column live. */
+        div:has(> .alloc-row .alloc-change-num.is-wide) > .alloc-row .alloc-change-num {
+            margin-left: 0;
+        }
+
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down; the number
            stays black. Zero changes carry no arrow. Reference triangles are a
            full glyph (not a small accent) and sit vertically centred on the
@@ -1349,7 +1370,7 @@
                                                       x-data="editableField('mainContent.assetAllocation.rows.{{ $rowIndex }}.change', '{{ addslashes((string) ($row['change'] ?? '')) }}', 'changeArrow')"
                                                       data-direction="{{ $row['changeDirection'] ?? '' }}"
                                                       @click="editMode && startEdit()"
-                                                      :class="{ editable: editMode, 'change-up': allocChangeClass(value, $el.dataset.direction) === 'change-up', 'change-down': allocChangeClass(value, $el.dataset.direction) === 'change-down' }">{{ $changeNumber }}</span>
+                                                      :class="{ editable: editMode, 'change-up': allocChangeClass(value, $el.dataset.direction) === 'change-up', 'change-down': allocChangeClass(value, $el.dataset.direction) === 'change-down' }"><span class="alloc-change-num{{ preg_match_all('/\d/', (string) $changeNumber) >= 3 ? ' is-wide' : '' }}">{{ $changeNumber }}</span></span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -1857,9 +1878,11 @@
                 return /^-?\d*\.?\d+$/.test(s) && Number(s) === 0 ? '-' : s;
             },
             // Asset allocation change: the number only — the triangle is the
-            // .alloc-change ::before, switched by allocChangeClass().
+            // .alloc-change ::before, switched by allocChangeClass(). The
+            // figure keeps its .alloc-change-num box (one triangle column).
             changeArrow(value) {
-                return String(value).replace(/[▲▼]/g, '').trim();
+                const t = String(value).replace(/[▲▼]/g, '').trim();
+                return '<span class="alloc-change-num' + ((t.match(/\d/g) || []).length >= 3 ? ' is-wide' : '') + '">' + t + '</span>';
             }
         };
         // Input normalisers, run before saving. A change can be typed as a
