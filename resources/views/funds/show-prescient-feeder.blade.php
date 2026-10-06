@@ -1051,6 +1051,7 @@
             color: inherit;
             line-height: inherit;
             letter-spacing: inherit;
+            text-align: inherit;
         }
 
         .notification {
@@ -1499,16 +1500,19 @@
                                                                   :class="editMode ? 'editable' : ''"
                                                                   x-text="value"></span>
                                                         </td>
-                                                        <td>{{ $geoFmt($row['total']) }}</td>
-                                                        <td>{{ $geoFmt($row['equity']) }}</td>
-                                                        <td>{{ $geoFmt($row['cash']) }}</td>
+                                                        @foreach (['total', 'equity', 'cash'] as $colKey)
+                                                            <td><span x-data="editableField('mainContent.assetAllocation.geographicExposure.{{ $rowIndex }}.{{ $colKey }}', '{{ addslashes((string) ($row[$colKey] ?? '')) }}', 'geoDash')"
+                                                                      @click="editMode && startEdit()"
+                                                                      :class="editMode ? 'editable' : ''">{{ $geoFmt($row[$colKey] ?? '') }}</span></td>
+                                                        @endforeach
                                                     </tr>
                                                 @endforeach
                                                 <tr class="total-row">
-                                                    <td>{{ $geoTotals['name'] ?? 'TOTAL' }}</td>
-                                                    <td>{{ $geoTotals['total'] ?? '' }}</td>
-                                                    <td>{{ $geoTotals['equity'] ?? '' }}</td>
-                                                    <td>{{ $geoTotals['cash'] ?? '' }}</td>
+                                                    @foreach (['name' => 'TOTAL', 'total' => '', 'equity' => '', 'cash' => ''] as $colKey => $colDefault)
+                                                        <td><span x-data="editableField('mainContent.assetAllocation.geographicTotals.{{ $colKey }}', '{{ addslashes((string) ($geoTotals[$colKey] ?? $colDefault)) }}')"
+                                                                  @click="editMode && startEdit()"
+                                                                  :class="editMode ? 'editable' : ''">{{ $geoTotals[$colKey] ?? $colDefault }}</span></td>
+                                                    @endforeach
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1963,6 +1967,11 @@
             twoDecimals(value) {
                 const s = String(value).trim();
                 return /^-?\d*\.?\d+$/.test(s) ? Number(s).toFixed(2) : s;
+            },
+            // Geographic exposure: zero prints as a dash, as the blade's $geoFmt does.
+            geoDash(value) {
+                const s = String(value).trim();
+                return /^-?\d*\.?\d+$/.test(s) && Number(s) === 0 ? '-' : s;
             },
             // 822 banner drops any "— CLASS X" suffix (the class prints in
             // the sidebar CLASS row).
