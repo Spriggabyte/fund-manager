@@ -354,6 +354,15 @@
            60mm wide (pie centre unchanged): Highcharts ellipsis-truncates an
            outside label that overflows the plot box, and a 50mm box cut the
            Asia pie's left-flank "4.9%" (Hong Kong) down to "%" (Trello 374). */
+        /* A small slice at 12 o'clock puts its outside label 10px past the
+           rim, i.e. against the box's top edge (the 875 pie's "0.7%" glyph
+           tops sat 0.3px above it), and Highcharts' inline overflow: hidden
+           on the render-to div and its container, plus the inline <svg>,
+           clipped them flat. Let the labels paint past the box instead of
+           moving the pies. */
+        .geo .geo-pie,
+        .geo .geo-pie .highcharts-container,
+        .geo .geo-pie svg { overflow: visible !important; }
         .geo .geo-legend {
             position: absolute;
             top: 54.0mm;
