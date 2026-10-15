@@ -110,6 +110,63 @@ class FundTest extends TestCase
         $this->assertDatabaseHas('funds', ['id' => $fund->id, 'name' => 'New Name']);
     }
 
+    public function test_edit_form_shows_page2_content_json(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create([
+            'user_id' => $user->id,
+            'page2_content' => ['moreAboutFund' => ['title' => 'MORE ABOUT THE FUND', 'paragraphs' => ['First paragraph']]],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('funds.edit', $fund));
+
+        $response->assertOk();
+        $response->assertSee('name="page2_content"', false);
+        $response->assertSee('First paragraph');
+    }
+
+    public function test_user_can_add_a_page2_paragraph_from_the_edit_form(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create([
+            'user_id' => $user->id,
+            'page2_content' => ['moreAboutFund' => ['title' => 'MORE ABOUT THE FUND', 'paragraphs' => ['First paragraph']]],
+        ]);
+
+        $response = $this->actingAs($user)->put(route('funds.update', $fund), [
+            'name' => $fund->name,
+            'class' => 'B',
+            'page2_content' => json_encode(['moreAboutFund' => [
+                'title' => 'MORE ABOUT THE FUND',
+                'paragraphs' => ['First paragraph', 'The “Master Fund” paragraph'],
+            ]]),
+        ]);
+
+        $response->assertRedirect(route('funds.show', $fund));
+        $this->assertSame(
+            ['First paragraph', 'The “Master Fund” paragraph'],
+            $fund->fresh()->page2_content['moreAboutFund']['paragraphs']
+        );
+    }
+
+    public function test_invalid_page2_content_json_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create([
+            'user_id' => $user->id,
+            'page2_content' => ['moreAboutFund' => ['paragraphs' => ['First paragraph']]],
+        ]);
+
+        $response = $this->actingAs($user)->put(route('funds.update', $fund), [
+            'name' => $fund->name,
+            'class' => 'B',
+            'page2_content' => '{"moreAboutFund": {"paragraphs": ["missing bracket"}}',
+        ]);
+
+        $response->assertSessionHasErrors('page2_content');
+        $this->assertSame(['First paragraph'], $fund->fresh()->page2_content['moreAboutFund']['paragraphs']);
+    }
+
     public function test_user_can_update_a_fund_created_by_a_colleague(): void
     {
         $creator = User::factory()->create();

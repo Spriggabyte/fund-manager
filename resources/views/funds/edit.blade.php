@@ -310,6 +310,7 @@
                                 'chart_data' => 'Chart Data',
                                 'sector_allocation' => 'Sector Allocation (equity funds)',
                                 'fees' => 'Fees',
+                                'page2_content' => 'Page 2 Content (More About the Fund, Unit Pricing, etc.)',
                             ];
                         @endphp
                         @foreach ($jsonSections as $field => $label)
@@ -320,7 +321,7 @@
                                 </legend>
                                 <div x-show="open" x-transition>
                                     <textarea id="{{ $field }}" name="{{ $field }}" rows="10"
-                                        class="block mt-2 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm font-mono text-xs">{{ old($field, json_encode($fund->$field ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) }}</textarea>
+                                        class="block mt-2 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm font-mono text-xs">{{ old($field, json_encode($fund->$field ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) }}</textarea>
                                     <x-input-error :messages="$errors->get($field)" class="mt-2" />
                                     <p class="mt-1 text-xs text-gray-500">This data is typically populated via Excel import. Edit manually only if needed.</p>
                                 </div>

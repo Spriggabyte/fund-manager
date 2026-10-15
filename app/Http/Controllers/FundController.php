@@ -407,6 +407,7 @@ class FundController extends Controller
             'chart_data',
             'sector_allocation',
             'fees',
+            'page2_content',
         ];
 
         foreach ($jsonFields as $field) {

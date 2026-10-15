@@ -75,6 +75,7 @@ class StoreFundRequest extends FormRequest
             'sector_allocation' => ['nullable', 'json'],
             'chart_description' => ['nullable', 'string'],
             'fees' => ['nullable', 'json'],
+            'page2_content' => ['nullable', 'json'],
         ];
     }
 }
