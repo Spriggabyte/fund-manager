@@ -936,6 +936,9 @@
            bottom margin gives the two gaps back so NOTES stays at 126.09mm. */
         .page2-section.more-about { margin-bottom: 14.40mm; }
         .page2-section.more-about .page2-body:not(:last-child) { margin-bottom: 6pt !important; }
+        /* Links in the More About copy print naartjie (overrides card 460's
+           inherit for this section only; the sidebar URL stays plain). */
+        .page2-section.more-about .ref-link { color: var(--naartjie); }
         .page2-section.notes { padding-right: 0.8mm; }
 
         /* The reference's prose runs to x=204mm while its tables stop at
@@ -1240,13 +1243,12 @@
                     return \App\Support\FactsheetText::supDigits($html);
                 };
 
-                // Reference: URLs and email addresses render naartjie
-                // (mirrored client-side by the `linkify` display formatter).
+                // URLs, email addresses and "[link text](https://…)" become
+                // clickable .ref-link anchors (mirrored client-side by the
+                // `linkify` display formatter).
                 // Card 445: straight quotes print curly, like “Equity Trustees”.
                 $linkify = function (string $text): string {
-                    return preg_replace(
-                        '/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/',
-                        '<span class="ref-link">$1</span>',
+                    return \App\Support\FactsheetText::links(
                         e(\App\Support\FactsheetText::smartQuotes($text))
                     );
                 };
@@ -1624,7 +1626,7 @@
                             @foreach ($fund->data['importantInfo']['paragraphs'] as $index => $paragraph)
                                 <p class="important-info-text">
                                     <span x-data="editableField('importantInfo.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}', 'linkify')"
-                                          @click="editMode && startEdit()"
+                                          @click="editMode && ($event.preventDefault(), startEdit())"
                                           :class="editMode ? 'editable' : ''">{!! $linkify($paragraph) !!}</span>
                                 </p>
                             @endforeach
@@ -1677,7 +1679,7 @@
                             @foreach ($fund->data['page2Content']['moreAboutFund']['paragraphs'] as $index => $paragraph)
                                 <p class="page2-body" style="margin-bottom: 0;">
                                     <span x-data="editableField('page2Content.moreAboutFund.paragraphs.{{ $index }}', '{{ addslashes($paragraph) }}', 'linkify')"
-                                          @click="editMode && startEdit()"
+                                          @click="editMode && ($event.preventDefault(), startEdit())"
                                           :class="editMode ? 'editable' : ''">{!! $linkify($paragraph) !!}</span>
                                 </p>
                             @endforeach
@@ -1782,10 +1784,8 @@
             },
             // Reference: URLs and email addresses render naartjie
             linkify(value) {
-                return intlFormatters.smartQuotes(value)
-                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                    .replace(/((?:www\.|https?:\/\/)[^\s,)]+|[\w.+-]+@[\w.-]+\.\w+)/g,
-                        '<span class="ref-link">$1</span>');
+                return intlFormatters.links(intlFormatters.smartQuotes(value)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
             }
         };
         function editableField(fieldPath, initialValue, formatter) {

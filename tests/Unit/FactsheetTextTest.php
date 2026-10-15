@@ -57,4 +57,36 @@ class FactsheetTextTest extends TestCase
             FactsheetText::footerInfo('Please visit our website for more information regarding our investment track record, the Foord team & more.')
         );
     }
+
+    public function test_bracketed_link_text_becomes_a_clickable_ref_link(): void
+    {
+        $this->assertSame(
+            'see <a class="ref-link" href="https://www.eqt.com.au/Insto" target="_blank" rel="noopener">Fund Research Regulatory Guidelines</a> here',
+            FactsheetText::links('see [Fund Research Regulatory Guidelines](https://www.eqt.com.au/Insto) here')
+        );
+        $this->assertSame(
+            '<a class="ref-link" href="https://www.eqt.com.au/Insto" target="_blank" rel="noopener">aweeee</a> aweeee',
+            FactsheetText::links('[aweeee](www.eqt.com.au/Insto) aweeee')
+        );
+    }
+
+    public function test_bare_urls_and_emails_become_clickable_without_trailing_punctuation(): void
+    {
+        $this->assertSame(
+            'at <a class="ref-link" href="https://www.eqt.com.au/Insto" target="_blank" rel="noopener">www.eqt.com.au/Insto</a>.',
+            FactsheetText::links('at www.eqt.com.au/Insto.')
+        );
+        $this->assertSame(
+            'email <a class="ref-link" href="mailto:investments@foord.com" target="_blank" rel="noopener">investments@foord.com</a> or',
+            FactsheetText::links('email investments@foord.com or')
+        );
+    }
+
+    public function test_links_expect_escaped_html_and_keep_it_escaped(): void
+    {
+        $this->assertSame(
+            'Q&amp;A <a class="ref-link" href="https://a.com/?a=1&amp;b=2" target="_blank" rel="noopener">terms</a>',
+            FactsheetText::links(e('Q&A [terms](https://a.com/?a=1&b=2)'))
+        );
+    }
 }

@@ -338,7 +338,7 @@
                                 </template>
                                 <button type="button" class="mt-3 text-sm font-medium text-naartjie-600 hover:text-naartjie-800" @click="paragraphs.push('')">+ Add paragraph</button>
                                 <x-input-error :messages="$errors->get('page2_more_about.*')" class="mt-2" />
-                                <p class="mt-1 text-xs text-gray-500">Paste copy as-is: quotes need no escaping, line breaks are joined into one paragraph and PDF ligatures (ﬁ, ﬂ) become plain letters. Empty paragraphs are dropped on save.</p>
+                                <p class="mt-1 text-xs text-gray-500">Paste copy as-is: quotes need no escaping, line breaks are joined into one paragraph and PDF ligatures (ﬁ, ﬂ) become plain letters. Empty paragraphs are dropped on save. Web addresses and emails become links automatically; to link other words, write [link text](https://www.example.com).</p>
                             </fieldset>
                         @endif
 

@@ -260,5 +260,19 @@
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                 .replace(/(track record,)\s+/, '$1<br>');
         },
+        links(html) {
+            const anchor = (href, text) => '<a class="ref-link" href="' + href + '" target="_blank" rel="noopener">' + text + '</a>';
+            const href = (url) => url.startsWith('www.') ? 'https://' + url : url;
+            return String(html).replace(
+                /\[([^\]]+)\]\(((?:https?:\/\/|www\.|mailto:)[^\s)]+)\)|((?:www\.|https?:\/\/)[^\s,)<]+)|([\w.+-]+@[\w.-]+\.\w+)/g,
+                (match, text, url, bare, email) => {
+                    if (text !== undefined) return anchor(href(url), text);
+                    if (bare !== undefined) {
+                        const [, link, trail] = bare.match(/^(.*?)([.;:!?]*)$/);
+                        return anchor(href(link), link) + trail;
+                    }
+                    return anchor('mailto:' + email, email);
+                });
+        },
     };
 </script>

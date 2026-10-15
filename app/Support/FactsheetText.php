@@ -71,6 +71,38 @@ class FactsheetText
     }
 
     /**
+     * Clickable links in copy, all styled `.ref-link` (the copy's own type
+     * setting, card 460): "[link text](https://…)" links the bracketed
+     * words, and bare www./http(s) URLs and email addresses link themselves
+     * (a sentence's closing full stop stays outside the link). Chrome keeps
+     * the anchors as link annotations in the exported PDF. Expects escaped
+     * HTML, e.g. e($text).
+     */
+    public static function links(string $html): string
+    {
+        $anchor = fn (string $href, string $text) => '<a class="ref-link" href="'.$href.'" target="_blank" rel="noopener">'.$text.'</a>';
+        $href = fn (string $url) => str_starts_with($url, 'www.') ? 'https://'.$url : $url;
+
+        return preg_replace_callback(
+            '/\[([^\]]+)\]\(((?:https?:\/\/|www\.|mailto:)[^\s)]+)\)|((?:www\.|https?:\/\/)[^\s,)<]+)|([\w.+-]+@[\w.-]+\.\w+)/',
+            function (array $m) use ($anchor, $href) {
+                if ($m[1] !== null) {
+                    return $anchor($href($m[2]), $m[1]);
+                }
+                if ($m[3] !== null) {
+                    preg_match('/^(.*?)([.;:!?]*)$/', $m[3], $parts);
+
+                    return $anchor($href($parts[1]), $parts[1]).$parts[2];
+                }
+
+                return $anchor('mailto:'.$m[4], $m[4]);
+            },
+            $html,
+            flags: PREG_UNMATCHED_AS_NULL
+        );
+    }
+
+    /**
      * Footer blurb: "…investment track record," ends the first line so
      * "the Foord team, …" starts the second (card 430). Plain text in.
      */
