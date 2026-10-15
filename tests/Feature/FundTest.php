@@ -167,6 +167,75 @@ class FundTest extends TestCase
         $this->assertSame(['First paragraph'], $fund->fresh()->page2_content['moreAboutFund']['paragraphs']);
     }
 
+    public function test_edit_form_shows_more_about_editor_and_leaves_it_out_of_the_json_box(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create([
+            'user_id' => $user->id,
+            'page2_content' => [
+                'sharePricing' => ['title' => 'UNIT PRICING', 'text' => 'Pricing text'],
+                'moreAboutFund' => ['title' => 'MORE ABOUT THE FUND', 'paragraphs' => ['First paragraph']],
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('funds.edit', $fund));
+
+        $response->assertOk();
+        $response->assertSee('name="page2_more_about[paragraphs][]"', false);
+        $response->assertSee('First paragraph');
+        $response->assertDontSee('&quot;moreAboutFund&quot;', false);
+        $response->assertSee('Pricing text');
+    }
+
+    public function test_edit_form_hides_more_about_editor_when_the_fund_has_no_such_section(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create([
+            'user_id' => $user->id,
+            'page2_content' => ['investingOffshore' => ['text' => 'Offshore text']],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('funds.edit', $fund));
+
+        $response->assertOk();
+        $response->assertDontSee('page2_more_about', false);
+    }
+
+    public function test_more_about_paragraphs_save_as_plain_text_without_json_escaping(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->create([
+            'user_id' => $user->id,
+            'page2_content' => [
+                'sharePricing' => ['title' => 'UNIT PRICING', 'text' => 'Pricing text'],
+                'moreAboutFund' => ['title' => 'MORE ABOUT THE FUND', 'paragraphs' => ['First paragraph']],
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->put(route('funds.update', $fund), [
+            'name' => $fund->name,
+            'class' => 'B',
+            'page2_content' => json_encode(['sharePricing' => ['title' => 'UNIT PRICING', 'text' => 'Pricing text']]),
+            'page2_more_about' => [
+                'title' => 'MORE ABOUT THE FUND',
+                'paragraphs' => [
+                    'First paragraph',
+                    "The \"Zenith\" rating is limited to “General Advice”\r\nfor the ﬁnancial situation of investors.",
+                    '',
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect(route('funds.show', $fund));
+        $page2 = $fund->fresh()->page2_content;
+        $this->assertSame([
+            'First paragraph',
+            'The "Zenith" rating is limited to “General Advice” for the financial situation of investors.',
+        ], $page2['moreAboutFund']['paragraphs']);
+        $this->assertSame('MORE ABOUT THE FUND', $page2['moreAboutFund']['title']);
+        $this->assertSame('Pricing text', $page2['sharePricing']['text']);
+    }
+
     public function test_user_can_update_a_fund_created_by_a_colleague(): void
     {
         $creator = User::factory()->create();

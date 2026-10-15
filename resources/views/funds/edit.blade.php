@@ -301,6 +301,47 @@
                             </div>
                         </fieldset>
 
+                        {{-- ===== MORE ABOUT THE FUND (page 2) =====
+                             Plain-text paragraphs so copy with quotes needs no
+                             JSON escaping; FundController::mergeMoreAboutFund()
+                             folds them back into page2_content. --}}
+                        @php
+                            $moreAbout = $fund->page2_content['moreAboutFund'] ?? null;
+                        @endphp
+                        @if ($moreAbout !== null)
+                            <fieldset class="border border-gray-200 rounded-lg p-4"
+                                x-data="{
+                                    paragraphs: @js(array_map(fn ($p) => (string) $p, old('page2_more_about.paragraphs', $moreAbout['paragraphs'] ?? []))),
+                                    move(index, step) {
+                                        const [paragraph] = this.paragraphs.splice(index, 1);
+                                        this.paragraphs.splice(index + step, 0, paragraph);
+                                    },
+                                }">
+                                <legend class="text-sm font-semibold text-gray-700 px-2">More About the Fund (page 2)</legend>
+                                <div>
+                                    <x-input-label for="page2_more_about_title" :value="__('Heading')" />
+                                    <x-text-input id="page2_more_about_title" class="block mt-1 w-full" type="text" name="page2_more_about[title]" :value="old('page2_more_about.title', $moreAbout['title'] ?? '')" />
+                                </div>
+                                <template x-for="(paragraph, index) in paragraphs" :key="index">
+                                    <div class="mt-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-xs font-medium text-gray-600" x-text="'Paragraph ' + (index + 1)"></span>
+                                            <div class="space-x-3 text-xs">
+                                                <button type="button" class="text-gray-500 hover:text-gray-700" x-show="index > 0" @click="move(index, -1)">↑ Up</button>
+                                                <button type="button" class="text-gray-500 hover:text-gray-700" x-show="index < paragraphs.length - 1" @click="move(index, 1)">↓ Down</button>
+                                                <button type="button" class="text-red-600 hover:underline" @click="paragraphs.splice(index, 1)">Remove</button>
+                                            </div>
+                                        </div>
+                                        <textarea name="page2_more_about[paragraphs][]" rows="6" x-model="paragraphs[index]"
+                                            class="block mt-1 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm text-sm"></textarea>
+                                    </div>
+                                </template>
+                                <button type="button" class="mt-3 text-sm font-medium text-naartjie-600 hover:text-naartjie-800" @click="paragraphs.push('')">+ Add paragraph</button>
+                                <x-input-error :messages="$errors->get('page2_more_about.*')" class="mt-2" />
+                                <p class="mt-1 text-xs text-gray-500">Paste copy as-is: quotes need no escaping, line breaks are joined into one paragraph and PDF ligatures (ﬁ, ﬂ) become plain letters. Empty paragraphs are dropped on save.</p>
+                            </fieldset>
+                        @endif
+
                         {{-- ===== JSON DATA SECTIONS ===== --}}
                         @php
                             $jsonSections = [
@@ -310,10 +351,16 @@
                                 'chart_data' => 'Chart Data',
                                 'sector_allocation' => 'Sector Allocation (equity funds)',
                                 'fees' => 'Fees',
-                                'page2_content' => 'Page 2 Content (More About the Fund, Unit Pricing, etc.)',
+                                'page2_content' => $moreAbout !== null ? 'Page 2 Content (Unit Pricing, etc.)' : 'Page 2 Content',
                             ];
                         @endphp
                         @foreach ($jsonSections as $field => $label)
+                            @php
+                                // More About the Fund has its own editor above
+                                $jsonValue = $field === 'page2_content' && $moreAbout !== null
+                                    ? \Illuminate\Support\Arr::except($fund->page2_content, ['moreAboutFund'])
+                                    : ($fund->$field ?? []);
+                            @endphp
                             <fieldset class="border border-gray-200 rounded-lg p-4" x-data="{ open: false }">
                                 <legend class="text-sm font-semibold text-gray-700 px-2 cursor-pointer" @click="open = !open">
                                     {{ $label }} (JSON)
@@ -321,7 +368,7 @@
                                 </legend>
                                 <div x-show="open" x-transition>
                                     <textarea id="{{ $field }}" name="{{ $field }}" rows="10"
-                                        class="block mt-2 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm font-mono text-xs">{{ old($field, json_encode($fund->$field ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) }}</textarea>
+                                        class="block mt-2 w-full border-gray-300 focus:border-naartjie-500 focus:ring-naartjie-500 rounded-md shadow-sm font-mono text-xs">{{ old($field, json_encode($jsonValue, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) }}</textarea>
                                     <x-input-error :messages="$errors->get($field)" class="mt-2" />
                                     <p class="mt-1 text-xs text-gray-500">This data is typically populated via Excel import. Edit manually only if needed.</p>
                                 </div>

@@ -82,6 +82,7 @@ class FundController extends Controller
 
         $validated = $request->validated();
         $validated = $this->decodeJsonFields($validated);
+        $validated = $this->mergeMoreAboutFund($validated, $fund);
 
         $fund->update($validated);
 
@@ -417,5 +418,51 @@ class FundController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Fold the edit form's plain-text "More About the Fund" fields back into
+     * page2_content. The page 2 JSON box leaves that section out, so the
+     * paragraphs never need JSON escaping.
+     */
+    private function mergeMoreAboutFund(array $data, Fund $fund): array
+    {
+        if (! array_key_exists('page2_more_about', $data)) {
+            return $data;
+        }
+
+        $moreAbout = $data['page2_more_about'] ?? [];
+        unset($data['page2_more_about']);
+
+        $page2 = array_key_exists('page2_content', $data)
+            ? ($data['page2_content'] ?? [])
+            : ($fund->page2_content ?? []);
+
+        $paragraphs = collect($moreAbout['paragraphs'] ?? [])
+            ->map(fn ($paragraph) => $this->cleanPastedParagraph((string) $paragraph))
+            ->filter(fn ($paragraph) => $paragraph !== '')
+            ->values()
+            ->all();
+
+        $page2['moreAboutFund'] = [
+            'title' => $moreAbout['title'] ?? '',
+            'paragraphs' => $paragraphs,
+        ];
+        $data['page2_content'] = $page2;
+
+        return $data;
+    }
+
+    /**
+     * Join line breaks from pasted copy into one paragraph and unpick the
+     * typographic ligatures (ﬁ, ﬂ, …) that come across when copying from a PDF.
+     */
+    private function cleanPastedParagraph(string $paragraph): string
+    {
+        $paragraph = preg_replace('/[ \t]*\R[ \t]*/u', ' ', $paragraph);
+
+        return trim(strtr($paragraph, [
+            'ﬀ' => 'ff', 'ﬁ' => 'fi', 'ﬂ' => 'fl', 'ﬃ' => 'ffi', 'ﬄ' => 'ffl', 'ﬅ' => 'st', 'ﬆ' => 'st',
+        ]));
     }
 }

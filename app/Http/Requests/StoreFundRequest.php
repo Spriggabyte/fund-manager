@@ -76,6 +76,11 @@ class StoreFundRequest extends FormRequest
             'chart_description' => ['nullable', 'string'],
             'fees' => ['nullable', 'json'],
             'page2_content' => ['nullable', 'json'],
+            // Plain-text editor for page2_content.moreAboutFund (no JSON escaping)
+            'page2_more_about' => ['nullable', 'array'],
+            'page2_more_about.title' => ['nullable', 'string', 'max:255'],
+            'page2_more_about.paragraphs' => ['nullable', 'array'],
+            'page2_more_about.paragraphs.*' => ['nullable', 'string'],
         ];
     }
 }
