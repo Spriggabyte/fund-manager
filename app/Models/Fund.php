@@ -35,6 +35,12 @@ class Fund extends Model
     public const GLOBAL_EQUITY_FEEDER_TEMPLATE = 'show-global-equity-feeder';
 
     /**
+     * The Prescient-branded feeder sheets (822, 823, 829). Their sidebar
+     * opens with the MINIMUM DISCLOSURE DOCUMENT label and a CLASS row.
+     */
+    public const PRESCIENT_TEMPLATES = ['show-prescient-feeder', 'show-prescient-global-equity', 'show-prescient-asia-ex-japan'];
+
+    /**
      * The six global fact sheets the Foord QC reviewer treats as
      * "international" (875, 874, 877, 878, 880, 879). Every other fact sheet,
      * the rand feeders included, follows the local-fund typography spec in
@@ -279,12 +285,12 @@ class Fund extends Model
                 'marketingCommunication' => in_array($this->template, array_merge(['show-international', 'show-international-trust'], self::GLOBAL_EQUITY_TEMPLATES), true) ? true : null,
                 // Prescient feeder sheets open the sidebar with the two-line
                 // MINIMUM DISCLOSURE DOCUMENT AND GENERAL INVESTOR REPORT label
-                'mddHeading' => in_array($this->template, ['show-prescient-feeder', 'show-prescient-global-equity'], true) ? true : null,
+                'mddHeading' => in_array($this->template, self::PRESCIENT_TEMPLATES, true) ? true : null,
                 // Global Equity (Luxembourg): SHARE CLASS heading under the
                 // marketing-communication label (876 reference)
                 // The Prescient sheets label the same row CLASS and print the
                 // code beneath it
-                'shareClass' => in_array($this->template, array_merge(self::GLOBAL_EQUITY_TEMPLATES, ['show-prescient-feeder', 'show-prescient-global-equity']), true) ? $this->class_code : null,
+                'shareClass' => in_array($this->template, array_merge(self::GLOBAL_EQUITY_TEMPLATES, self::PRESCIENT_TEMPLATES), true) ? $this->class_code : null,
                 'depository' => $this->depository,
                 // 878 only: SHARIAH SUPERVISORY BOARD sits under MANAGEMENT COMPANY.
                 'shariahSupervisoryBoard' => $this->shariah_supervisory_board,

@@ -238,6 +238,39 @@ class FundTemplateSelectionTest extends TestCase
             ->assertViewIs('funds.show-prescient-global-equity');
     }
 
+    public function test_internal_pdf_view_uses_prescient_asia_ex_japan_page_template(): void
+    {
+        $fund = Fund::factory()->create(['template' => 'show-prescient-asia-ex-japan']);
+
+        $view = (new FundController)->internalPdfView($fund);
+
+        $this->assertSame('funds.show-prescient-asia-ex-japan', $view->name());
+    }
+
+    /**
+     * The 829 sheet renders with only its seeded statics and an import's
+     * worth of data: no performance chart, table or price graph.
+     */
+    public function test_show_renders_prescient_asia_ex_japan_template(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create([
+            'template' => 'show-prescient-asia-ex-japan',
+            'class_code' => 'A',
+            'master_fund' => 'The portfolio will, apart from assets in liquid form, consist solely of participatory interests in the Foord Asia ex-Japan Fund.',
+            'sector_allocation' => ['title' => 'PORTFOLIO STRUCTURE %*', 'sectors' => [['name' => 'Cash', 'value' => 9, 'change' => '0.3', 'direction' => 'down']]],
+            'asset_allocation' => ['geographicCountryExposure' => [['name' => 'China', 'value' => 46.6], ['name' => 'Other', 'value' => 53.4]]],
+            'performance_table' => ['title' => 'PORTFOLIO PERFORMANCE', 'notice' => 'Regulation prohibits performance reporting for periods less than one year.', 'footnotes' => []],
+        ]);
+
+        $this->actingAs($user)->get(route('funds.show', $fund))
+            ->assertOk()
+            ->assertViewIs('funds.show-prescient-asia-ex-japan')
+            ->assertSee('INVESTMENT POLICY')
+            ->assertSee('Regulation prohibits performance reporting')
+            ->assertSee('class="geo-pie"', false);
+    }
+
     public function test_internal_pdf_view_uses_global_equity_feeder_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-global-equity-feeder']);

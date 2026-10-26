@@ -46,7 +46,7 @@ class FundController extends Controller
             ->with('success', 'Fund created successfully.');
     }
 
-    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-conservative', 'show-bond', 'show-flex-income', 'show-income', 'show-inflation-income', 'show-domestic', 'show-absolute', 'show-shariah', 'show-shariah-income', 'show-international', 'show-international-trust', 'show-global-equity', 'show-feeder', 'show-prescient-feeder', 'show-prescient-global-equity', 'show-global-equity-feeder', 'show-hassen-shariah', 'show-australian-feeder', 'show-asia-ex-japan', 'show-local-overview', 'show-global-overview'];
+    private const ALLOWED_TEMPLATES = ['show', 'show-equity', 'show-flexible', 'show-conservative', 'show-bond', 'show-flex-income', 'show-income', 'show-inflation-income', 'show-domestic', 'show-absolute', 'show-shariah', 'show-shariah-income', 'show-international', 'show-international-trust', 'show-global-equity', 'show-feeder', 'show-prescient-feeder', 'show-prescient-global-equity', 'show-prescient-asia-ex-japan', 'show-global-equity-feeder', 'show-hassen-shariah', 'show-australian-feeder', 'show-asia-ex-japan', 'show-local-overview', 'show-global-overview'];
 
     public function show(Fund $fund): View
     {

@@ -16,7 +16,7 @@ class FactsheetImporter extends AbstractExcelImporter
      *
      * @var list<string>
      */
-    private const PRESCIENT_TEMPLATES = ['show-prescient-feeder', 'show-prescient-global-equity'];
+    private const PRESCIENT_TEMPLATES = Fund::PRESCIENT_TEMPLATES;
 
     /**
      * Sheets whose DISTRIBUTIONS row is static prose ("… does not distribute
@@ -25,7 +25,27 @@ class FactsheetImporter extends AbstractExcelImporter
      *
      * @var list<string>
      */
-    private const STATIC_DISTRIBUTION_TEMPLATES = ['show-prescient-feeder', 'show-prescient-global-equity', Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE];
+    private const STATIC_DISTRIBUTION_TEMPLATES = [...Fund::PRESCIENT_TEMPLATES, Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE];
+
+    /**
+     * Prescient sheets whose page-2 ASSET ALLOCATION % table and
+     * CONTRIBUTORS / DETRACTORS rows come from AA_TOTAL_* and the
+     * CONTRIBUTORS / DETRACTORS keys (823; 829 prints the same blocks on
+     * page 1).
+     *
+     * @var list<string>
+     */
+    private const PRESCIENT_ALLOCATION_TEMPLATES = ['show-prescient-global-equity', 'show-prescient-asia-ex-japan'];
+
+    /**
+     * New funds under a year old (829, incepted 30 September 2026):
+     * regulation prohibits reporting their performance, so the sheet prints a
+     * notice instead of a table, and the export's FOORD_* rows (the master
+     * fund's, 879) are not imported.
+     *
+     * @var list<string>
+     */
+    private const NO_PERFORMANCE_TEMPLATES = ['show-prescient-asia-ex-japan'];
 
     /**
      * Sheets whose published line carries no full stop (877, 878). The 879
@@ -114,9 +134,12 @@ class FactsheetImporter extends AbstractExcelImporter
         $this->mapPortfolioStatistics($fund, $data);
         $this->mapCreditExposure($fund, $data);
         $this->mapMonthlyPerformance($fund, $data);
-        $this->mapPerformanceTable($fund, $data);
+        if (! in_array($fund->template ?? '', self::NO_PERFORMANCE_TEMPLATES, true)) {
+            $this->mapPerformanceTable($fund, $data);
+        }
         $this->mapTotalInvestmentCharge($fund, $data);
         $this->updateChartDescription($fund, $data);
+        $this->refreshMasterFundDate($fund, $data);
     }
 
     private function mapScalarFields(Fund $fund, array $data): void
@@ -124,7 +147,10 @@ class FactsheetImporter extends AbstractExcelImporter
         if (isset($data['MONTH_END_DATE'])) {
             $fund->fund_date = $data['MONTH_END_DATE'];
         }
-        if (isset($data['PORTFOLIO_SIZE'])) {
+        // A new fund's export sends ERR for the size, price and unit count
+        // (829 Sept 2026: the sheet prints "Not available—New Fund"), so an
+        // unusable cell keeps the stored text.
+        if ($this->isUsable($data['PORTFOLIO_SIZE'] ?? null)) {
             // Sheets export the bare figure ("5.0 billion"); the fact sheets
             // display the fund currency — rands for SA funds, dollars for the
             // USD-based international funds (TOTAL FUND SIZE "$1.5 billion").
@@ -145,7 +171,7 @@ class FactsheetImporter extends AbstractExcelImporter
             }
             $fund->portfolio_size = $size;
         }
-        if (isset($data['UNIT_PRICE'])) {
+        if ($this->isUsable($data['UNIT_PRICE'] ?? null)) {
             $price = (string) $data['UNIT_PRICE'];
             // The 880 feed exports the price with a bare dollar sign; the
             // published sheet marks it Australian ("A$22.35").
@@ -159,7 +185,7 @@ class FactsheetImporter extends AbstractExcelImporter
             }
             $fund->unit_price = $price;
         }
-        if (isset($data['NUMBER_OF_UNITS'])) {
+        if ($this->isUsable($data['NUMBER_OF_UNITS'] ?? null)) {
             $units = $data['NUMBER_OF_UNITS'];
             // The 877 feed mixes formats per class: some export the worded
             // count ("7.6 million"), others the raw share count
@@ -174,7 +200,11 @@ class FactsheetImporter extends AbstractExcelImporter
         }
         // The 880 feed has no ISIN column of its own and exports "0"; the
         // sheet's registration codes are seeded statics (as for SEDOL).
-        if (isset($data['ISIN']) && (string) $data['ISIN'] !== '0') {
+        // ISINs are unique per class, so one another fund already holds is a
+        // feed error and the stored code stays: the 829 export (Sept 2026)
+        // carries 822 Class A's ZAE000307708.
+        if (isset($data['ISIN']) && (string) $data['ISIN'] !== '0'
+            && ! Fund::query()->where('isin_number', $data['ISIN'])->whereKeyNot($fund->getKey())->exists()) {
             $fund->isin_number = $data['ISIN'];
         }
         if (isset($data['SEDOL']) && $data['SEDOL'] !== '0') {
@@ -317,8 +347,8 @@ class FactsheetImporter extends AbstractExcelImporter
         // The Shariah income fund (841) exports PS_SA_EQUITY too, but publishes
         // the flex-income SA/FOREIGN/TOTAL/CHANGE portfolio structure rather
         // than the 840 asset allocation, so it is excluded by template.
-        if (($fund->template ?? '') === 'show-prescient-global-equity') {
-            // 823 exports bare AA_TOTAL_* too, but they feed its page-2
+        if (in_array($fund->template ?? '', self::PRESCIENT_ALLOCATION_TEMPLATES, true)) {
+            // 823 and 829 export bare AA_TOTAL_* too, but they feed the
             // ASSET ALLOCATION % table, not the domestic branch below.
             $this->mapPrescientGlobalEquityAssetAllocation($fund, $data);
         } elseif (isset($data['AA_SHARE_CURRENT'])) {
@@ -837,7 +867,7 @@ class FactsheetImporter extends AbstractExcelImporter
      */
     private function mapContributorsDetractors(Fund $fund, array $data): void
     {
-        if (($fund->template ?? '') !== 'show-prescient-global-equity') {
+        if (! in_array($fund->template ?? '', self::PRESCIENT_ALLOCATION_TEMPLATES, true)) {
             return;
         }
 
@@ -1236,7 +1266,7 @@ class FactsheetImporter extends AbstractExcelImporter
         $sectorAllocation['title'] = $sectorAllocation['title'] ?? 'EQUITY SECTOR ALLOCATION %';
 
         $monthEnd = $this->parseMonthEnd($data);
-        if (in_array($fund->template ?? '', [Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE, 'show-prescient-global-equity', 'show-asia-ex-japan', Fund::AUSTRALIAN_FEEDER_TEMPLATE, 'show-global-equity', 'show-hassen-shariah', 'show-equity'], true)
+        if (in_array($fund->template ?? '', [Fund::GLOBAL_EQUITY_FEEDER_TEMPLATE, 'show-prescient-global-equity', 'show-prescient-asia-ex-japan', 'show-asia-ex-japan', Fund::AUSTRALIAN_FEEDER_TEMPLATE, 'show-global-equity', 'show-hassen-shariah', 'show-equity'], true)
             && $this->isUsable($data['LAST_QUARTER_END'] ?? null)) {
             // The published 811, 821, 823, 877, 878, 879 and 880 PORTFOLIO
             // STRUCTURE / EQUITY SECTOR ALLOCATION lists all report their
@@ -2051,7 +2081,10 @@ class FactsheetImporter extends AbstractExcelImporter
             foreach ($mapping as $prefix => $name) {
                 $m12 = $data["{$prefix}_12_MONTH"] ?? null;
                 $m36 = $data["{$prefix}_36_MONTH"] ?? null;
-                if ($m12 === null) {
+                // A new fund's export sends error markers ("ER5>>" / "ER6>>",
+                // 829 Sept 2026) — no figure, so the stored row stays rather
+                // than importing as 0.00.
+                if ($m12 === null || ! is_numeric($m12)) {
                     continue;
                 }
                 // Funds without global exposure export zero global charges;
@@ -2081,7 +2114,7 @@ class FactsheetImporter extends AbstractExcelImporter
             }
             $totalM12 = $data['SA_TER_TOTAL_INVESTMENT_CHARGE_12_MONTH'] ?? null;
             $totalM36 = $data['SA_TER_TOTAL_INVESTMENT_CHARGE_36_MONTH'] ?? null;
-            if ($totalM12 !== null) {
+            if ($totalM12 !== null && is_numeric($totalM12)) {
                 $tic['total'] = [
                     'name' => 'Total investment charge',
                     '12m' => $this->toNumber($totalM12),
@@ -2218,6 +2251,33 @@ class FactsheetImporter extends AbstractExcelImporter
 
         $fees['annualisedCostRatio'] = $acr;
         $fund->fees = $fees;
+    }
+
+    /**
+     * 829 prints the master fund's figures until the feeder has its own
+     * ("* Figures are based on Master Fund at 31 August 2026. Feeder Fund data
+     * will be available in the next publication."). The export carries the
+     * master fund's data at its month end, so the note's date follows
+     * MONTH_END_DATE.
+     */
+    private function refreshMasterFundDate(Fund $fund, array $data): void
+    {
+        $monthEnd = $data['MONTH_END_DATE'] ?? null;
+        $table = $fund->performance_table;
+        if (! $this->isUsable($monthEnd) || ! is_array($table) || empty($table['footnotes'])) {
+            return;
+        }
+
+        $footnotes = array_map(
+            fn ($note) => is_string($note)
+                ? preg_replace('/(Master Fund at )\d{1,2} \p{L}+ \d{4}/u', '${1}'.$monthEnd, $note)
+                : $note,
+            $table['footnotes']
+        );
+        if ($footnotes !== $table['footnotes']) {
+            $table['footnotes'] = $footnotes;
+            $fund->performance_table = $table;
+        }
     }
 
     private function updateTerFootnote(Fund $fund, array $data): void
