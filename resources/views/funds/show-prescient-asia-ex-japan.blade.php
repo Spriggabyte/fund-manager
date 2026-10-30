@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     @include('funds.partials.avenir-fonts')
+    @include('funds.partials.lato2-fonts')
     <style>
         /* =====================================================
            PRESCIENT FOORD ASIA EX-JAPAN FEEDER FUND (829)
@@ -393,24 +394,38 @@
             background-color: var(--naartjie);
         }
 
+        /* QC 27 Oct 2026: value ink ends on the reference's 121.38mm and the
+           change's on 130.69mm (both were 0.76mm right). */
         .ps-value {
-            flex: 0 0 4.5mm;
+            flex: 0 0 3.74mm;
             text-align: right;
             font-weight: 400;
         }
 
         /* The arrow fills the slot between the value and the change figure,
-           so the change's right edge stays on 131.59mm whatever its width. */
+           so the change's right edge stays put whatever its width. Baseline
+           alignment sits the arrow's base on the figure's baseline (as on the
+           reference). Centred, the two rounded to whole px separately and the
+           5mm (18.9px) row pitch left one arrow in three or four 1px high. */
         .ps-change {
             flex: 0 0 9.32mm;
             display: inline-flex;
             justify-content: flex-end;
-            align-items: center;
+            align-items: baseline;
         }
 
         /* Reference arrows: black ▲ for up, steel-blue ▼ for down (SVG from
-           global-fixes); the figure stays navy. 1mm clear of the value. */
-        .ps-arrow { flex: 0 0 auto; margin-left: 1mm; margin-right: auto; display: inline-flex; }
+           global-fixes); the figure stays navy. QC 27 Oct 2026: the arrow
+           hugged the value — it now takes the whole slot and centres in it;
+           the 0.45mm pad nudges it onto the reference's 123.4mm (2.0mm clear
+           of the value, 1.5mm of the change). Size: after the global
+           include. */
+        .ps-arrow {
+            flex: 1 1 auto;
+            display: inline-flex;
+            justify-content: center;
+            padding-left: 0.45mm;
+        }
         .ps-arrow.change-up::before,
         .ps-arrow.change-down::before { margin: 0 !important; }
         .change-up::before { content: '▲'; font-size: 5.1pt; color: #000; }
@@ -704,19 +719,28 @@
             margin: 0;
         }
 
-        .info-sidebar-content { padding: 6.3mm 4mm 4mm 9mm; }
+        /* QC 27 Oct 2026: a 45.88mm measure breaks every page 2–3 line
+           where the 829 reference does. */
+        .info-sidebar-content { padding: 6.57mm 5.12mm 4mm 9mm; }
 
-        /* Feeder reference: the SA important-information column runs longer
-           than the international one — 6.5pt Lato Light keeps it on the page. */
+        /* QC 27 Oct 2026 ("font on staging" vs "font on example"): the 829
+           reference sets pages 2–3 in Lato 2.015 Light 6.48pt, black,
+           untracked and unkerned (Publisher doesn't kern small text;
+           partials/lato2-fonts). Family and size are forced over
+           global-fixes 295 after its include. 10px leading = 2.65mm
+           (reference 2.59mm) — whole px, so Chrome prints every line on the
+           same pitch; 5px between paragraphs gives the reference's 3.98mm
+           baseline gap. */
         .info-sidebar-content p,
         .important-info-text {
-            font-family: 'Lato', 'Avenir Next', sans-serif;
+            font-family: 'Lato 2', 'Lato', sans-serif;
             font-weight: 300;
-            font-size: 6.5pt;
-            line-height: 7.23pt;
-            letter-spacing: 0.01em;
-            color: var(--dark-navy);
-            margin: 0 0 1.3mm 0;
+            font-size: 6.48pt;
+            line-height: 10px;
+            letter-spacing: 0;
+            font-kerning: none;
+            color: #000;
+            margin: 0 0 5px 0;
             text-align: left;
         }
 
@@ -731,36 +755,43 @@
 
         .info-sidebar-content p:last-child { margin-bottom: 0; }
 
-        /* 822 reference: the closing "This document is for information
-           purposes only …" disclaimer sets in grey italics, with the issue
-           date returning to the body colour beneath it. */
+        /* 829 reference: the closing "This document is for information
+           purposes only …" disclaimer and the issue date beneath it set in
+           navy (the body copy is black); the disclaimer in italics. */
         .important-info-text.disclaimer {
             font-style: italic;
-            color: var(--dark-navy-70);
+            color: var(--dark-navy);
         }
+        .important-info-text.issue-date { color: var(--dark-navy); }
 
         /* === Page 3 — contact details + glossary === */
+        /* 829 reference: Lato 2 Light 6.5pt navy, 8.35mm above the first
+           contact line. */
         .contact-heading {
-            font-family: 'Avenir Next', 'Lato', sans-serif;
-            font-weight: 400;
-            font-size: 6.25pt;
-            line-height: 8.2pt;
-            letter-spacing: 0.02em;
+            font-family: 'Lato 2', 'Lato', sans-serif;
+            font-weight: 300;
+            font-size: 6.5pt;
+            line-height: 10px;
+            letter-spacing: 0;
+            font-kerning: none;
             text-transform: uppercase;
-            color: var(--dark-navy-70);
-            margin: 0 0 5.1mm 0;
+            color: var(--dark-navy);
+            margin: 0 0 5.6mm 0;
         }
 
-        /* Reference page 3: contact lines run on a 2.75mm pitch with a
-           1.45mm gap between blocks — looser than the page 2 column. */
-        .contact-block { margin-bottom: 2.05mm; }
+        /* Reference page 3: contact lines run on a 2.75mm pitch (10px =
+           2.65mm, whole px as page 2) with 1.4mm between blocks (6px); the
+           label-less paragraph block has a blank line above it (11px). */
+        .contact-block { margin-bottom: 6px; }
+        .contact-block.contact-prose { margin-top: 11px; }
         .contact-block:last-child { margin-bottom: 0; }
 
-        .contact-block p { margin: 0; line-height: 7.8pt; }
+        .contact-block p { margin: 0; line-height: 10px; }
 
+        /* Labels in Lato 2 Regular, black like their values. */
         .contact-block strong {
-            font-weight: 700;
-            color: var(--dark-navy);
+            font-weight: 400;
+            color: #000;
         }
 
         /* Reference: 3.3mm line pitch, 4.65mm between entries */
@@ -1038,6 +1069,26 @@
         .sidebar-section h3 { line-height: 8px !important; }
         .sidebar-section p,
         .sidebar-section .sidebar-value { line-height: 11px !important; }
+
+        /* Portfolio-structure arrows at the 829 reference's Wingdings size
+           (2.03 x 1.78mm; global default 1.7 x 1.55mm). Chrome snaps a
+           background tile to whole px, so a 2.05 x 1.76mm box printed as
+           7 x 6px (1.77mm wide); an 8 x 7px box prints the 10:9 SVG at
+           2.06 x 1.85mm on every row. */
+        .ps-arrow.change-up::before,
+        .ps-arrow.change-down::before {
+            width: 8px !important;
+            height: 7px !important;
+            background-size: 8px 7px !important;
+        }
+
+        /* Pages 2–3 column: Lato 2.015 at the reference's 6.48pt, over
+           global-fixes 295's Google Lato 6.5pt (see .important-info-text). */
+        .info-sidebar-content p,
+        .info-sidebar-content li {
+            font-family: 'Lato 2', 'Lato', sans-serif !important;
+            font-size: 6.48pt !important;
+        }
 
         /* MINIMUM DISCLOSURE heading: Avenir Next Medium 7.5pt on a 3.04mm
            pitch (reference 7.56pt), larger than the 6pt row labels. */
@@ -1639,7 +1690,7 @@
                                           :class="editMode ? 'editable' : ''">{!! $linkify($paragraph) !!}</span>
                                 </p>
                             @endforeach
-                            <p class="important-info-text" style="margin-top: 2.5mm;">
+                            <p class="important-info-text issue-date">
                                 <span x-data="editableField('importantInfo.publishedDate', '{{ $fund->data['importantInfo']['publishedDate'] }}')"
                                       @click="editMode && startEdit()"
                                       :class="editMode ? 'editable' : ''"
@@ -1795,7 +1846,7 @@
                     <div class="info-sidebar-content">
                         <h3 class="contact-heading">{{ $fund->data['page2Content']['contactDetails']['title'] ?? 'CONTACT DETAILS' }}</h3>
                         @foreach ($fund->data['page2Content']['contactDetails']['blocks'] ?? [] as $blockIndex => $block)
-                            <div class="contact-block">
+                            <div class="contact-block {{ collect($block)->every(fn ($line) => empty($line['label'])) ? 'contact-prose' : '' }}">
                                 @foreach ($block as $lineIndex => $line)
                                     <p class="important-info-text">
                                         @if(!empty($line['label']))<strong>{{ $line['label'] }}:</strong> @endif{!! $linkify($line['value'] ?? '') !!}
