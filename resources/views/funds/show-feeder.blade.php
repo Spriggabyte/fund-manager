@@ -2033,8 +2033,11 @@
         };
 
         // End value annotation plugin. WhatsApp 5 Oct: the labels are spans
-        // in .chart-end-labels (vector text in the PDF), each on the
-        // baseline the canvas text used (3px above the line end).
+        // in .chart-end-labels (vector text in the PDF). WhatsApp 3 Nov
+        // ("too high compared to line"): the reference centres each label
+        // on its line end (baseline ~1.8pt below it at 6.76pt type, i.e.
+        // 0.27 × font size). The old baseline, 3px above the line end,
+        // floated the label a full line too high.
         const endLabelLayer = document.querySelector('#performanceChart + .chart-end-labels');
         const endValuePlugin = {
             id: 'endValueAnnotation',
@@ -2069,7 +2072,7 @@
                     labels.push({
                         span,
                         dx: lastPoint.x + 4 - (span.getBoundingClientRect().left - layerRect.left),
-                        baseline: lastPoint.y - 3,
+                        baseline: lastPoint.y + 0.27 * fontPx,
                         probeBottom: probe.getBoundingClientRect().bottom - layerRect.top,
                     });
                 });

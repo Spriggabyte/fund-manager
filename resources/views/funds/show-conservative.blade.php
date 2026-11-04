@@ -1816,7 +1816,11 @@
                 // the plot height BELOW the 100 baseline, with the x-axis crossing
                 // at 100 (Excel "axis crosses at 100"). Measured with PyMuPDF:
                 // axis 175.7→213.3mm, 100 baseline at 208.0mm.
-                const yMax = Math.ceil(maxVal * 1.01 / 50) * 50;
+                // Headroom is a fixed 2% of the 100→peak rise (296 → 300 in the
+                // reference, ~0.65mm). Rounding up to a 50 step instead (only the
+                // 100 tick is labelled, so yMax needn't be round) jumped 299 → 350
+                // and left a 6.5mm gap above the lines (WhatsApp 3 Nov 2026).
+                const yMax = 100 + (maxVal - 100) * 1.02;
                 const yMin = 100 - (yMax - 100) * 0.164;
                 const MIN_LABEL_GAP = 12; // px — reference keeps end labels ≥3.3mm apart
 
