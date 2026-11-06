@@ -271,6 +271,32 @@ class FundTemplateSelectionTest extends TestCase
             ->assertSee('class="geo-pie"', false);
     }
 
+    /**
+     * The 829 sheet prints the quarter-end "Change since" line under the
+     * PORTFOLIO STRUCTURE % heading (879 layout), bound to the editable
+     * sectorAllocation.subtitle field.
+     */
+    public function test_show_renders_prescient_asia_ex_japan_portfolio_structure_subtitle(): void
+    {
+        $user = User::factory()->create();
+        $fund = Fund::factory()->for($user)->create([
+            'template' => 'show-prescient-asia-ex-japan',
+            'class_code' => 'B2',
+            'master_fund' => 'The portfolio will, apart from assets in liquid form, consist solely of participatory interests in the Foord Asia ex-Japan Fund.',
+            'sector_allocation' => [
+                'title' => 'PORTFOLIO STRUCTURE %*',
+                'sectors' => [['name' => 'Cash', 'value' => 9, 'change' => '0.3', 'direction' => 'down']],
+                'subtitle' => 'Change since 30 June 2026',
+            ],
+            'asset_allocation' => ['geographicCountryExposure' => [['name' => 'China', 'value' => 46.6], ['name' => 'Other', 'value' => 53.4]]],
+            'performance_table' => ['title' => 'PORTFOLIO PERFORMANCE', 'notice' => 'Regulation prohibits performance reporting for periods less than one year.', 'footnotes' => []],
+        ]);
+
+        $this->actingAs($user)->get(route('funds.show', $fund))
+            ->assertOk()
+            ->assertSee("editableField('mainContent.sectorAllocation.subtitle', 'Change since 30 June 2026')", false);
+    }
+
     public function test_internal_pdf_view_uses_global_equity_feeder_page_template(): void
     {
         $fund = Fund::factory()->create(['template' => 'show-global-equity-feeder']);

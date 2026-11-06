@@ -327,14 +327,22 @@
             letter-spacing: 0.01em;
         }
 
+        /* "Change since <quarter end>" under the PORTFOLIO STRUCTURE %
+           heading, as the 879 master sheet prints it (Avenir Next Medium 8,
+           baseline 3.44mm below the heading's). The 829 reference leaves the
+           line blank, so the block keeps its height when the subtitle is
+           empty and the sector rows stay put either way. */
         .section-subtitle {
+            display: block;
+            min-height: 9pt;
+            padding-left: 0.62mm;
             font-family: 'Avenir Next', 'Lato', sans-serif;
             font-weight: 500;
-            font-size: 7.4pt;
-            line-height: 8.9pt;
+            font-size: 8pt;
+            line-height: 9pt;
             letter-spacing: 0.01em;
             color: var(--dark-navy);
-            margin: -0.5mm 0 2.1mm 0;
+            margin: 0.2mm 0 0 0;
         }
 
         /* === Row 1: PORTFOLIO STRUCTURE % beside TOP 10 (879 layout). The
@@ -362,9 +370,10 @@
            ===================================================== */
         .ps-section { margin-bottom: 0; }
 
-        /* The reference leaves the "Change since" line's room empty: 10.96mm
-           from the heading's baseline to the first row's. */
-        .ps-header { margin-bottom: 7.03mm; }
+        /* 10.96mm from the heading's baseline to the first row's (829
+           reference). The subtitle block (0.2mm + 9pt = 3.375mm) now sits in
+           that room, so the gap below the header is 7.03mm less that. */
+        .ps-header { margin-bottom: 3.655mm; }
 
         .ps-row {
             display: flex;
@@ -1414,6 +1423,13 @@
                                                   :class="editMode ? 'editable' : ''"
                                                   x-text="value"></span>
                                         </h3>
+                                        {{-- 879 master sheet: the quarter-end "Change since" line prints
+                                             under the heading. The 829 reference left it blank. --}}
+                                        <span class="section-subtitle"
+                                              x-data="editableField('mainContent.sectorAllocation.subtitle', '{{ addslashes($psData['subtitle'] ?? '') }}')"
+                                              @click="editMode && startEdit()"
+                                              :class="editMode ? 'editable' : ''"
+                                              x-text="value"></span>
                                     </div>
                                     <div>
                                         @foreach ($psData['sectors'] as $rowIndex => $row)
