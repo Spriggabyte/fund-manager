@@ -563,6 +563,10 @@
         /* 13.04mm from the last bar row's baseline to the heading's. */
         .geo-section { margin-top: 8.98mm; }
         .geo-section .section-heading { margin-bottom: 0; }
+        /* 49.61mm is the reference box; layoutPieLabels() re-sizes it so
+           its bottom edge always sits 2.37mm below the lowest label's
+           baseline (or the rim), keeping PORTFOLIO PERFORMANCE 13.2mm
+           below the pie whichever slice points down. */
         .geo-pie {
             display: block;
             width: 67.74mm;
@@ -2058,6 +2062,7 @@
                 }
             }
 
+            let lowest = cy + r;
             boxes.forEach(({ label, lines, w, x, y, dy }) => {
                 label.textContent = '';
                 // Right-hand labels read from the left edge; the others
@@ -2066,12 +2071,25 @@
                 label.setAttribute('text-anchor', right ? 'start' : 'middle');
                 lines.forEach((text, i) => {
                     const tspan = document.createElementNS(NS, 'tspan');
+                    const baseline = y + i * LINE + (LINE + CAP) / 2;
                     tspan.setAttribute('x', (right ? x : x + w / 2).toFixed(2));
-                    tspan.setAttribute('y', (y + i * LINE + (LINE + CAP) / 2).toFixed(2));
+                    tspan.setAttribute('y', baseline.toFixed(2));
                     tspan.textContent = text;
                     label.appendChild(tspan);
+                    lowest = Math.max(lowest, baseline);
                 });
             });
+
+            // Size the box to the labels: the reference's box ends ~2mm
+            // below its lowest label baseline (Korea 13.3% → 49.61mm), so
+            // the section below keeps its 13.2mm baseline gap (the same as
+            // the headings above and below it) when a slice at 6 o'clock
+            // carries a two-line label. 2.37mm lands the heading on the
+            // same px step as the other two gaps.
+            const width = +svg.getAttribute('viewBox').split(' ')[2];
+            const height = +(lowest + 2.37).toFixed(2);
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.style.height = height + 'mm';
         }
         layoutPieLabels();
         document.fonts && document.fonts.ready.then(layoutPieLabels);

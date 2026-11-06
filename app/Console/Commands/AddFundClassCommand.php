@@ -47,7 +47,10 @@ class AddFundClassCommand extends Command
         }
 
         $fund = $source->replicate();
+        // `class_code` selects the class's export files; the legacy `class`
+        // column still feeds revisions and the fund lists, so both move.
         $fund->class_code = $classCode;
+        $fund->class = $classCode;
         $fund->name = $this->option('name') ?: $this->deriveName($source->name, $classCode);
 
         // Everything below is per-class and must come from that class's own
